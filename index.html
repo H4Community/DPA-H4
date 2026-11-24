@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>H4 Dance DPA | 5-Minute Hip-Hop Movement Breaks for K–6</title>
-  <meta name="description" content="Free 5-minute hip-hop Daily Physical Activity (DPA) movement breaks for K–6 classrooms by H4 Community. Zero logins, zero prep, press play." />
+  <meta name="description"
+    content="Free 5-minute hip-hop Daily Physical Activity (DPA) movement breaks for K–6 classrooms by H4 Community. Zero logins, zero prep, press play." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+    rel="stylesheet" />
   <style>
     :root {
       --bg-paper: #FAF5E8;
@@ -49,7 +53,10 @@
       overflow-x: hidden;
     }
 
-    h1, h2, h3, .font-display {
+    h1,
+    h2,
+    h3,
+    .font-display {
       font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
       letter-spacing: -0.01em;
     }
@@ -280,8 +287,15 @@
     }
 
     @keyframes pulseGlow {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.025); }
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.025);
+      }
     }
 
     .btn-secondary {
@@ -315,7 +329,7 @@
     }
 
     .speech-bubble {
-      min-height: 40px;
+      min-height: 44px;
       background: #FFFFFF;
       border: 2.5px solid var(--ink);
       border-radius: 14px;
@@ -359,11 +373,25 @@
     }
 
     @keyframes crewJump {
-      0% { transform: translateY(0) scale(1, 1); }
-      25% { transform: translateY(4px) scale(1.12, 0.88); }
-      55% { transform: translateY(-18px) rotate(-6deg) scale(0.95, 1.08); }
-      80% { transform: translateY(2px) scale(1.06, 0.94); }
-      100% { transform: translateY(0) scale(1, 1); }
+      0% {
+        transform: translateY(0) scale(1, 1);
+      }
+
+      25% {
+        transform: translateY(4px) scale(1.12, 0.88);
+      }
+
+      55% {
+        transform: translateY(-18px) rotate(-6deg) scale(0.95, 1.08);
+      }
+
+      80% {
+        transform: translateY(2px) scale(1.06, 0.94);
+      }
+
+      100% {
+        transform: translateY(0) scale(1, 1);
+      }
     }
 
     .crew-name {
@@ -405,7 +433,7 @@
     /* 10 Grooves Tutorial Grid */
     .grooves-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
       gap: 16px;
     }
 
@@ -503,7 +531,7 @@
       border: var(--border-w) solid var(--ink);
       border-radius: 18px;
       padding: 14px 18px;
-      margin-bottom: 18px;
+      margin-top: 16px;
       box-shadow: var(--shadow-sm);
       font-weight: 700;
     }
@@ -681,6 +709,7 @@
     .footer-links {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: 14px;
       font-weight: 700;
       font-size: 0.92rem;
@@ -783,7 +812,7 @@
       padding: 14px;
       text-align: center;
       position: relative;
-      min-height: 240px;
+      min-height: 245px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -825,62 +854,184 @@
       justify-content: center;
     }
 
-    .is-playing .anim-bounce { animation: moveBounce 0.625s infinite ease-in-out; }
-    .is-playing .anim-rock   { animation: moveRock 1.25s infinite ease-in-out; }
-    .is-playing .anim-hop    { animation: moveHop 0.625s infinite cubic-bezier(0.28, 0.84, 0.42, 1); }
-    .is-playing .anim-slide  { animation: moveSlide 1.25s infinite ease-in-out; }
-    .is-playing .anim-shift  { animation: moveShift 1.25s infinite ease-in-out; }
-    .is-playing .anim-shake  { animation: moveShake 0.312s infinite linear; }
-    .is-playing .anim-twist  { animation: moveTwist 0.625s infinite ease-in-out; }
-    .is-playing .anim-tick   { animation: moveTick 1.25s infinite steps(1, end); }
-    .is-playing .anim-roll   { animation: moveRoll 1.25s infinite linear; }
-    .is-playing .anim-wave   { animation: moveWave 1.25s infinite ease-in-out; }
+    .is-playing .anim-bounce {
+      animation: moveBounce 0.625s infinite ease-in-out;
+    }
+
+    .is-playing .anim-rock {
+      animation: moveRock 1.25s infinite ease-in-out;
+    }
+
+    .is-playing .anim-hop {
+      animation: moveHop 0.625s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
+    }
+
+    .is-playing .anim-slide {
+      animation: moveSlide 1.25s infinite ease-in-out;
+    }
+
+    .is-playing .anim-shift {
+      animation: moveShift 1.25s infinite ease-in-out;
+    }
+
+    .is-playing .anim-shake {
+      animation: moveShake 0.312s infinite linear;
+    }
+
+    .is-playing .anim-twist {
+      animation: moveTwist 0.625s infinite ease-in-out;
+    }
+
+    .is-playing .anim-tick {
+      animation: moveTick 1.25s infinite steps(1, end);
+    }
+
+    .is-playing .anim-roll {
+      animation: moveRoll 1.25s infinite linear;
+    }
+
+    .is-playing .anim-wave {
+      animation: moveWave 1.25s infinite ease-in-out;
+    }
 
     @keyframes moveBounce {
-      0%, 100% { transform: translateY(0) scale(1, 1); }
-      50% { transform: translateY(14px) scale(1.08, 0.9); }
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1, 1);
+      }
+
+      50% {
+        transform: translateY(14px) scale(1.08, 0.9);
+      }
     }
+
     @keyframes moveRock {
-      0%, 100% { transform: rotate(0deg) translateX(0); }
-      25% { transform: rotate(-12deg) translateX(-12px); }
-      75% { transform: rotate(12deg) translateX(12px); }
+
+      0%,
+      100% {
+        transform: rotate(0deg) translateX(0);
+      }
+
+      25% {
+        transform: rotate(-12deg) translateX(-12px);
+      }
+
+      75% {
+        transform: rotate(12deg) translateX(12px);
+      }
     }
+
     @keyframes moveHop {
-      0%, 100% { transform: translateY(0); }
-      45% { transform: translateY(-24px) rotate(4deg); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      45% {
+        transform: translateY(-24px) rotate(4deg);
+      }
     }
+
     @keyframes moveSlide {
-      0%, 100% { transform: translateX(-22px) skewX(-6deg); }
-      50% { transform: translateX(22px) skewX(6deg); }
+
+      0%,
+      100% {
+        transform: translateX(-22px) skewX(-6deg);
+      }
+
+      50% {
+        transform: translateX(22px) skewX(6deg);
+      }
     }
+
     @keyframes moveShift {
-      0%, 100% { transform: translateY(-8px) translateX(-14px); }
-      50% { transform: translateY(-8px) translateX(14px); }
+
+      0%,
+      100% {
+        transform: translateY(-8px) translateX(-14px);
+      }
+
+      50% {
+        transform: translateY(-8px) translateX(14px);
+      }
     }
+
     @keyframes moveShake {
-      0%, 100% { transform: translateX(-5px) rotate(-3deg); }
-      50% { transform: translateX(5px) rotate(3deg); }
+
+      0%,
+      100% {
+        transform: translateX(-5px) rotate(-3deg);
+      }
+
+      50% {
+        transform: translateX(5px) rotate(3deg);
+      }
     }
+
     @keyframes moveTwist {
-      0%, 100% { transform: scaleX(1) rotate(-8deg); }
-      50% { transform: scaleX(0.86) rotate(8deg); }
+
+      0%,
+      100% {
+        transform: scaleX(1) rotate(-8deg);
+      }
+
+      50% {
+        transform: scaleX(0.86) rotate(8deg);
+      }
     }
+
     @keyframes moveTick {
-      0% { transform: rotate(-14deg) translateX(-8px); }
-      25% { transform: rotate(0deg) translateY(-10px); }
-      50% { transform: rotate(15deg) translateX(10px); }
-      75% { transform: rotate(-6deg) translateY(6px); }
+      0% {
+        transform: rotate(-14deg) translateX(-8px);
+      }
+
+      25% {
+        transform: rotate(0deg) translateY(-10px);
+      }
+
+      50% {
+        transform: rotate(15deg) translateX(10px);
+      }
+
+      75% {
+        transform: rotate(-6deg) translateY(6px);
+      }
     }
+
     @keyframes moveRoll {
-      0% { transform: translate(0, -10px); }
-      25% { transform: translate(14px, 0); }
-      50% { transform: translate(0, 10px); }
-      75% { transform: translate(-14px, 0); }
-      100% { transform: translate(0, -10px); }
+      0% {
+        transform: translate(0, -10px);
+      }
+
+      25% {
+        transform: translate(14px, 0);
+      }
+
+      50% {
+        transform: translate(0, 10px);
+      }
+
+      75% {
+        transform: translate(-14px, 0);
+      }
+
+      100% {
+        transform: translate(0, -10px);
+      }
     }
+
     @keyframes moveWave {
-      0%, 100% { transform: skewY(-7deg) translateY(-4px); }
-      50% { transform: skewY(7deg) translateY(4px); }
+
+      0%,
+      100% {
+        transform: skewY(-7deg) translateY(-4px);
+      }
+
+      50% {
+        transform: skewY(7deg) translateY(4px);
+      }
     }
 
     .stage-info h3 {
@@ -985,11 +1136,19 @@
     }
 
     @keyframes confettiFall {
-      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(360px) rotate(540deg); opacity: 0; }
+      0% {
+        transform: translateY(-20px) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(360px) rotate(540deg);
+        opacity: 0;
+      }
     }
 
     @media (max-width: 820px) {
+
       .hero-grid,
       .conversion-strip,
       .player-stage {
@@ -998,12 +1157,14 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- TOP BAR -->
   <header class="topbar">
     <div class="container topbar-inner">
-      <a href="https://h4community.org" target="_blank" rel="noopener noreferrer" class="brand-pill" aria-label="H4 Community Main Website">
+      <a href="https://h4community.org" target="_blank" rel="noopener noreferrer" class="brand-pill"
+        aria-label="H4 Community Main Website">
         <span class="brand-mark">H4</span>
         <span>H4 COMMUNITY · DANCE</span>
       </a>
@@ -1018,7 +1179,8 @@
           Calm Motion: OFF
         </button>
 
-        <a href="#book-workshop" class="comic-btn" style="background: var(--yellow); padding: 7px 14px; font-size: 0.88rem;">
+        <a href="#book-workshop" class="comic-btn"
+          style="background: var(--yellow); padding: 7px 14px; font-size: 0.88rem;">
           Book a Live Workshop
         </a>
       </div>
@@ -1028,7 +1190,8 @@
   <main class="container">
     <!-- Offline Fallback Notice (toggleable in footer for testing) -->
     <div class="offline-banner" role="status">
-      <span>⚡ Low-Bandwidth Classroom Mode: Animations simplified for older school laptops. All 10 grooves &amp; beats still work 100% offline!</span>
+      <span>⚡ Low-Bandwidth Classroom Mode: Animations simplified for older school laptops. All 10 grooves &amp; beats
+        still work 100% offline!</span>
       <button type="button" class="mini-ctrl" id="exitOfflineBtn">Restore Full Visuals</button>
     </div>
 
@@ -1047,7 +1210,9 @@
           </h1>
 
           <p>
-            Free, music-driven hip-hop movement breaks built for Grade 2 &amp; K–6 classrooms by <strong>H4 Community</strong>. Hit <strong>DPA START</strong> to cycle randomly through all 10 hip-hop grooves on the beat—no student accounts, no equipment, and no boring repeats!
+            Free, music-driven hip-hop movement breaks built for Grade 2 &amp; K–6 classrooms by <strong>H4
+              Community</strong>. Hit <strong>DPA START</strong> to cycle randomly through all 10 hip-hop grooves on the
+            beat—no student accounts, no equipment, and no boring repeats!
           </p>
 
           <div class="hero-cta-row">
@@ -1071,26 +1236,23 @@
             <!-- Character 1: Zeke (Lime #0 Jersey) -->
             <button type="button" class="crew-card-btn" data-dancer="zeke" aria-label="Tap Zeke to jump">
               <svg width="86" height="96" viewBox="0 0 100 110" fill="none" aria-hidden="true">
-                <!-- Sneakers -->
-                <rect x="24" y="92" width="20" height="10" rx="5" fill="#FACC15" stroke="#141414" stroke-width="3.5"/>
-                <rect x="54" y="92" width="20" height="10" rx="5" fill="#FACC15" stroke="#141414" stroke-width="3.5"/>
-                <!-- Baggy Pants -->
-                <path d="M32 68 L28 92 H42 L48 76 L54 92 H68 L64 68 Z" fill="#1E293B" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
-                <!-- Arms -->
-                <path d="M30 46 L14 60 L22 66 L34 55" fill="#D99B66" stroke="#141414" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M68 46 L86 34 L90 42 L72 55" fill="#D99B66" stroke="#141414" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- Lime #0 Jersey -->
-                <rect x="30" y="42" width="38" height="30" rx="8" fill="#A3E635" stroke="#141414" stroke-width="3.5"/>
-                <text x="49" y="63" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="18" fill="#141414">0</text>
-                <!-- Big Round Floor-Kids Head -->
-                <circle cx="49" cy="25" r="19" fill="#D99B66" stroke="#141414" stroke-width="3.5"/>
-                <!-- Cornrow Lines -->
-                <path d="M37 11 Q49 7 61 11" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
-                <path d="M34 15 Q49 11 64 15" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
-                <!-- Signature Stitched Visor Eyes -->
-                <path d="M37 26 Q49 22 61 26" stroke="#141414" stroke-width="3" stroke-linecap="round"/>
-                <line x1="41" y1="22" x2="41" y2="29" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="57" y1="22" x2="57" y2="29" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="24" y="92" width="20" height="10" rx="5" fill="#FACC15" stroke="#141414" stroke-width="3.5" />
+                <rect x="54" y="92" width="20" height="10" rx="5" fill="#FACC15" stroke="#141414" stroke-width="3.5" />
+                <path d="M32 68 L28 92 H42 L48 76 L54 92 H68 L64 68 Z" fill="#1E293B" stroke="#141414"
+                  stroke-width="3.5" stroke-linejoin="round" />
+                <path d="M30 46 L14 60 L22 66 L34 55" fill="#D99B66" stroke="#141414" stroke-width="3.5"
+                  stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M68 46 L86 34 L90 42 L72 55" fill="#D99B66" stroke="#141414" stroke-width="3.5"
+                  stroke-linecap="round" stroke-linejoin="round" />
+                <rect x="30" y="42" width="38" height="30" rx="8" fill="#A3E635" stroke="#141414" stroke-width="3.5" />
+                <text x="49" y="63" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700"
+                  font-size="18" fill="#141414">0</text>
+                <circle cx="49" cy="25" r="19" fill="#D99B66" stroke="#141414" stroke-width="3.5" />
+                <path d="M37 11 Q49 7 61 11" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M34 15 Q49 11 64 15" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
+                <path d="M37 26 Q49 22 61 26" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+                <line x1="41" y1="22" x2="41" y2="29" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
+                <line x1="57" y1="22" x2="57" y2="29" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
               </svg>
               <span class="crew-name">ZEKE</span>
             </button>
@@ -1098,24 +1260,20 @@
             <!-- Character 2: Milo (Tangerine Tee + Afro) -->
             <button type="button" class="crew-card-btn" data-dancer="milo" aria-label="Tap Milo to jump">
               <svg width="86" height="96" viewBox="0 0 100 110" fill="none" aria-hidden="true">
-                <!-- Sneakers -->
-                <rect x="22" y="92" width="20" height="10" rx="5" fill="#FFFFFF" stroke="#141414" stroke-width="3.5"/>
-                <rect x="56" y="92" width="20" height="10" rx="5" fill="#FFFFFF" stroke="#141414" stroke-width="3.5"/>
-                <!-- Jeans -->
-                <path d="M33 68 L27 92 H41 L49 75 L57 92 H71 L65 68 Z" fill="#3B82F6" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
-                <!-- Arms -->
-                <path d="M31 48 L15 38 L12 46 L30 57" fill="#8D5524" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
-                <path d="M67 48 L84 60 L79 67 L64 56" fill="#8D5524" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
-                <!-- Tangerine Tee -->
-                <rect x="30" y="43" width="38" height="29" rx="8" fill="#FB923C" stroke="#141414" stroke-width="3.5"/>
-                <!-- Afro -->
-                <circle cx="49" cy="21" r="21" fill="#141414"/>
-                <!-- Face -->
-                <circle cx="49" cy="26" r="16" fill="#8D5524" stroke="#141414" stroke-width="3.5"/>
-                <!-- Stitched Eyes -->
-                <path d="M39 27 Q49 23 59 27" stroke="#141414" stroke-width="3" stroke-linecap="round"/>
-                <line x1="43" y1="23" x2="43" y2="30" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="55" y1="23" x2="55" y2="30" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="22" y="92" width="20" height="10" rx="5" fill="#FFFFFF" stroke="#141414" stroke-width="3.5" />
+                <rect x="56" y="92" width="20" height="10" rx="5" fill="#FFFFFF" stroke="#141414" stroke-width="3.5" />
+                <path d="M33 68 L27 92 H41 L49 75 L57 92 H71 L65 68 Z" fill="#3B82F6" stroke="#141414"
+                  stroke-width="3.5" stroke-linejoin="round" />
+                <path d="M31 48 L15 38 L12 46 L30 57" fill="#8D5524" stroke="#141414" stroke-width="3.5"
+                  stroke-linejoin="round" />
+                <path d="M67 48 L84 60 L79 67 L64 56" fill="#8D5524" stroke="#141414" stroke-width="3.5"
+                  stroke-linejoin="round" />
+                <rect x="30" y="43" width="38" height="29" rx="8" fill="#FB923C" stroke="#141414" stroke-width="3.5" />
+                <circle cx="49" cy="21" r="21" fill="#141414" />
+                <circle cx="49" cy="26" r="16" fill="#8D5524" stroke="#141414" stroke-width="3.5" />
+                <path d="M39 27 Q49 23 59 27" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+                <line x1="43" y1="23" x2="43" y2="30" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
+                <line x1="55" y1="23" x2="55" y2="30" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
               </svg>
               <span class="crew-name">MILO</span>
             </button>
@@ -1123,23 +1281,18 @@
             <!-- Character 3: Kai (Cobalt Snapback) -->
             <button type="button" class="crew-card-btn" data-dancer="kai" aria-label="Tap Kai to jump">
               <svg width="86" height="96" viewBox="0 0 100 110" fill="none" aria-hidden="true">
-                <!-- Sneakers -->
-                <rect x="25" y="92" width="19" height="10" rx="5" fill="#38BDF8" stroke="#141414" stroke-width="3.5"/>
-                <rect x="55" y="92" width="19" height="10" rx="5" fill="#38BDF8" stroke="#141414" stroke-width="3.5"/>
-                <!-- Joggers -->
-                <path d="M33 68 L29 92 H42 L49 76 L56 92 H69 L65 68 Z" fill="#334155" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
-                <!-- Crossed Arms / B-Boy Stance -->
-                <rect x="26" y="45" width="46" height="26" rx="8" fill="#94A3B8" stroke="#141414" stroke-width="3.5"/>
-                <path d="M28 56 H70" stroke="#141414" stroke-width="3.5"/>
-                <!-- Head -->
-                <circle cx="49" cy="27" r="18" fill="#E0AC69" stroke="#141414" stroke-width="3.5"/>
-                <!-- Cobalt Snapback Cap -->
-                <path d="M31 21 C31 10 67 10 67 21 Z" fill="#0284C7" stroke="#141414" stroke-width="3.5"/>
-                <path d="M22 21 H72" stroke="#141414" stroke-width="4" stroke-linecap="round"/>
-                <!-- Stitched Eyes -->
-                <path d="M38 29 Q49 26 60 29" stroke="#141414" stroke-width="3" stroke-linecap="round"/>
-                <line x1="42" y1="25" x2="42" y2="32" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="56" y1="25" x2="56" y2="32" stroke="#141414" stroke-width="2.5" stroke-linecap="round"/>
+                <rect x="25" y="92" width="19" height="10" rx="5" fill="#38BDF8" stroke="#141414" stroke-width="3.5" />
+                <rect x="55" y="92" width="19" height="10" rx="5" fill="#38BDF8" stroke="#141414" stroke-width="3.5" />
+                <path d="M33 68 L29 92 H42 L49 76 L56 92 H69 L65 68 Z" fill="#334155" stroke="#141414"
+                  stroke-width="3.5" stroke-linejoin="round" />
+                <rect x="26" y="45" width="46" height="26" rx="8" fill="#94A3B8" stroke="#141414" stroke-width="3.5" />
+                <path d="M28 56 H70" stroke="#141414" stroke-width="3.5" />
+                <circle cx="49" cy="27" r="18" fill="#E0AC69" stroke="#141414" stroke-width="3.5" />
+                <path d="M31 21 C31 10 67 10 67 21 Z" fill="#0284C7" stroke="#141414" stroke-width="3.5" />
+                <path d="M22 21 H72" stroke="#141414" stroke-width="4" stroke-linecap="round" />
+                <path d="M38 29 Q49 26 60 29" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+                <line x1="42" y1="25" x2="42" y2="32" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
+                <line x1="56" y1="25" x2="56" y2="32" stroke="#141414" stroke-width="2.5" stroke-linecap="round" />
               </svg>
               <span class="crew-name">KAI</span>
             </button>
@@ -1154,16 +1307,18 @@
         <div>
           <h2 id="grooves-heading">The 10 Techniques of Hip-Hop</h2>
           <p class="section-sub">
-            Learn each groove solo with your class, or hit <strong>DPA START</strong> above to remix all 10 moves randomly every 2 counts of 8 (~20 seconds) for a full 5-minute energy boost!
+            Learn each groove solo with your class, or hit <strong>DPA START</strong> above to remix all 10 moves
+            randomly every 2 counts of 8 (~20 seconds) for a full 5-minute energy boost!
           </p>
         </div>
-        <button type="button" class="comic-btn" id="startRandomDpaBtn2" style="background: var(--lime); padding: 12px 18px; font-size: 1rem;">
+        <button type="button" class="comic-btn" id="startRandomDpaBtn2"
+          style="background: var(--lime); padding: 12px 18px; font-size: 1rem;">
           🎲 Shuffle All 10 (5-Min DPA)
         </button>
       </div>
 
       <div class="grooves-grid" id="groovesGrid">
-        <!-- Populated cleanly via JS with custom Floor-Kids SVG artwork for each of the 10 techniques -->
+        <!-- Populated dynamically with custom Floor-Kids SVG artwork for all 10 techniques -->
       </div>
     </section>
 
@@ -1178,20 +1333,26 @@
 
       <!-- Collapsible Ontario DPA & Privacy Compliance Accordion -->
       <div class="compliance-box">
-        <button type="button" class="compliance-trigger" id="complianceBtn" aria-expanded="false" aria-controls="compliancePanel">
+        <button type="button" class="compliance-trigger" id="complianceBtn" aria-expanded="false"
+          aria-controls="compliancePanel">
           <span>📋 Ontario DPA &amp; School Board Privacy Notes (Click to Expand)</span>
           <span id="complianceArrow">▼</span>
         </button>
         <div class="compliance-panel" id="compliancePanel" hidden>
           <ul class="compliance-list">
             <li class="compliance-item">
-              <strong>Ontario 20-Minute Daily DPA Fit:</strong> Each 5-minute random groove session delivers moderate-to-vigorous rhythmic movement that counts directly toward elementary Daily Physical Activity goals.
+              <strong>Ontario 20-Minute Daily DPA Fit:</strong> Each 5-minute random groove session delivers
+              moderate-to-vigorous rhythmic movement that counts directly toward elementary Daily Physical Activity
+              goals.
             </li>
             <li class="compliance-item">
-              <strong>100% Desk-Side Safe:</strong> All 10 foundational hip-hop grooves (Bounce, Rock, Hop, Slide, Shift, Shake, Twist, Tick, Roll, Wave) stay within arm's reach beside student desks—no gym booking required.
+              <strong>100% Desk-Side Safe:</strong> All 10 foundational hip-hop grooves (Bounce, Rock, Hop, Slide,
+              Shift, Shake, Twist, Tick, Roll, Wave) stay within arm's reach beside student desks—no gym booking
+              required.
             </li>
             <li class="compliance-item">
-              <strong>Zero Student Data or Logins:</strong> Runs locally in the browser with zero cookies, zero student accounts, zero camera access, and zero external video ads.
+              <strong>Zero Student Data or Logins:</strong> Runs locally in the browser with zero cookies, zero student
+              accounts, zero camera access, and zero external video ads.
             </li>
           </ul>
         </div>
@@ -1205,15 +1366,20 @@
           </span>
           <h2>Want a Pro to Lead Day 1 Live? Hire H4.</h2>
           <p>
-            Videos keep the daily habit alive—a live kickoff makes the whole school buy in. Bring an <strong>H4 Community</strong> professional breaking and hip-hop educator into your gym for a <strong>Full-Day Kickoff Workshop</strong> (up to 5 classes in one day).
+            Videos keep the daily habit alive—a live kickoff makes the whole school buy in. Bring an <strong>H4
+              Community</strong> professional breaking and hip-hop educator into your gym for a <strong>Full-Day Kickoff
+              Workshop</strong> (up to 5 classes in one day).
           </p>
           <ul class="conversion-perks">
             <li>Students learn real breaking &amp; hip-hop foundations live with pro educators</li>
             <li>Teachers get an effortless handoff so 5-minute DPA sticks all winter</li>
-            <li>Now booking <strong>January–March</strong> school dates · <a href="https://h4community.org" target="_blank" rel="noopener noreferrer" style="color: var(--yellow); font-weight: 700;">h4community.org</a></li>
+            <li>Now booking <strong>January–March</strong> school dates · <a href="https://h4community.org"
+                target="_blank" rel="noopener noreferrer"
+                style="color: var(--yellow); font-weight: 700;">h4community.org</a></li>
           </ul>
           <p style="font-size: 0.9rem; color: #A1A1AA;">
-            Direct inquiries: <a href="mailto:info@h4community.org" style="color: var(--lime); font-weight: 700;">info@h4community.org</a>
+            Direct inquiries: <a href="mailto:info@h4community.org"
+              style="color: var(--lime); font-weight: 700;">info@h4community.org</a>
           </p>
         </div>
 
@@ -1226,7 +1392,8 @@
             </div>
             <div class="form-field">
               <label for="schoolName">School Name &amp; Board *</label>
-              <input type="text" id="schoolName" name="schoolName" placeholder="e.g., St. Mother Teresa / TCDSB" required />
+              <input type="text" id="schoolName" name="schoolName" placeholder="e.g., St. Mother Teresa / TCDSB"
+                required />
             </div>
             <div class="form-field">
               <label for="targetMonth">Preferred Month *</label>
@@ -1240,7 +1407,8 @@
             <div class="form-error" id="formError" role="alert">
               Please enter both your name and school name so we can prepare your quote.
             </div>
-            <button type="submit" class="comic-btn" style="width: 100%; background: var(--lime); padding: 12px; font-size: 1.02rem;">
+            <button type="submit" class="comic-btn"
+              style="width: 100%; background: var(--lime); padding: 12px; font-size: 1.02rem;">
               Send Date Request →
             </button>
           </form>
@@ -1255,7 +1423,8 @@
       <div>
         <strong>H4 Community (How Hip Hop Helps)</strong> · Toronto Non-Profit Youth Organization<br />
         <span style="font-size: 0.88rem; color: var(--ink-soft);">
-          Questions or school bookings: <a href="mailto:info@h4community.org" style="color: var(--ink); font-weight: 700;">info@h4community.org</a>
+          Questions or school bookings: <a href="mailto:info@h4community.org"
+            style="color: var(--ink); font-weight: 700;">info@h4community.org</a>
         </span>
       </div>
 
@@ -1279,13 +1448,16 @@
           <button type="button" class="mini-ctrl is-active" id="audioToggleBtn" aria-pressed="true">
             🔊 Beat Music: ON
           </button>
-          <button type="button" class="mini-ctrl is-active" id="interval10Btn" title="Switch every 2 counts of 8 (10s / 16 beats)">
+          <button type="button" class="mini-ctrl is-active" id="interval10Btn"
+            title="Switch every 2 counts of 8 (10s / 16 beats)">
             10s (2×8)
           </button>
-          <button type="button" class="mini-ctrl" id="interval15Btn" title="Switch every 3 counts of 8 (15s / 24 beats)">
+          <button type="button" class="mini-ctrl" id="interval15Btn"
+            title="Switch every 3 counts of 8 (15s / 24 beats)">
             15s (3×8)
           </button>
-          <button type="button" class="mini-ctrl" id="quickDemoBtn" title="Test rapid switches & celebration in 30 seconds">
+          <button type="button" class="mini-ctrl" id="quickDemoBtn"
+            title="Test rapid switches & celebration in 30 seconds">
             ⚡ 30s Quick Demo
           </button>
           <button type="button" class="mini-ctrl" id="closeModalBtn" style="background: var(--coral); color: #FFFFFF;">
@@ -1300,18 +1472,18 @@
           <span class="timer-badge" id="totalTimerDisplay">05:00</span>
           <span class="switch-badge" id="switchTimerDisplay">Next move in 10s</span>
 
-          <div class="stage-dancer-wrap" id="stageDancerWrap">
-            <!-- Injected dynamic Floor Kids character SVG -->
-          </div>
+          <div class="stage-dancer-wrap" id="stageDancerWrap"></div>
 
-          <div style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 0.95rem; margin-top: 6px;" id="stageEnergyCallout">
+          <div style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 0.95rem; margin-top: 6px;"
+            id="stageEnergyCallout">
             COUNT IT OUT LOUD: 1 – 2 – 3 – 4!
           </div>
         </div>
 
         <!-- Right: Move Instructions + 8-Count Musical Tracker -->
-        <div>
-          <span class="tag-chip" id="playerMoveNumber" style="background: var(--ink); color: #FFFFFF; margin-bottom: 8px;">
+        <div class="stage-info">
+          <span class="tag-chip" id="playerMoveNumber"
+            style="background: var(--ink); color: #FFFFFF; margin-bottom: 8px;">
             MOVE 01 OF 10
           </span>
           <h3 id="playerMoveTitle">01 · THE BOUNCE</h3>
@@ -1346,10 +1518,12 @@
 
       <div class="player-footer-controls">
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button type="button" class="comic-btn" id="playPauseBtn" style="background: var(--lime); padding: 11px 22px; font-size: 1.05rem;">
+          <button type="button" class="comic-btn" id="playPauseBtn"
+            style="background: var(--lime); padding: 11px 22px; font-size: 1.05rem;">
             ⏸ Pause (Space)
           </button>
-          <button type="button" class="comic-btn" id="nextMoveBtn" style="background: var(--cobalt); padding: 11px 18px; font-size: 0.98rem;">
+          <button type="button" class="comic-btn" id="nextMoveBtn"
+            style="background: var(--cobalt); padding: 11px 18px; font-size: 0.98rem;">
             ⏭ Switch Move Now
           </button>
         </div>
@@ -1363,7 +1537,6 @@
 
   <script>
     (function () {
-      // 1. Explicit Data Contract: The 10 Foundational Techniques of Hip-Hop
       const GROOVES = [
         {
           id: "bounce",
@@ -1541,7 +1714,6 @@
             <rect x="62" y="90" width="20" height="10" rx="5" fill="#141414" stroke="#141414" stroke-width="3.5"/>
             <path d="M37 68 L31 90 H44 L55 74 L66 90 H79 L73 68 Z" fill="#475569" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
             <rect x="35" y="42" width="40" height="28" rx="9" fill="#FACC15" stroke="#141414" stroke-width="3.5"/>
-            <!-- Sharp 90-degree robot arms -->
             <path d="M35 48 H18 V32 H25 V42 H35" fill="#8D5524" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
             <path d="M75 48 H92 V64 H85 V54 H75" fill="#8D5524" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
             <circle cx="55" cy="24" r="18" fill="#8D5524" stroke="#141414" stroke-width="3.5"/>
@@ -1583,7 +1755,6 @@
             <rect x="62" y="90" width="20" height="10" rx="5" fill="#FFFFFF" stroke="#141414" stroke-width="3.5"/>
             <path d="M37 68 L31 90 H44 L55 74 L66 90 H79 L73 68 Z" fill="#1E293B" stroke="#141414" stroke-width="3.5" stroke-linejoin="round"/>
             <rect x="35" y="42" width="40" height="28" rx="9" fill="#A3E635" stroke="#141414" stroke-width="3.5"/>
-            <!-- Wavy arms -->
             <path d="M10 46 Q18 36 26 46 T36 46" stroke="#141414" stroke-width="5" stroke-linecap="round" fill="none"/>
             <path d="M74 46 Q82 56 90 46 T100 46" stroke="#141414" stroke-width="5" stroke-linecap="round" fill="none"/>
             <circle cx="55" cy="24" r="18" fill="#D99B66" stroke="#141414" stroke-width="3.5"/>
@@ -1619,16 +1790,25 @@
           "Zeke says: Soft knees on the Bounce—feel that 96 BPM bass!",
           "Grade 2, show me your cleanest Slide across the desk!",
           "Hit DPA START and see if you can survive all 10 moves!"
+          '"Zeke says: Soft knees on the Bounce—feel that 96 BPM bass!"',
+          '"Grade 2, show me your cleanest Slide across the desk!"',
+          '"Hit DPA START and see if you can survive all 10 moves!"'
         ],
         milo: [
           "Milo says: Lean into the Rock and keep your shoulders loose!",
           "Who in this classroom has the sharpest Robot Tick?",
           "5 minutes of hip-hop = 100% brain power for math!"
+          '"Milo says: Lean into the Rock and keep your shoulders loose!"',
+          '"Who in this classroom has the sharpest Robot Tick?"',
+          '"5 minutes of hip-hop = 100% brain power for math!"'
         ],
         kai: [
           "Kai says: Send that Ocean Wave from your fingers to your shoulders!",
           "Don't forget—every 2 counts of 8, the move switches randomly!",
           "Finish 5 minutes to earn a Classroom Star!"
+          '"Kai says: Send that Ocean Wave from your fingers to your shoulders!"',
+          '"Don\'t forget—every 2 counts of 8, the move switches randomly!"',
+          '"Finish 5 minutes to earn a Classroom Star!"'
         ]
       };
       let quoteIndex = 0;
@@ -1651,7 +1831,7 @@
       let audioCtx = null;
       let audioEnabled = true;
       const BPM = 96;
-      const BEAT_MS = Math.round(60000 / BPM); // 625ms per beat (~5.0s per 8-count)
+      const BEAT_MS = Math.round(60000 / BPM);
 
       function ensureAudio() {
         if (!audioEnabled) return null;
@@ -1660,7 +1840,7 @@
           if (Ctx) audioCtx = new Ctx();
         }
         if (audioCtx && audioCtx.state === "suspended") {
-          audioCtx.resume().catch(() => {});
+          audioCtx.resume().catch(() => { });
         }
         return audioCtx;
       }
@@ -1687,7 +1867,6 @@
         if (!ctx) return;
         const now = ctx.currentTime;
 
-        // Kick on 1 & 5 (indices 0, 4) + syncopated & of 3
         if (beatIndex === 0 || beatIndex === 4) {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -1702,7 +1881,6 @@
           osc.stop(now + 0.21);
         }
 
-        // Crisp clap/snare on 2, 4, 6, 8 (indices 1, 3, 5, 7)
         if (beatIndex % 2 === 1) {
           const bufferSize = ctx.sampleRate * 0.11;
           const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -1724,7 +1902,6 @@
           noise.start(now);
         }
 
-        // Subtle switch chime on Beat 1 when groove changes
         if (isSwitchAccent) {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -1778,11 +1955,14 @@
       const playPauseBtn = document.getElementById("playPauseBtn");
       const beatBoxes = Array.from(document.querySelectorAll(".beat-box"));
 
-      let mode = "random"; // "random" | "solo"
+      let mode = "random";
       let isPlaying = false;
       let switchSecondsSetting = 10; // Default 10s (2 counts of 8 = 16 beats at 96 BPM)
+      let switchSecondsSetting = 20;
       let quickDemoMode = false;
       let totalSecondsLeft = 300; // 5:00
+      let totalSecondsLeft = 300;
+      let moveSecondsLeft = 20;
       let beatStep = 0;
       let currentGrooveIdx = 0;
       let nextGrooveIdx = 1;
@@ -1934,252 +2114,263 @@
         const totalCycles = getTotalCycles();
         const countCycle = Math.floor(beatStep / 8) + 1;
         eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
+        function startLoops() {
+          stopLoops();
+          isPlaying = true;
+          playerStage.classList.add("is-playing");
+          playPauseBtn.textContent = "⏸ Pause (Space)";
+          ensureAudio();
 
-        const g = GROOVES[currentGrooveIdx];
-        if (beatInEight === 0) {
-          const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
-          stageEnergyCallout.textContent = g.energyLines[lineIdx];
-        }
+          beatTimerId = setInterval(() => {
+            const activeIdx = beatStep % 8;
+            beatBoxes.forEach((box, idx) => {
+              box.classList.toggle("is-active", idx === activeIdx);
+            });
+            const countCycle = Math.floor(beatStep / 8) + 1;
+            const totalCycles = switchSecondsSetting === 30 ? 3 : 2;
+            eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
 
-        playBeatStep(beatInEight, isSwitchBeat);
-        updateTimersUI();
-        beatStep++;
-      }
+            const g = GROOVES[currentGrooveIdx];
+            if (beatInEight === 0) {
+              const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
+              stageEnergyCallout.textContent = g.energyLines[lineIdx];
+            }
+            const g = GROOVES[currentGrooveIdx];
+            if (activeIdx === 0) {
+              const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
+              stageEnergyCallout.textContent = g.energyLines[lineIdx];
+            }
+
+            playBeatStep(beatInEight, isSwitchBeat);
+            updateTimersUI();
+            beatStep++;
+          }
 
       function startLoops(playInitialAccent = false) {
-        stopLoops();
-        isPlaying = true;
-        playerStage.classList.add("is-playing");
-        playPauseBtn.textContent = "⏸ Pause (Space)";
-        ensureAudio();
+              stopLoops();
+              isPlaying = true;
+              playerStage.classList.add("is-playing");
+              playPauseBtn.textContent = "⏸ Pause (Space)";
+              ensureAudio();
 
-        // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
-        runBeatTick(playInitialAccent);
+              // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
+              runBeatTick(playInitialAccent);
 
-        // Beat loop (96 BPM = 625ms per beat)
-        beatTimerId = setInterval(() => {
-          runBeatTick(false);
-        }, BEAT_MS);
+              // Beat loop (96 BPM = 625ms per beat)
+              beatTimerId = setInterval(() => {
+                runBeatTick(false);
+                playBeatStep(activeIdx, false);
+                beatStep++;
+              }, BEAT_MS);
 
-        // 1-second session countdown only (move switching is beat-locked above)
-        secondTimerId = setInterval(() => {
-          if (totalSecondsLeft <= 1) {
-            totalSecondsLeft = 0;
-            updateTimersUI();
-            finishSession();
-            return;
-          }
-          totalSecondsLeft -= 1;
-          totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
-        }, 1000);
-      }
+              // 1-second session countdown only (move switching is beat-locked above)
+              secondTimerId = setInterval(() => {
+                if (totalSecondsLeft <= 1) {
+                  totalSecondsLeft = 0;
+                  updateTimersUI();
+                  finishSession();
+                  return;
+                }
+                totalSecondsLeft -= 1;
+                totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
+              }, 1000);
+            }
 
       function openPlayer(selectedMode, soloIndex = 0) {
-        mode = selectedMode;
-        beatStep = 0;
-        if (mode === "random") {
-          totalSecondsLeft = quickDemoMode ? 30 : 300;
-          shuffleBag = [];
-          currentGrooveIdx = drawNextRandomIdx(-1);
-          nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-        } else {
-          totalSecondsLeft = 120;
-          currentGrooveIdx = soloIndex;
-          nextGrooveIdx = (soloIndex + 1) % GROOVES.length;
-        }
-        renderCurrentGroove(false);
-        playerModal.classList.add("is-open");
-        startLoops(true);
-      }
+              mode = selectedMode;
+              beatStep = 0;
+              if (mode === "random") {
+                totalSecondsLeft = quickDemoMode ? 30 : 300;
+                shuffleBag = [];
+                currentGrooveIdx = drawNextRandomIdx(-1);
+                nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+              } else {
+                totalSecondsLeft = 120;
+                currentGrooveIdx = soloIndex;
+                nextGrooveIdx = (soloIndex + 1) % GROOVES.length;
+              }
+              renderCurrentGroove(false);
+              playerModal.classList.add("is-open");
+              startLoops(true);
+            }
 
       function closePlayer() {
-        stopLoops();
-        playerModal.classList.remove("is-open");
-      }
+              stopLoops();
+              playerModal.classList.remove("is-open");
+            }
 
-      // Launchers
       document.getElementById("startRandomDpaBtn").addEventListener("click", () => openPlayer("random"));
-      document.getElementById("startRandomDpaBtn2").addEventListener("click", () => openPlayer("random"));
+          document.getElementById("startRandomDpaBtn2").addEventListener("click", () => openPlayer("random"));
 
-      groovesGrid.addEventListener("click", (e) => {
-        const btn = e.target.closest("[data-solo-idx]");
-        if (!btn) return;
-        const idx = Number(btn.getAttribute("data-solo-idx"));
-        openPlayer("solo", idx);
-      });
+          groovesGrid.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-solo-idx]");
+            if (!btn) return;
+            const idx = Number(btn.getAttribute("data-solo-idx"));
+            openPlayer("solo", idx);
+          });
 
-      // Player Controls
-      playPauseBtn.addEventListener("click", () => {
-        if (totalSecondsLeft === 0) {
-          openPlayer(mode, currentGrooveIdx);
-          return;
-        }
-        if (isPlaying) {
-          stopLoops();
-        } else {
-          startLoops();
-        }
-      });
+          playPauseBtn.addEventListener("click", () => {
+            if (totalSecondsLeft === 0) {
+              openPlayer(mode, currentGrooveIdx);
+              return;
+            }
+            if (isPlaying) {
+              stopLoops();
+            } else {
+              startLoops();
+            }
+          });
 
-      document.getElementById("nextMoveBtn").addEventListener("click", () => {
-        if (mode === "random") {
-          currentGrooveIdx = nextGrooveIdx;
-          nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-        } else {
-          currentGrooveIdx = (currentGrooveIdx + 1) % GROOVES.length;
-        }
-        beatStep = 0;
-        if (isPlaying) {
-          renderCurrentGroove(false);
-          startLoops(true);
-        } else {
-          renderCurrentGroove(true);
-          updateTimersUI();
-        }
-      });
+          document.getElementById("nextMoveBtn").addEventListener("click", () => {
+            if (mode === "random") {
+              currentGrooveIdx = nextGrooveIdx;
+              nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+            } else {
+              currentGrooveIdx = (currentGrooveIdx + 1) % GROOVES.length;
+            }
+            beatStep = 0;
+            if (isPlaying) {
+              renderCurrentGroove(false);
+              startLoops(true);
+            } else {
+              renderCurrentGroove(true);
+              updateTimersUI();
+            }
+          });
 
-      document.getElementById("closeModalBtn").addEventListener("click", closePlayer);
+          document.getElementById("closeModalBtn").addEventListener("click", closePlayer);
 
-      document.getElementById("audioToggleBtn").addEventListener("click", (e) => {
-        audioEnabled = !audioEnabled;
-        e.currentTarget.setAttribute("aria-pressed", String(audioEnabled));
-        e.currentTarget.classList.toggle("is-active", audioEnabled);
-        e.currentTarget.textContent = audioEnabled ? "🔊 Beat Music: ON" : "🔇 Beat Music: OFF";
-      });
+          playerModal.addEventListener("click", (e) => {
+            if (e.target === playerModal) closePlayer();
+          });
 
-      const interval10Btn = document.getElementById("interval10Btn");
-      const interval15Btn = document.getElementById("interval15Btn");
-      const quickDemoBtn = document.getElementById("quickDemoBtn");
+          document.getElementById("audioToggleBtn").addEventListener("click", (e) => {
+            audioEnabled = !audioEnabled;
+            e.currentTarget.setAttribute("aria-pressed", String(audioEnabled));
+            e.currentTarget.classList.toggle("is-active", audioEnabled);
+            e.currentTarget.textContent = audioEnabled ? "🔊 Beat Music: ON" : "🔇 Beat Music: OFF";
+          });
 
-      interval10Btn.addEventListener("click", () => {
-        quickDemoMode = false;
-        switchSecondsSetting = 10;
-        interval10Btn.classList.add("is-active");
-        interval15Btn.classList.remove("is-active");
-        quickDemoBtn.classList.remove("is-active");
-        if (mode === "random") {
-          beatStep = beatStep % getTotalBeatsForMove();
-          renderCurrentGroove(false);
-          updateTimersUI();
-        }
-      });
+          const interval10Btn = document.getElementById("interval10Btn");
+          const interval15Btn = document.getElementById("interval15Btn");
+          const quickDemoBtn = document.getElementById("quickDemoBtn");
 
-      interval15Btn.addEventListener("click", () => {
-        quickDemoMode = false;
-        switchSecondsSetting = 15;
-        interval15Btn.classList.add("is-active");
-        interval10Btn.classList.remove("is-active");
-        quickDemoBtn.classList.remove("is-active");
-        if (mode === "random") {
-          beatStep = beatStep % getTotalBeatsForMove();
-          renderCurrentGroove(false);
-          updateTimersUI();
-        }
-      });
+          interval10Btn.addEventListener("click", () => {
+            quickDemoMode = false;
+            switchSecondsSetting = 10;
+            interval10Btn.classList.add("is-active");
+            interval15Btn.classList.remove("is-active");
+            quickDemoBtn.classList.remove("is-active");
+            if (mode === "random") {
+              beatStep = beatStep % getTotalBeatsForMove();
+              renderCurrentGroove(false);
+              updateTimersUI();
+            }
+          });
 
-      quickDemoBtn.addEventListener("click", () => {
-        quickDemoMode = !quickDemoMode;
-        quickDemoBtn.classList.toggle("is-active", quickDemoMode);
-        if (mode === "random") {
-          totalSecondsLeft = quickDemoMode ? 30 : 300;
-          beatStep = beatStep % getTotalBeatsForMove();
-          renderCurrentGroove(false);
-          updateTimersUI();
-        }
-      });
+          interval15Btn.addEventListener("click", () => {
+            quickDemoMode = false;
+            switchSecondsSetting = 15;
+            interval15Btn.classList.add("is-active");
+            interval10Btn.classList.remove("is-active");
+            quickDemoBtn.classList.remove("is-active");
+            if (mode === "random") {
+              beatStep = beatStep % getTotalBeatsForMove();
+              renderCurrentGroove(false);
+              updateTimersUI();
+            }
+          });
 
-      // Keyboard Ergonomics inside Player
-      document.addEventListener("keydown", (e) => {
-        if (!playerModal.classList.contains("is-open")) return;
-        if (e.key === "Escape") {
-          closePlayer();
-        } else if (e.key === " " && document.activeElement.tagName !== "BUTTON") {
-          e.preventDefault();
-          playPauseBtn.click();
-        } else if (e.key.toLowerCase() === "n") {
-          document.getElementById("nextMoveBtn").click();
-        }
-      });
+          quickDemoBtn.addEventListener("click", () => {
+            quickDemoMode = !quickDemoMode;
+            quickDemoBtn.classList.toggle("is-active", quickDemoMode);
+            if (mode === "random") {
+              totalSecondsLeft = quickDemoMode ? 30 : 300;
+              beatStep = beatStep % getTotalBeatsForMove();
+              renderCurrentGroove(false);
+              updateTimersUI();
+            }
+          });
 
-      // Calm Motion Toggle & Star Reset (2-step safe)
-      const calmMotionBtn = document.getElementById("calmMotionBtn");
-      calmMotionBtn.addEventListener("click", () => {
-        const active = document.body.classList.toggle("calm-motion");
-        calmMotionBtn.setAttribute("aria-pressed", String(active));
-        calmMotionBtn.textContent = active ? "Calm Motion: ON" : "Calm Motion: OFF";
-      });
+          document.addEventListener("keydown", (e) => {
+            if (!playerModal.classList.contains("is-open")) return;
+            if (e.key === "Escape") {
+              closePlayer();
+            } else if (e.key === " " && document.activeElement.tagName !== "BUTTON") {
+              e.preventDefault();
+              playPauseBtn.click();
+            } else if (e.key.toLowerCase() === "n") {
+              document.getElementById("nextMoveBtn").click();
+            }
+          });
 
-      let confirmReset = false;
-      const resetStarsBtn = document.getElementById("resetStarsBtn");
-      resetStarsBtn.addEventListener("click", () => {
-        if (!confirmReset) {
-          confirmReset = true;
-          resetStarsBtn.textContent = "Sure?";
-          setTimeout(() => {
+          const calmMotionBtn = document.getElementById("calmMotionBtn");
+          calmMotionBtn.addEventListener("click", () => {
+            const active = document.body.classList.toggle("calm-motion");
+            calmMotionBtn.setAttribute("aria-pressed", String(active));
+            calmMotionBtn.textContent = active ? "Calm Motion: ON" : "Calm Motion: OFF";
+          });
+
+          let confirmReset = false;
+          const resetStarsBtn = document.getElementById("resetStarsBtn");
+          resetStarsBtn.addEventListener("click", () => {
+            if (!confirmReset) {
+              confirmReset = true;
+              resetStarsBtn.textContent = "Sure?";
+              setTimeout(() => {
+                confirmReset = false;
+                resetStarsBtn.textContent = "Reset";
+              }, 3000);
+              return;
+            }
+            stars = 0;
+            localStorage.setItem("h4_dpa_stars", "0");
+            starCountEl.textContent = "0";
             confirmReset = false;
             resetStarsBtn.textContent = "Reset";
-          }, 3000);
-          return;
-        }
-        stars = 0;
-        localStorage.setItem("h4_dpa_stars", "0");
-        starCountEl.textContent = "0";
-        confirmReset = false;
-        resetStarsBtn.textContent = "Reset";
-      });
+          });
 
-      // Ontario DPA Compliance Accordion
-      const complianceBtn = document.getElementById("complianceBtn");
-      const compliancePanel = document.getElementById("compliancePanel");
-      const complianceArrow = document.getElementById("complianceArrow");
-      complianceBtn.addEventListener("click", () => {
-        const expanded = complianceBtn.getAttribute("aria-expanded") === "true";
-        complianceBtn.setAttribute("aria-expanded", String(!expanded));
-        compliancePanel.hidden = expanded;
-        complianceArrow.textContent = expanded ? "▼" : "▲";
-      });
+          const complianceBtn = document.getElementById("complianceBtn");
+          const compliancePanel = document.getElementById("compliancePanel");
+          const complianceArrow = document.getElementById("complianceArrow");
+          complianceBtn.addEventListener("click", () => {
+            const expanded = complianceBtn.getAttribute("aria-expanded") === "true";
+            complianceBtn.setAttribute("aria-expanded", String(!expanded));
+            compliancePanel.hidden = expanded;
+            complianceArrow.textContent = expanded ? "▼" : "▲";
+          });
 
-      // Low-Bandwidth Classroom Preview Toggle
-      document.getElementById("toggleOfflineBtn").addEventListener("click", () => {
-        document.body.classList.toggle("offline-mode");
-        document.body.classList.toggle("calm-motion", document.body.classList.contains("offline-mode"));
-      });
-      document.getElementById("exitOfflineBtn").addEventListener("click", () => {
-        document.body.classList.remove("offline-mode", "calm-motion");
-      });
+          document.getElementById("toggleOfflineBtn").addEventListener("click", () => {
+            document.body.classList.toggle("offline-mode");
+            document.body.classList.toggle("calm-motion", document.body.classList.contains("offline-mode"));
+          });
+          document.getElementById("exitOfflineBtn").addEventListener("click", () => {
+            document.body.classList.remove("offline-mode", "calm-motion");
+          });
 
-      // Teacher Booking Form (Routes strictly to info@h4community.org & h4community.org)
-      const workshopForm = document.getElementById("workshopForm");
-      const formError = document.getElementById("formError");
-      const bookingCard = document.getElementById("bookingCard");
+          const workshopForm = document.getElementById("workshopForm");
+          const formError = document.getElementById("formError");
+          const bookingCard = document.getElementById("bookingCard");
 
-      workshopForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const teacher = document.getElementById("teacherName").value.trim();
-        const school = document.getElementById("schoolName").value.trim();
-        const month = document.getElementById("targetMonth").value;
+          workshopForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const teacher = document.getElementById("teacherName").value.trim();
+            const school = document.getElementById("schoolName").value.trim();
+            const month = document.getElementById("targetMonth").value;
 
-        if (!teacher || !school) {
-          formError.style.display = "block";
-          return;
-        }
-        formError.style.display = "none";
+            if (!teacher || !school) {
+              formError.style.display = "block";
+              return;
+            }
+            formError.style.display = "none";
 
-        const subject = encodeURIComponent(`H4 Full-Day Dance Workshop Inquiry — ${school} (${month})`);
-        const body = encodeURIComponent(
-          `Hi H4 Community Team,
+            const subject = encodeURIComponent(`H4 Full-Day Dance Workshop Inquiry — ${school} (${month})`);
+            const body = encodeURIComponent(
+              `Hi H4 Community Team,\n\nWe'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.\n\nContact Name: ${teacher}\nSchool / Board: ${school}\nPreferred Month: ${month}\n\nSent from dance.h4community.org`
+            );
+            const mailtoHref = `mailto:info@h4community.org?subject=${subject}&body=${body}`;
 
-We'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.
-
-Contact Name: ${teacher}
-School / Board: ${school}
-Preferred Month: ${month}
-
-Sent from dance.h4community.org`
-        );
-        const mailtoHref = `mailto:info@h4community.org?subject=${subject}&body=${body}`;
-
-        bookingCard.innerHTML = `
+            bookingCard.innerHTML = `
           <div class="form-success" role="status">
             <h3 style="margin-bottom: 6px;">✅ Request Ready for ${school}!</h3>
             <p style="font-size: 0.92rem; margin-bottom: 12px;">
@@ -2190,8 +2381,9 @@ Sent from dance.h4community.org`
             </a>
           </div>
         `;
-      });
-    })();
+          });
+        }) ();
   </script>
 </body>
+
 </html>
