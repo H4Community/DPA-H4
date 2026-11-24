@@ -1308,7 +1308,7 @@
           <h2 id="grooves-heading">The 10 Techniques of Hip-Hop</h2>
           <p class="section-sub">
             Learn each groove solo with your class, or hit <strong>DPA START</strong> above to remix all 10 moves
-            randomly every 2 counts of 8 (~20 seconds) for a full 5-minute energy boost!
+            randomly every 2 counts of 8 (~8 seconds) for a full 5-minute energy boost!
           </p>
         </div>
         <button type="button" class="comic-btn" id="startRandomDpaBtn2"
@@ -1448,13 +1448,13 @@
           <button type="button" class="mini-ctrl is-active" id="audioToggleBtn" aria-pressed="true">
             🔊 Beat Music: ON
           </button>
-          <button type="button" class="mini-ctrl is-active" id="interval10Btn"
-            title="Switch every 2 counts of 8 (10s / 16 beats)">
-            10s (2×8)
+          <button type="button" class="mini-ctrl is-active" id="interval2x8Btn"
+            title="Switch every 2 counts of 8 (16 beats)">
+            2×8 Counts
           </button>
-          <button type="button" class="mini-ctrl" id="interval15Btn"
-            title="Switch every 3 counts of 8 (15s / 24 beats)">
-            15s (3×8)
+          <button type="button" class="mini-ctrl" id="interval3x8Btn"
+            title="Switch every 3 counts of 8 (24 beats)">
+            3×8 Counts
           </button>
           <button type="button" class="mini-ctrl" id="quickDemoBtn"
             title="Test rapid switches & celebration in 30 seconds">
@@ -1470,7 +1470,7 @@
         <!-- Left: Animated Floor-Kids Character + Timers -->
         <div class="stage-visual" id="stageVisual" style="background: #FEF08A;">
           <span class="timer-badge" id="totalTimerDisplay">05:00</span>
-          <span class="switch-badge" id="switchTimerDisplay">Next move in 10s</span>
+          <span class="switch-badge" id="switchTimerDisplay">2×8 Counts</span>
 
           <div class="stage-dancer-wrap" id="stageDancerWrap"></div>
 
@@ -1496,7 +1496,7 @@
           </div>
 
           <div class="eight-count-label">
-            <span>Musical 8-Count Tracker (96 BPM)</span>
+            <span>Musical 8-Count Tracker (115 BPM)</span>
             <span id="eightCountCycleLabel">Count 1 of 2</span>
           </div>
           <div class="eight-count-grid" id="eightCountGrid" aria-label="8-count beat visualizer">
@@ -1787,28 +1787,19 @@
       // 3. Crew Tap Interaction (Hero Stage)
       const CREW_QUOTES = {
         zeke: [
-          "Zeke says: Soft knees on the Bounce—feel that 96 BPM bass!",
+          "Zeke says: Soft knees on the Bounce—feel that 115 BPM bass!",
           "Grade 2, show me your cleanest Slide across the desk!",
           "Hit DPA START and see if you can survive all 10 moves!"
-          '"Zeke says: Soft knees on the Bounce—feel that 96 BPM bass!"',
-          '"Grade 2, show me your cleanest Slide across the desk!"',
-          '"Hit DPA START and see if you can survive all 10 moves!"'
         ],
         milo: [
           "Milo says: Lean into the Rock and keep your shoulders loose!",
           "Who in this classroom has the sharpest Robot Tick?",
           "5 minutes of hip-hop = 100% brain power for math!"
-          '"Milo says: Lean into the Rock and keep your shoulders loose!"',
-          '"Who in this classroom has the sharpest Robot Tick?"',
-          '"5 minutes of hip-hop = 100% brain power for math!"'
         ],
         kai: [
           "Kai says: Send that Ocean Wave from your fingers to your shoulders!",
           "Don't forget—every 2 counts of 8, the move switches randomly!",
           "Finish 5 minutes to earn a Classroom Star!"
-          '"Kai says: Send that Ocean Wave from your fingers to your shoulders!"',
-          '"Don\'t forget—every 2 counts of 8, the move switches randomly!"',
-          '"Finish 5 minutes to earn a Classroom Star!"'
         ]
       };
       let quoteIndex = 0;
@@ -1827,10 +1818,10 @@
         });
       });
 
-      // 4. Web Audio Boom-Bap Synthesizer (96 BPM, zero external MP3 dependencies)
+      // 4. Web Audio Boom-Bap Synthesizer (115 BPM, zero external MP3 dependencies)
       let audioCtx = null;
       let audioEnabled = true;
-      const BPM = 96;
+      const BPM = 115;
       const BEAT_MS = Math.round(60000 / BPM);
 
       function ensureAudio() {
@@ -1957,12 +1948,9 @@
 
       let mode = "random";
       let isPlaying = false;
-      let switchSecondsSetting = 10; // Default 10s (2 counts of 8 = 16 beats at 96 BPM)
-      let switchSecondsSetting = 20;
+      let countsPerMove = 2; // Default 2 counts of 8 (16 beats, ~8s at 115 BPM)
       let quickDemoMode = false;
       let totalSecondsLeft = 300; // 5:00
-      let totalSecondsLeft = 300;
-      let moveSecondsLeft = 20;
       let beatStep = 0;
       let currentGrooveIdx = 0;
       let nextGrooveIdx = 1;
@@ -2011,7 +1999,7 @@
         if (mode === "random") {
           playerModeLabel.textContent = quickDemoMode
             ? "⚡ 30-SEC QUICK DEMO MIX"
-            : `🎲 5-MIN RANDOM DPA MIX (${switchSecondsSetting}s / Move)`;
+            : `🎲 5-MIN RANDOM DPA MIX (${countsPerMove}×8 Counts / Move)`;
           upNextText.textContent = `🎲 UP NEXT: ${nextG.num} · ${nextG.name.toUpperCase()} (${nextG.tag})`;
         } else {
           playerModeLabel.textContent = `🎯 TUTORIAL PRACTICE: ${g.name.toUpperCase()}`;
@@ -2023,14 +2011,13 @@
         }
       }
 
-      function getTotalBeatsForMove() {
-        if (quickDemoMode) return 8; // 1 count of 8 = 5s at 96 BPM
-        return switchSecondsSetting === 15 ? 24 : 16; // 3×8 = 24 beats (15s), 2×8 = 16 beats (10s)
+      function getTotalCycles() {
+        if (quickDemoMode) return 1; // 1 count of 8 (8 beats)
+        return countsPerMove === 3 ? 3 : 2;
       }
 
-      function getTotalCycles() {
-        if (quickDemoMode) return 1;
-        return switchSecondsSetting === 15 ? 3 : 2;
+      function getTotalBeatsForMove() {
+        return getTotalCycles() * 8; // 2×8 = 16 beats, 3×8 = 24 beats, Quick Demo = 8 beats
       }
 
       function updateTimersUI() {
@@ -2038,12 +2025,12 @@
         if (mode === "random") {
           const totalBeats = getTotalBeatsForMove();
           const beatsLeft = Math.max(1, totalBeats - beatStep);
-          const secondsLeft = Math.ceil((beatsLeft * BEAT_MS) / 1000);
-          switchTimerDisplay.textContent = `Switch in ${secondsLeft}s`;
+          const countsLabel = quickDemoMode ? "1×8 Quick" : `${getTotalCycles()}×8 Counts`;
+          switchTimerDisplay.textContent = `${countsLabel} · ${beatsLeft}b`;
           if (beatsLeft <= 4 && totalSecondsLeft > 3) {
             upNextBanner.classList.add("is-alert");
             const nextG = GROOVES[nextGrooveIdx];
-            upNextText.textContent = `🚨 GET READY IN ${secondsLeft}s... NEXT: ${nextG.name.toUpperCase()}!`;
+            upNextText.textContent = `🚨 GET READY (${beatsLeft})... NEXT: ${nextG.name.toUpperCase()}!`;
           } else {
             upNextBanner.classList.remove("is-alert");
             const nextG = GROOVES[nextGrooveIdx];
@@ -2097,7 +2084,7 @@
       function runBeatTick(isInitialAccent = false) {
         let isSwitchBeat = isInitialAccent;
 
-        // Trigger random move switches directly on Beat 1 (every 16 beats for 2×8, 24 for 3×8, or 8 for Quick Demo)
+        // Trigger random move switches directly on Beat 1 (beat 17 for 2×8, beat 25 for 3×8, beat 9 for Quick Demo)
         if (mode === "random" && beatStep >= getTotalBeatsForMove()) {
           currentGrooveIdx = nextGrooveIdx;
           nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
@@ -2114,67 +2101,45 @@
         const totalCycles = getTotalCycles();
         const countCycle = Math.floor(beatStep / 8) + 1;
         eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
-        function startLoops() {
-          stopLoops();
-          isPlaying = true;
-          playerStage.classList.add("is-playing");
-          playPauseBtn.textContent = "⏸ Pause (Space)";
-          ensureAudio();
 
-          beatTimerId = setInterval(() => {
-            const activeIdx = beatStep % 8;
-            beatBoxes.forEach((box, idx) => {
-              box.classList.toggle("is-active", idx === activeIdx);
-            });
-            const countCycle = Math.floor(beatStep / 8) + 1;
-            const totalCycles = switchSecondsSetting === 30 ? 3 : 2;
-            eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
+        const g = GROOVES[currentGrooveIdx];
+        if (beatInEight === 0) {
+          const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
+          stageEnergyCallout.textContent = g.energyLines[lineIdx];
+        }
 
-            const g = GROOVES[currentGrooveIdx];
-            if (beatInEight === 0) {
-              const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
-              stageEnergyCallout.textContent = g.energyLines[lineIdx];
-            }
-            const g = GROOVES[currentGrooveIdx];
-            if (activeIdx === 0) {
-              const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
-              stageEnergyCallout.textContent = g.energyLines[lineIdx];
-            }
-
-            playBeatStep(beatInEight, isSwitchBeat);
-            updateTimersUI();
-            beatStep++;
-          }
+        playBeatStep(beatInEight, isSwitchBeat);
+        updateTimersUI();
+        beatStep++;
+      }
 
       function startLoops(playInitialAccent = false) {
-              stopLoops();
-              isPlaying = true;
-              playerStage.classList.add("is-playing");
-              playPauseBtn.textContent = "⏸ Pause (Space)";
-              ensureAudio();
+        stopLoops();
+        isPlaying = true;
+        playerStage.classList.add("is-playing");
+        playPauseBtn.textContent = "⏸ Pause (Space)";
+        ensureAudio();
 
-              // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
-              runBeatTick(playInitialAccent);
+        // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
+        runBeatTick(playInitialAccent);
 
-              // Beat loop (96 BPM = 625ms per beat)
-              beatTimerId = setInterval(() => {
-                runBeatTick(false);
-                playBeatStep(activeIdx, false);
-                beatStep++;
-              }, BEAT_MS);
+        // Beat loop (115 BPM ≈ 522ms per beat)
+        beatTimerId = setInterval(() => {
+          runBeatTick(false);
+        }, BEAT_MS);
 
-              // 1-second session countdown only (move switching is beat-locked above)
-              secondTimerId = setInterval(() => {
-                if (totalSecondsLeft <= 1) {
-                  totalSecondsLeft = 0;
-                  updateTimersUI();
-                  finishSession();
-                  return;
-                }
-                totalSecondsLeft -= 1;
-                totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
-              }, 1000);
-            }
+        // 1-second session countdown only (move switching is beat-locked above)
+        secondTimerId = setInterval(() => {
+          if (totalSecondsLeft <= 1) {
+            totalSecondsLeft = 0;
+            updateTimersUI();
+            finishSession();
+            return;
+          }
+          totalSecondsLeft -= 1;
+          totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
+        }, 1000);
+      }
 
       function openPlayer(selectedMode, soloIndex = 0) {
               mode = selectedMode;
@@ -2251,15 +2216,15 @@
             e.currentTarget.textContent = audioEnabled ? "🔊 Beat Music: ON" : "🔇 Beat Music: OFF";
           });
 
-          const interval10Btn = document.getElementById("interval10Btn");
-          const interval15Btn = document.getElementById("interval15Btn");
+          const interval2x8Btn = document.getElementById("interval2x8Btn");
+          const interval3x8Btn = document.getElementById("interval3x8Btn");
           const quickDemoBtn = document.getElementById("quickDemoBtn");
 
-          interval10Btn.addEventListener("click", () => {
+          interval2x8Btn.addEventListener("click", () => {
             quickDemoMode = false;
-            switchSecondsSetting = 10;
-            interval10Btn.classList.add("is-active");
-            interval15Btn.classList.remove("is-active");
+            countsPerMove = 2;
+            interval2x8Btn.classList.add("is-active");
+            interval3x8Btn.classList.remove("is-active");
             quickDemoBtn.classList.remove("is-active");
             if (mode === "random") {
               beatStep = beatStep % getTotalBeatsForMove();
@@ -2268,11 +2233,11 @@
             }
           });
 
-          interval15Btn.addEventListener("click", () => {
+          interval3x8Btn.addEventListener("click", () => {
             quickDemoMode = false;
-            switchSecondsSetting = 15;
-            interval15Btn.classList.add("is-active");
-            interval10Btn.classList.remove("is-active");
+            countsPerMove = 3;
+            interval3x8Btn.classList.add("is-active");
+            interval2x8Btn.classList.remove("is-active");
             quickDemoBtn.classList.remove("is-active");
             if (mode === "random") {
               beatStep = beatStep % getTotalBeatsForMove();
