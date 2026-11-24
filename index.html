@@ -10,12 +10,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Playpen+Sans:wght@500;700;800&display=swap"
     rel="stylesheet" />
   <style>
     :root {
-      --bg-paper: #FAF5E8;
-      --bg-card: #FFFFFF;
+      --bg-paper: #FDF6E2;
+      --bg-card: #FFFDF7;
       --ink: #141414;
       --ink-soft: #3F3F46;
       --lime: #A3E635;
@@ -25,12 +25,13 @@
       --yellow: #FACC15;
       --coral: #F43F5E;
       --purple: #C084FC;
-      --border-w: 3px;
-      --shadow-sm: 3px 3px 0px #141414;
-      --shadow-md: 5px 5px 0px #141414;
+      --border-w: 4px;
+      --shadow-sm: 4px 4px 0px #141414;
+      --shadow-md: 6px 6px 0px #141414;
       --shadow-lg: 8px 8px 0px #141414;
-      --radius-md: 16px;
-      --radius-lg: 24px;
+      --radius-md: 18px;
+      --radius-lg: 22px;
+      --radius-sketch: 20px 23px 19px 22px / 22px 19px 23px 20px;
     }
 
     * {
@@ -44,9 +45,9 @@
     }
 
     body {
-      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg-paper);
-      background-image: radial-gradient(rgba(20, 20, 20, 0.11) 1.25px, transparent 1.25px);
+      font-family: 'Playpen Sans', 'Comic Neue', sans-serif;
+      background-color: #fbf5df;
+      background-image: radial-gradient(#d4be8d 2px, transparent 2px);
       background-size: 18px 18px;
       color: var(--ink);
       line-height: 1.45;
@@ -56,8 +57,17 @@
     h1,
     h2,
     h3,
-    .font-display {
-      font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+    .font-display,
+    button,
+    .comic-btn,
+    .mini-ctrl,
+    .pill-toggle,
+    .star-badge,
+    .brand-pill,
+    .groove-num,
+    .groove-tag,
+    .tag-chip {
+      font-family: 'Fredoka', sans-serif;
       letter-spacing: -0.01em;
     }
 
@@ -80,7 +90,7 @@
     .comic-box {
       background: var(--bg-card);
       border: var(--border-w) solid var(--ink);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-sketch);
       box-shadow: var(--shadow-md);
     }
 
@@ -89,10 +99,10 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      font-family: 'Fredoka', system-ui, sans-serif;
+      font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       border: var(--border-w) solid var(--ink);
-      border-radius: 14px;
+      border-radius: 16px 19px 15px 18px / 18px 15px 19px 16px;
       box-shadow: var(--shadow-sm);
       cursor: pointer;
       text-decoration: none;
@@ -103,11 +113,11 @@
 
     .comic-btn:hover {
       transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0px #141414;
+      box-shadow: 6px 6px 0px #141414;
     }
 
     .comic-btn:active {
-      transform: translate(2px, 2px);
+      transform: translate(3px, 3px);
       box-shadow: 1px 1px 0px #141414;
     }
 
@@ -125,10 +135,10 @@
       position: sticky;
       top: 0;
       z-index: 40;
-      background: rgba(250, 245, 232, 0.94);
+      background: rgba(253, 246, 226, 0.96);
       backdrop-filter: blur(8px);
       border-bottom: var(--border-w) solid var(--ink);
-      padding: 10px 0;
+      padding: 11px 0;
     }
 
     .topbar-inner {
@@ -147,45 +157,54 @@
       color: var(--ink);
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: 1.22rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .brand-mark {
       background: var(--ink);
       color: var(--lime);
-      padding: 5px 11px;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      letter-spacing: 0.04em;
-      box-shadow: 2px 2px 0 var(--tangerine);
+      padding: 5px 12px;
+      border: 3.5px solid var(--ink);
+      border-radius: 12px 14px 11px 13px;
+      font-size: 1.15rem;
+      letter-spacing: 0.05em;
+      box-shadow: 3px 3px 0px var(--tangerine);
     }
 
     .topbar-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .star-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: var(--yellow);
-      border: 2.5px solid var(--ink);
-      border-radius: 999px;
-      padding: 5px 12px;
+      gap: 7px;
+      background: #FFFFFF;
+      border: 3.5px solid var(--ink);
+      border-radius: 30px;
+      padding: 6px 14px;
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 0.92rem;
-      box-shadow: 2px 2px 0 var(--ink);
+      box-shadow: 4px 4px 0px var(--ink);
+    }
+
+    .star-icon-svg {
+      flex-shrink: 0;
+      filter: drop-shadow(1px 1px 0px #141414);
     }
 
     .star-reset-btn {
       background: transparent;
       border: none;
+      font-family: 'Playpen Sans', sans-serif;
       font-size: 0.78rem;
-      font-weight: 700;
+      font-weight: 800;
       text-decoration: underline;
       cursor: pointer;
       color: var(--ink);
@@ -194,14 +213,25 @@
 
     .pill-toggle {
       background: #FFFFFF;
-      border: 2.5px solid var(--ink);
-      border-radius: 999px;
-      padding: 5px 12px;
-      font-family: 'Space Grotesk', sans-serif;
+      border: 3.5px solid var(--ink);
+      border-radius: 30px;
+      padding: 6px 14px;
+      font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      font-size: 0.82rem;
+      font-size: 0.86rem;
       cursor: pointer;
-      box-shadow: 2px 2px 0 var(--ink);
+      box-shadow: 4px 4px 0px var(--ink);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease;
+    }
+
+    .pill-toggle:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0px var(--ink);
+    }
+
+    .pill-toggle:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--ink);
     }
 
     .pill-toggle[aria-pressed="true"] {
@@ -218,9 +248,9 @@
       grid-template-columns: 1.15fr 0.85fr;
       gap: 22px;
       align-items: center;
-      background: #FFFFFF;
+      background: #FFFDF7;
       border: var(--border-w) solid var(--ink);
-      border-radius: 28px;
+      border-radius: 26px 30px 24px 28px / 28px 24px 30px 26px;
       box-shadow: var(--shadow-lg);
       padding: 26px 28px;
       position: relative;
@@ -238,9 +268,10 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 4px 11px;
-      border: 2px solid var(--ink);
+      padding: 4px 12px;
+      border: 3px solid var(--ink);
       border-radius: 999px;
+      box-shadow: 2px 2px 0px var(--ink);
       font-size: 0.8rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -306,9 +337,11 @@
 
     /* Interactive Crew Stage in Hero */
     .crew-stage {
-      background: linear-gradient(180deg, #E0F2FE 0%, #FEF08A 100%);
+      background-color: #FEF08A;
+      background-image: radial-gradient(rgba(20, 20, 20, 0.09) 1.5px, transparent 1.5px);
+      background-size: 12px 12px;
       border: var(--border-w) solid var(--ink);
-      border-radius: 22px;
+      border-radius: 22px 26px 20px 24px;
       padding: 16px 14px 12px;
       box-shadow: var(--shadow-md);
       text-align: center;
@@ -331,14 +364,14 @@
     .speech-bubble {
       min-height: 44px;
       background: #FFFFFF;
-      border: 2.5px solid var(--ink);
-      border-radius: 14px;
-      padding: 7px 12px;
+      border: 3.5px solid var(--ink);
+      border-radius: 20px;
+      padding: 8px 14px;
       font-family: 'Fredoka', sans-serif;
       font-weight: 600;
       font-size: 0.95rem;
       margin-bottom: 10px;
-      box-shadow: 3px 3px 0 var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -352,12 +385,13 @@
     }
 
     .crew-card-btn {
-      background: rgba(255, 255, 255, 0.72);
-      border: 2.5px solid var(--ink);
-      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 3.5px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 3px 3px 0px var(--ink);
       padding: 8px 4px 6px;
       cursor: pointer;
-      transition: transform 0.15s ease, background 0.15s ease;
+      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -365,7 +399,8 @@
 
     .crew-card-btn:hover {
       background: #FFFFFF;
-      transform: translateY(-4px);
+      transform: translate(-1px, -4px);
+      box-shadow: 5px 6px 0px var(--ink);
     }
 
     .crew-card-btn.is-jumping svg {
@@ -428,20 +463,48 @@
       color: var(--ink-soft);
       font-size: 0.98rem;
       max-width: 60ch;
+      background: rgba(255, 253, 247, 0.85);
+      border: 2.5px solid var(--ink);
+      border-radius: 16px 19px 15px 17px;
+      padding: 8px 14px;
+      margin-top: 8px;
+      box-shadow: 3px 3px 0px rgba(20, 20, 20, 0.15);
+    }
+
+    .btn-shuffle-sketch {
+      background: linear-gradient(180deg, #BEF264 0%, #84CC16 100%);
+      border: 4px solid var(--ink);
+      border-radius: 24px 28px 22px 26px / 26px 22px 28px 24px;
+      box-shadow: 5px 5px 0px var(--ink);
+      padding: 12px 22px;
+      font-size: 1.05rem;
+      color: var(--ink);
+    }
+
+    .btn-shuffle-sketch:hover {
+      background: linear-gradient(180deg, #D9F99D 0%, #A3E635 100%);
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px var(--ink);
+    }
+
+    .btn-shuffle-sketch:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px var(--ink);
     }
 
     /* 10 Grooves Tutorial Grid */
     .grooves-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-      gap: 16px;
+      gap: 18px;
     }
 
+    #ten-grooves .groove-card,
     .groove-card {
-      background: #FFFFFF;
-      border: var(--border-w) solid var(--ink);
-      border-radius: 22px;
-      box-shadow: var(--shadow-md);
+      background: #FFFDF7;
+      border: 4px solid var(--ink);
+      border-radius: 20px 23px 19px 22px / 22px 19px 23px 20px;
+      box-shadow: 6px 6px 0px var(--ink);
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -450,9 +513,10 @@
       min-width: 0;
     }
 
+    #ten-grooves .groove-card:hover,
     .groove-card:hover {
-      transform: translate(-2px, -3px);
-      box-shadow: 7px 7px 0 var(--ink);
+      transform: translate(-2px, -3px) rotate(-0.4deg);
+      box-shadow: 8px 9px 0px var(--ink);
     }
 
     .groove-top {
@@ -466,31 +530,39 @@
     .groove-num {
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       background: var(--ink);
       color: #FFFFFF;
-      padding: 3px 10px;
+      border: 3px solid var(--ink);
+      padding: 3px 11px;
       border-radius: 999px;
+      box-shadow: 2px 2px 0px rgba(20, 20, 20, 0.25);
     }
 
     .groove-tag {
-      font-size: 0.75rem;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 3px 9px;
-      border: 2px solid var(--ink);
+      padding: 3px 11px;
+      border: 3px solid var(--ink);
       border-radius: 999px;
+      box-shadow: 2px 2px 0px var(--ink);
+      color: var(--ink);
     }
 
     .groove-art {
-      height: 126px;
-      border: 2.5px solid var(--ink);
-      border-radius: 16px;
+      height: 128px;
+      border: 3.5px solid var(--ink);
+      border-radius: 16px 18px 15px 17px;
+      background-image: radial-gradient(rgba(20, 20, 20, 0.08) 1.5px, transparent 1.5px);
+      background-size: 12px 12px;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       position: relative;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
     }
 
     .groove-card:hover .groove-art svg {
@@ -502,26 +574,41 @@
     }
 
     .groove-title {
-      font-size: 1.32rem;
-      margin-bottom: 5px;
+      font-size: 1.38rem;
+      margin-bottom: 7px;
+      color: var(--ink);
     }
 
     .groove-desc {
-      font-size: 0.9rem;
-      color: var(--ink-soft);
+      font-size: 0.88rem;
+      color: var(--ink);
+      background: #FDF6E2;
+      border: 2.5px solid var(--ink);
+      border-radius: 14px 16px 13px 15px;
+      padding: 9px 11px;
       margin-bottom: 14px;
       flex-grow: 1;
     }
 
     .groove-btn {
       width: 100%;
-      padding: 10px 12px;
-      font-size: 0.95rem;
-      background: var(--bg-paper);
+      padding: 10px 14px;
+      font-size: 0.96rem;
+      background: #FFFDF7;
+      border: 3.5px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 4px 4px 0px var(--ink);
     }
 
     .groove-btn:hover {
       background: var(--yellow);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px var(--ink);
+    }
+
+    .groove-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0px var(--ink);
     }
 
     /* Offline Fallback Banner */
@@ -742,10 +829,12 @@
       max-width: 980px;
       max-height: 95vh;
       overflow-y: auto;
-      background: var(--bg-paper);
-      border: 4px solid var(--ink);
-      border-radius: 28px;
-      box-shadow: 10px 10px 0 #000000;
+      background-color: #fbf5df;
+      background-image: radial-gradient(#d4be8d 1.75px, transparent 1.75px);
+      background-size: 16px 16px;
+      border: 5px solid var(--ink);
+      border-radius: 26px 30px 24px 28px;
+      box-shadow: 10px 10px 0px #141414;
       padding: 18px 20px;
       position: relative;
     }
@@ -764,8 +853,10 @@
       color: var(--lime);
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 999px;
+      padding: 7px 16px;
+      border: 3px solid var(--ink);
+      border-radius: 30px;
+      box-shadow: 3px 3px 0px var(--tangerine);
       font-size: 0.95rem;
     }
 
@@ -778,13 +869,25 @@
 
     .mini-ctrl {
       background: #FFFFFF;
-      border: 2.5px solid var(--ink);
-      border-radius: 10px;
-      padding: 6px 10px;
+      border: 3px solid var(--ink);
+      border-radius: 30px;
+      box-shadow: 3px 3px 0px var(--ink);
+      padding: 6px 12px;
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 0.84rem;
       cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .mini-ctrl:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px var(--ink);
+    }
+
+    .mini-ctrl:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--ink);
     }
 
     .mini-ctrl.is-active {
@@ -795,16 +898,18 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: #F8FAFC;
-      border: 2.5px solid var(--ink);
-      border-radius: 10px;
-      padding: 2px 4px;
+      background: #FFFDF7;
+      border: 3px solid var(--ink);
+      border-radius: 30px;
+      box-shadow: 3px 3px 0px var(--ink);
+      padding: 3px 6px;
     }
 
     .bpm-ctrl-group .mini-ctrl {
-      border-width: 2px;
-      padding: 4px 8px;
-      border-radius: 7px;
+      border-width: 2.5px;
+      padding: 4px 9px;
+      border-radius: 20px;
+      box-shadow: 2px 2px 0px var(--ink);
     }
 
     .bpm-readout {
@@ -821,9 +926,9 @@
       grid-template-columns: 0.95fr 1.05fr;
       gap: 18px;
       align-items: center;
-      background: #FFFFFF;
-      border: 3px solid var(--ink);
-      border-radius: 22px;
+      background: #FFFDF7;
+      border: 4px solid var(--ink);
+      border-radius: 22px 25px 20px 24px;
       padding: 18px;
       box-shadow: var(--shadow-md);
       margin-bottom: 14px;
@@ -832,12 +937,15 @@
     }
 
     .stage-visual {
-      border: 3px solid var(--ink);
-      border-radius: 18px;
+      border: 4px solid var(--ink);
+      border-radius: 18px 22px 17px 20px;
+      box-shadow: 5px 5px 0px var(--ink);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.1) 1.5px, transparent 1.5px);
+      background-size: 14px 14px;
       padding: 14px;
       text-align: center;
       position: relative;
-      min-height: 245px;
+      min-height: 250px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -850,11 +958,13 @@
       left: 10px;
       background: var(--ink);
       color: #FFFFFF;
+      border: 2.5px solid var(--ink);
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 1.05rem;
       padding: 4px 12px;
       border-radius: 999px;
+      box-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
     }
 
     .switch-badge {
@@ -862,7 +972,8 @@
       top: 10px;
       right: 10px;
       background: #FFFFFF;
-      border: 2px solid var(--ink);
+      border: 3px solid var(--ink);
+      box-shadow: 2px 2px 0px var(--ink);
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 0.82rem;
@@ -873,11 +984,23 @@
     /* 10 Live Dance Animations on Stage Dancer */
     .stage-dancer-wrap {
       --beat-ms: 522ms;
-      width: 165px;
-      height: 165px;
+      width: 172px;
+      height: 172px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 3.5px dashed rgba(20, 20, 20, 0.35);
+      border-radius: 52% 48% 50% 50% / 48% 52% 48% 52%;
+      background: rgba(255, 255, 255, 0.48);
+      box-shadow: 4px 4px 0px rgba(20, 20, 20, 0.18);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .is-playing .stage-dancer-wrap {
+      border-style: solid;
+      border-color: var(--ink);
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: 5px 5px 0px var(--ink);
     }
 
     .is-playing .anim-bounce {
@@ -1091,26 +1214,29 @@
     .eight-count-grid {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      gap: 6px;
-      margin-bottom: 12px;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     .beat-box {
-      border: 2.5px solid var(--ink);
-      border-radius: 10px;
-      padding: 8px 0;
-      text-align: center;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 1.05rem;
       background: var(--bg-paper);
-      transition: transform 0.08s ease, background 0.08s ease;
+      box-shadow: 3px 3px 0px var(--ink);
+      transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
     }
 
     .beat-box.is-active {
       background: var(--lime);
-      transform: scale(1.1);
-      box-shadow: 2px 2px 0 var(--ink);
+      transform: scale(1.12);
+      box-shadow: 4px 4px 0px var(--ink);
     }
 
     .beat-box.is-snare.is-active {
@@ -1119,9 +1245,10 @@
 
     .up-next-banner {
       background: #E0F2FE;
-      border: 2.5px dashed var(--ink);
-      border-radius: 14px;
-      padding: 9px 12px;
+      border: 3.5px dashed var(--ink);
+      border-radius: 18px;
+      box-shadow: 4px 4px 0px var(--ink);
+      padding: 10px 14px;
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 0.98rem;
@@ -1129,12 +1256,19 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
+      transition: transform 0.15s ease, background-color 0.15s ease;
     }
 
     .up-next-banner.is-alert {
-      background: var(--coral);
+      background: #F43F5E;
       color: #FFFFFF;
+      border: 4px solid var(--ink);
       border-style: solid;
+      box-shadow: 5px 5px 0px var(--ink);
+      font-size: 1.06rem;
+      letter-spacing: 0.03em;
+      transform: rotate(-0.6deg) scale(1.01);
+      text-shadow: 2px 2px 0px var(--ink);
     }
 
     .player-footer-controls {
@@ -1197,7 +1331,11 @@
 
       <div class="topbar-actions">
         <div class="star-badge" aria-live="polite">
-          <span>⭐ <span id="starCount">0</span> Classroom Stars</span>
+          <svg class="star-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2.2L14.9 8.1L21.4 9.0L16.7 13.6L17.8 20.1L12 17.0L6.2 20.1L7.3 13.6L2.6 9.0L9.1 8.1L12 2.2Z"
+              fill="#FACC15" stroke="#141414" stroke-width="2.2" stroke-linejoin="round" />
+          </svg>
+          <span><span id="starCount">0</span> Classroom Stars</span>
           <button type="button" class="star-reset-btn" id="resetStarsBtn" title="Reset classroom stars">Reset</button>
         </div>
 
@@ -1206,7 +1344,7 @@
         </button>
 
         <a href="#book-workshop" class="comic-btn"
-          style="background: var(--yellow); padding: 7px 14px; font-size: 0.88rem;">
+          style="background: var(--yellow); padding: 7px 16px; font-size: 0.9rem; border-width: 3.5px; box-shadow: 4px 4px 0px #141414;">
           Book a Live Workshop
         </a>
       </div>
@@ -1335,8 +1473,7 @@
             randomly every 2 counts of 8 (~8 seconds) for a full 5-minute energy boost!
           </p>
         </div>
-        <button type="button" class="comic-btn" id="startRandomDpaBtn2"
-          style="background: var(--lime); padding: 12px 18px; font-size: 1rem;">
+        <button type="button" class="comic-btn btn-shuffle-sketch" id="startRandomDpaBtn2">
           🎲 Shuffle All 10 (5-Min DPA)
         </button>
       </div>
