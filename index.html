@@ -791,6 +791,31 @@
       background: var(--yellow);
     }
 
+    .bpm-ctrl-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #F8FAFC;
+      border: 2.5px solid var(--ink);
+      border-radius: 10px;
+      padding: 2px 4px;
+    }
+
+    .bpm-ctrl-group .mini-ctrl {
+      border-width: 2px;
+      padding: 4px 8px;
+      border-radius: 7px;
+    }
+
+    .bpm-readout {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.84rem;
+      padding: 0 6px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
     .player-stage {
       display: grid;
       grid-template-columns: 0.95fr 1.05fr;
@@ -847,6 +872,7 @@
 
     /* 10 Live Dance Animations on Stage Dancer */
     .stage-dancer-wrap {
+      --beat-ms: 522ms;
       width: 165px;
       height: 165px;
       display: flex;
@@ -855,43 +881,43 @@
     }
 
     .is-playing .anim-bounce {
-      animation: moveBounce 0.625s infinite ease-in-out;
+      animation: moveBounce calc(var(--beat-ms) * 1) infinite ease-in-out;
     }
 
     .is-playing .anim-rock {
-      animation: moveRock 1.25s infinite ease-in-out;
+      animation: moveRock calc(var(--beat-ms) * 2) infinite ease-in-out;
     }
 
     .is-playing .anim-hop {
-      animation: moveHop 0.625s infinite cubic-bezier(0.28, 0.84, 0.42, 1);
+      animation: moveHop calc(var(--beat-ms) * 1) infinite cubic-bezier(0.28, 0.84, 0.42, 1);
     }
 
     .is-playing .anim-slide {
-      animation: moveSlide 1.25s infinite ease-in-out;
+      animation: moveSlide calc(var(--beat-ms) * 2) infinite ease-in-out;
     }
 
     .is-playing .anim-shift {
-      animation: moveShift 1.25s infinite ease-in-out;
+      animation: moveShift calc(var(--beat-ms) * 2) infinite ease-in-out;
     }
 
     .is-playing .anim-shake {
-      animation: moveShake 0.312s infinite linear;
+      animation: moveShake calc(var(--beat-ms) * 0.5) infinite linear;
     }
 
     .is-playing .anim-twist {
-      animation: moveTwist 0.625s infinite ease-in-out;
+      animation: moveTwist calc(var(--beat-ms) * 1) infinite ease-in-out;
     }
 
     .is-playing .anim-tick {
-      animation: moveTick 1.25s infinite steps(1, end);
+      animation: moveTick calc(var(--beat-ms) * 2) infinite steps(1, end);
     }
 
     .is-playing .anim-roll {
-      animation: moveRoll 1.25s infinite linear;
+      animation: moveRoll calc(var(--beat-ms) * 2) infinite linear;
     }
 
     .is-playing .anim-wave {
-      animation: moveWave 1.25s infinite ease-in-out;
+      animation: moveWave calc(var(--beat-ms) * 2) infinite ease-in-out;
     }
 
     @keyframes moveBounce {
@@ -1460,6 +1486,14 @@
             title="Test rapid switches & celebration in 30 seconds">
             ⚡ 30s Quick Demo
           </button>
+          <div class="bpm-ctrl-group" role="group" aria-label="Tempo controls">
+            <button type="button" class="mini-ctrl" id="bpmDownBtn" title="Slow down by 5 BPM">-5</button>
+            <span class="bpm-readout" id="bpmDisplay">115 BPM</span>
+            <button type="button" class="mini-ctrl" id="bpmUpBtn" title="Speed up by 5 BPM">+5</button>
+            <button type="button" class="mini-ctrl" id="tapBpmBtn" title="Tap along with your music to set BPM">
+              👆 Tap BPM
+            </button>
+          </div>
           <button type="button" class="mini-ctrl" id="closeModalBtn" style="background: var(--coral); color: #FFFFFF;">
             ✕ Close (Esc)
           </button>
@@ -1496,7 +1530,7 @@
           </div>
 
           <div class="eight-count-label">
-            <span>Musical 8-Count Tracker (115 BPM)</span>
+            <span id="eightCountBpmLabel">Musical 8-Count Tracker (115 BPM)</span>
             <span id="eightCountCycleLabel">Count 1 of 2</span>
           </div>
           <div class="eight-count-grid" id="eightCountGrid" aria-label="8-count beat visualizer">
@@ -1818,11 +1852,16 @@
         });
       });
 
-      // 4. Web Audio Boom-Bap Synthesizer (115 BPM, zero external MP3 dependencies)
+      // 4. Web Audio Boom-Bap Synthesizer (Dynamic BPM, zero external MP3 dependencies)
       let audioCtx = null;
       let audioEnabled = true;
-      const BPM = 115;
-      const BEAT_MS = Math.round(60000 / BPM);
+      const MIN_BPM = 75;
+      const MAX_BPM = 145;
+      let currentBpm = 115;
+
+      function getBeatMs() {
+        return Math.round(60000 / currentBpm);
+      }
 
       function ensureAudio() {
         if (!audioEnabled) return null;
@@ -1940,7 +1979,12 @@
       const playerCoachCue = document.getElementById("playerCoachCue");
       const totalTimerDisplay = document.getElementById("totalTimerDisplay");
       const switchTimerDisplay = document.getElementById("switchTimerDisplay");
+      const eightCountBpmLabel = document.getElementById("eightCountBpmLabel");
       const eightCountCycleLabel = document.getElementById("eightCountCycleLabel");
+      const bpmDisplay = document.getElementById("bpmDisplay");
+      const bpmDownBtn = document.getElementById("bpmDownBtn");
+      const bpmUpBtn = document.getElementById("bpmUpBtn");
+      const tapBpmBtn = document.getElementById("tapBpmBtn");
       const upNextBanner = document.getElementById("upNextBanner");
       const upNextText = document.getElementById("upNextText");
       const playPauseBtn = document.getElementById("playPauseBtn");
@@ -2113,20 +2157,51 @@
         beatStep++;
       }
 
+      function syncBpmUI() {
+        const beatMs = getBeatMs();
+        bpmDisplay.textContent = `${currentBpm} BPM`;
+        eightCountBpmLabel.textContent = `Musical 8-Count Tracker (${currentBpm} BPM)`;
+        stageDancerWrap.style.setProperty("--beat-ms", `${beatMs}ms`);
+        bpmDownBtn.disabled = currentBpm <= MIN_BPM;
+        bpmUpBtn.disabled = currentBpm >= MAX_BPM;
+      }
+
+      function setBpm(newBpm, alignBeatToTap = false) {
+        currentBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(newBpm)));
+        syncBpmUI();
+        if (alignBeatToTap) {
+          beatStep = 0;
+        }
+        if (isPlaying) {
+          if (beatTimerId) clearInterval(beatTimerId);
+          if (alignBeatToTap) {
+            runBeatTick(false);
+          }
+          beatTimerId = setInterval(() => {
+            runBeatTick(false);
+          }, getBeatMs());
+        } else if (alignBeatToTap) {
+          updateTimersUI();
+        }
+      }
+
+      syncBpmUI();
+
       function startLoops(playInitialAccent = false) {
         stopLoops();
         isPlaying = true;
         playerStage.classList.add("is-playing");
         playPauseBtn.textContent = "⏸ Pause (Space)";
         ensureAudio();
+        syncBpmUI();
 
         // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
         runBeatTick(playInitialAccent);
 
-        // Beat loop (115 BPM ≈ 522ms per beat)
+        // Beat loop (dynamic BPM via getBeatMs())
         beatTimerId = setInterval(() => {
           runBeatTick(false);
-        }, BEAT_MS);
+        }, getBeatMs());
 
         // 1-second session countdown only (move switching is beat-locked above)
         secondTimerId = setInterval(() => {
@@ -2254,6 +2329,36 @@
               beatStep = beatStep % getTotalBeatsForMove();
               renderCurrentGroove(false);
               updateTimersUI();
+            }
+          });
+
+          bpmDownBtn.addEventListener("click", () => {
+            setBpm(currentBpm - 5, false);
+          });
+
+          bpmUpBtn.addEventListener("click", () => {
+            setBpm(currentBpm + 5, false);
+          });
+
+          let tapTimestamps = [];
+          tapBpmBtn.addEventListener("click", () => {
+            const now = performance.now();
+            if (tapTimestamps.length > 0 && now - tapTimestamps[tapTimestamps.length - 1] > 2000) {
+              tapTimestamps = [];
+            }
+            tapTimestamps.push(now);
+            if (tapTimestamps.length > 8) {
+              tapTimestamps.shift();
+            }
+            if (tapTimestamps.length >= 3) {
+              let totalDelta = 0;
+              for (let i = 1; i < tapTimestamps.length; i++) {
+                totalDelta += tapTimestamps[i] - tapTimestamps[i - 1];
+              }
+              const avgDelta = totalDelta / (tapTimestamps.length - 1);
+              if (avgDelta > 0) {
+                setBpm(60000 / avgDelta, true);
+              }
             }
           });
 
