@@ -1279,11 +1279,11 @@
           <button type="button" class="mini-ctrl is-active" id="audioToggleBtn" aria-pressed="true">
             🔊 Beat Music: ON
           </button>
-          <button type="button" class="mini-ctrl is-active" id="interval20Btn" title="Switch every 2 counts of 8 (~20s)">
-            20s (2×8)
+          <button type="button" class="mini-ctrl is-active" id="interval10Btn" title="Switch every 2 counts of 8 (10s / 16 beats)">
+            10s (2×8)
           </button>
-          <button type="button" class="mini-ctrl" id="interval30Btn" title="Switch every 3 counts of 8 (~30s)">
-            30s (3×8)
+          <button type="button" class="mini-ctrl" id="interval15Btn" title="Switch every 3 counts of 8 (15s / 24 beats)">
+            15s (3×8)
           </button>
           <button type="button" class="mini-ctrl" id="quickDemoBtn" title="Test rapid switches & celebration in 30 seconds">
             ⚡ 30s Quick Demo
@@ -1298,7 +1298,7 @@
         <!-- Left: Animated Floor-Kids Character + Timers -->
         <div class="stage-visual" id="stageVisual" style="background: #FEF08A;">
           <span class="timer-badge" id="totalTimerDisplay">05:00</span>
-          <span class="switch-badge" id="switchTimerDisplay">Next move in 20s</span>
+          <span class="switch-badge" id="switchTimerDisplay">Next move in 10s</span>
 
           <div class="stage-dancer-wrap" id="stageDancerWrap">
             <!-- Injected dynamic Floor Kids character SVG -->
@@ -1616,19 +1616,19 @@
       // 3. Crew Tap Interaction (Hero Stage)
       const CREW_QUOTES = {
         zeke: [
-          ""Zeke says: Soft knees on the Bounce—feel that 96 BPM bass!"",
-          ""Grade 2, show me your cleanest Slide across the desk!"",
-          ""Hit DPA START and see if you can survive all 10 moves!""
+          "Zeke says: Soft knees on the Bounce—feel that 96 BPM bass!",
+          "Grade 2, show me your cleanest Slide across the desk!",
+          "Hit DPA START and see if you can survive all 10 moves!"
         ],
         milo: [
-          ""Milo says: Lean into the Rock and keep your shoulders loose!"",
-          ""Who in this classroom has the sharpest Robot Tick?"",
-          ""5 minutes of hip-hop = 100% brain power for math!""
+          "Milo says: Lean into the Rock and keep your shoulders loose!",
+          "Who in this classroom has the sharpest Robot Tick?",
+          "5 minutes of hip-hop = 100% brain power for math!"
         ],
         kai: [
-          ""Kai says: Send that Ocean Wave from your fingers to your shoulders!"",
-          ""Don't forget—every 2 counts of 8, the move switches randomly!"",
-          ""Finish 5 minutes to earn a Classroom Star!""
+          "Kai says: Send that Ocean Wave from your fingers to your shoulders!",
+          "Don't forget—every 2 counts of 8, the move switches randomly!",
+          "Finish 5 minutes to earn a Classroom Star!"
         ]
       };
       let quoteIndex = 0;
@@ -1780,10 +1780,9 @@
 
       let mode = "random"; // "random" | "solo"
       let isPlaying = false;
-      let switchSecondsSetting = 20; // Default 20s (~2 counts of 8 at 96 BPM)
+      let switchSecondsSetting = 10; // Default 10s (2 counts of 8 = 16 beats at 96 BPM)
       let quickDemoMode = false;
       let totalSecondsLeft = 300; // 5:00
-      let moveSecondsLeft = 20;
       let beatStep = 0;
       let currentGrooveIdx = 0;
       let nextGrooveIdx = 1;
@@ -1844,14 +1843,27 @@
         }
       }
 
+      function getTotalBeatsForMove() {
+        if (quickDemoMode) return 8; // 1 count of 8 = 5s at 96 BPM
+        return switchSecondsSetting === 15 ? 24 : 16; // 3×8 = 24 beats (15s), 2×8 = 16 beats (10s)
+      }
+
+      function getTotalCycles() {
+        if (quickDemoMode) return 1;
+        return switchSecondsSetting === 15 ? 3 : 2;
+      }
+
       function updateTimersUI() {
         totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
         if (mode === "random") {
-          switchTimerDisplay.textContent = `Switch in ${moveSecondsLeft}s`;
-          if (moveSecondsLeft <= 4 && totalSecondsLeft > 4) {
+          const totalBeats = getTotalBeatsForMove();
+          const beatsLeft = Math.max(1, totalBeats - beatStep);
+          const secondsLeft = Math.ceil((beatsLeft * BEAT_MS) / 1000);
+          switchTimerDisplay.textContent = `Switch in ${secondsLeft}s`;
+          if (beatsLeft <= 4 && totalSecondsLeft > 3) {
             upNextBanner.classList.add("is-alert");
             const nextG = GROOVES[nextGrooveIdx];
-            upNextText.textContent = `🚨 GET READY IN ${moveSecondsLeft}... NEXT: ${nextG.name.toUpperCase()}!`;
+            upNextText.textContent = `🚨 GET READY IN ${secondsLeft}s... NEXT: ${nextG.name.toUpperCase()}!`;
           } else {
             upNextBanner.classList.remove("is-alert");
             const nextG = GROOVES[nextGrooveIdx];
@@ -1902,33 +1914,54 @@
         upNextText.textContent = "⭐ DPA COMPLETE! You earned a Classroom Star!";
       }
 
-      function startLoops() {
+      function runBeatTick(isInitialAccent = false) {
+        let isSwitchBeat = isInitialAccent;
+
+        // Trigger random move switches directly on Beat 1 (every 16 beats for 2×8, 24 for 3×8, or 8 for Quick Demo)
+        if (mode === "random" && beatStep >= getTotalBeatsForMove()) {
+          currentGrooveIdx = nextGrooveIdx;
+          nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+          beatStep = 0;
+          renderCurrentGroove(false);
+          isSwitchBeat = true;
+        }
+
+        const beatInEight = beatStep % 8;
+        beatBoxes.forEach((box, idx) => {
+          box.classList.toggle("is-active", idx === beatInEight);
+        });
+
+        const totalCycles = getTotalCycles();
+        const countCycle = Math.floor(beatStep / 8) + 1;
+        eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
+
+        const g = GROOVES[currentGrooveIdx];
+        if (beatInEight === 0) {
+          const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
+          stageEnergyCallout.textContent = g.energyLines[lineIdx];
+        }
+
+        playBeatStep(beatInEight, isSwitchBeat);
+        updateTimersUI();
+        beatStep++;
+      }
+
+      function startLoops(playInitialAccent = false) {
         stopLoops();
         isPlaying = true;
         playerStage.classList.add("is-playing");
         playPauseBtn.textContent = "⏸ Pause (Space)";
         ensureAudio();
 
-        // Beat loop (96 BPM)
+        // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
+        runBeatTick(playInitialAccent);
+
+        // Beat loop (96 BPM = 625ms per beat)
         beatTimerId = setInterval(() => {
-          beatBoxes.forEach((box, idx) => {
-            box.classList.toggle("is-active", idx === beatStep);
-          });
-          const countCycle = Math.floor(beatStep / 8) + 1;
-          const totalCycles = switchSecondsSetting === 30 ? 3 : 2;
-          eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
-
-          const g = GROOVES[currentGrooveIdx];
-          if (beatStep % 8 === 0) {
-            const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
-            stageEnergyCallout.textContent = g.energyLines[lineIdx];
-          }
-
-          playBeatStep(beatStep % 8, false);
-          beatStep++;
+          runBeatTick(false);
         }, BEAT_MS);
 
-        // 1-second countdown & random move switcher
+        // 1-second session countdown only (move switching is beat-locked above)
         secondTimerId = setInterval(() => {
           if (totalSecondsLeft <= 1) {
             totalSecondsLeft = 0;
@@ -1937,19 +1970,7 @@
             return;
           }
           totalSecondsLeft -= 1;
-
-          if (mode === "random") {
-            if (moveSecondsLeft <= 1) {
-              currentGrooveIdx = nextGrooveIdx;
-              nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-              moveSecondsLeft = quickDemoMode ? 6 : switchSecondsSetting;
-              beatStep = 0;
-              renderCurrentGroove(true);
-            } else {
-              moveSecondsLeft -= 1;
-            }
-          }
-          updateTimersUI();
+          totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
         }, 1000);
       }
 
@@ -1958,20 +1979,17 @@
         beatStep = 0;
         if (mode === "random") {
           totalSecondsLeft = quickDemoMode ? 30 : 300;
-          moveSecondsLeft = quickDemoMode ? 6 : switchSecondsSetting;
           shuffleBag = [];
           currentGrooveIdx = drawNextRandomIdx(-1);
           nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
         } else {
           totalSecondsLeft = 120;
-          moveSecondsLeft = 120;
           currentGrooveIdx = soloIndex;
           nextGrooveIdx = (soloIndex + 1) % GROOVES.length;
         }
-        renderCurrentGroove(true);
-        updateTimersUI();
+        renderCurrentGroove(false);
         playerModal.classList.add("is-open");
-        startLoops();
+        startLoops(true);
       }
 
       function closePlayer() {
@@ -2007,13 +2025,17 @@
         if (mode === "random") {
           currentGrooveIdx = nextGrooveIdx;
           nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-          moveSecondsLeft = quickDemoMode ? 6 : switchSecondsSetting;
         } else {
           currentGrooveIdx = (currentGrooveIdx + 1) % GROOVES.length;
         }
         beatStep = 0;
-        renderCurrentGroove(true);
-        updateTimersUI();
+        if (isPlaying) {
+          renderCurrentGroove(false);
+          startLoops(true);
+        } else {
+          renderCurrentGroove(true);
+          updateTimersUI();
+        }
       });
 
       document.getElementById("closeModalBtn").addEventListener("click", closePlayer);
@@ -2025,31 +2047,31 @@
         e.currentTarget.textContent = audioEnabled ? "🔊 Beat Music: ON" : "🔇 Beat Music: OFF";
       });
 
-      const interval20Btn = document.getElementById("interval20Btn");
-      const interval30Btn = document.getElementById("interval30Btn");
+      const interval10Btn = document.getElementById("interval10Btn");
+      const interval15Btn = document.getElementById("interval15Btn");
       const quickDemoBtn = document.getElementById("quickDemoBtn");
 
-      interval20Btn.addEventListener("click", () => {
+      interval10Btn.addEventListener("click", () => {
         quickDemoMode = false;
-        switchSecondsSetting = 20;
-        interval20Btn.classList.add("is-active");
-        interval30Btn.classList.remove("is-active");
+        switchSecondsSetting = 10;
+        interval10Btn.classList.add("is-active");
+        interval15Btn.classList.remove("is-active");
         quickDemoBtn.classList.remove("is-active");
         if (mode === "random") {
-          moveSecondsLeft = 20;
+          beatStep = beatStep % getTotalBeatsForMove();
           renderCurrentGroove(false);
           updateTimersUI();
         }
       });
 
-      interval30Btn.addEventListener("click", () => {
+      interval15Btn.addEventListener("click", () => {
         quickDemoMode = false;
-        switchSecondsSetting = 30;
-        interval30Btn.classList.add("is-active");
-        interval20Btn.classList.remove("is-active");
+        switchSecondsSetting = 15;
+        interval15Btn.classList.add("is-active");
+        interval10Btn.classList.remove("is-active");
         quickDemoBtn.classList.remove("is-active");
         if (mode === "random") {
-          moveSecondsLeft = 30;
+          beatStep = beatStep % getTotalBeatsForMove();
           renderCurrentGroove(false);
           updateTimersUI();
         }
@@ -2060,7 +2082,7 @@
         quickDemoBtn.classList.toggle("is-active", quickDemoMode);
         if (mode === "random") {
           totalSecondsLeft = quickDemoMode ? 30 : 300;
-          moveSecondsLeft = quickDemoMode ? 6 : switchSecondsSetting;
+          beatStep = beatStep % getTotalBeatsForMove();
           renderCurrentGroove(false);
           updateTimersUI();
         }
