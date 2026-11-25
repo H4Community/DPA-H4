@@ -559,7 +559,7 @@
     }
 
     .groove-art {
-      height: 128px;
+      height: 176px;
       border: 3.5px solid var(--ink);
       border-radius: 16px 18px 15px 17px;
       background-image: radial-gradient(rgba(20, 20, 20, 0.08) 1.5px, transparent 1.5px);
@@ -578,16 +578,33 @@
       transform: scale(1.08) rotate(-2deg);
     }
 
+    .groove-card:hover .groove-art .move-video {
+      transform: scale(1.03);
+    }
+
     .groove-art svg,
-    .groove-art .groove-char-img {
+    .groove-art .groove-char-img,
+    .groove-art .move-video {
       transition: transform 0.2s ease;
     }
 
     .groove-art .groove-char-img {
       width: 100%;
-      height: 114px;
+      height: 152px;
       object-fit: contain;
       display: block;
+    }
+
+    .move-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .move-fallback[hidden] {
+      display: none !important;
     }
 
     .groove-title {
@@ -959,10 +976,10 @@
       box-shadow: 5px 5px 0px var(--ink);
       background-image: radial-gradient(rgba(20, 20, 20, 0.1) 1.5px, transparent 1.5px);
       background-size: 14px 14px;
-      padding: 14px;
+      padding: 48px 14px 14px;
       text-align: center;
       position: relative;
-      min-height: 250px;
+      min-height: 350px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1001,14 +1018,16 @@
     /* 10 Live Dance Animations on Stage Dancer */
     .stage-dancer-wrap {
       --beat-ms: 522ms;
-      width: 172px;
-      height: 172px;
+      width: 186px;
+      max-width: 100%;
+      height: 296px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       border: 3.5px dashed rgba(20, 20, 20, 0.35);
-      border-radius: 52% 48% 50% 50% / 48% 52% 48% 52%;
-      background: rgba(255, 255, 255, 0.48);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.65);
       box-shadow: 4px 4px 0px rgba(20, 20, 20, 0.18);
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
@@ -1016,13 +1035,20 @@
     .is-playing .stage-dancer-wrap {
       border-style: solid;
       border-color: var(--ink);
-      background: rgba(255, 255, 255, 0.65);
+      background: rgba(255, 255, 255, 0.85);
       box-shadow: 5px 5px 0px var(--ink);
     }
 
+    .stage-dancer-wrap .move-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 16px;
+    }
+
     .stage-dancer-wrap .groove-char-img {
-      width: 146px;
-      height: 146px;
+      width: 164px;
+      height: 240px;
       object-fit: contain;
       display: block;
     }
@@ -1695,7 +1721,8 @@
           shortDesc: "Bending your knees to the beat! Soft knees, heavy groove, head nodding.",
           coachCue: "Bend both knees down on every beat like you're dribbling an invisible basketball!",
           energyLines: ["BEND THOSE KNEES!", "FEEL THE BASSLINE!", "NOD YOUR HEAD WITH IT!"],
-          character: "ace"
+          character: "ace",
+          video: "Characters/Videos/bounce.mp4"
         },
         {
           id: "rock",
@@ -1707,7 +1734,8 @@
           shortDesc: "Leaning forward, backward, or to the side! Ride the rhythm smoothly.",
           coachCue: "Lean forward on 1, back on 2—keep your chest relaxed like a rocking chair!",
           energyLines: ["LEAN FRONT & BACK!", "RIDE THE GROOVE!", "SIDE-TO-SIDE ROCK!"],
-          character: "miles"
+          character: "miles",
+          video: "Characters/Videos/rock.mp4"
         },
         {
           id: "hop",
@@ -1719,7 +1747,8 @@
           shortDesc: "Small jump in any direction! Light on your toes—front, back, or side.",
           coachCue: "Stay light on the balls of your feet—hop forward, hop back, hop left, hop right!",
           energyLines: ["LIGHT ON YOUR TOES!", "HOP FRONT & BACK!", "MINI JUMPS ON BEAT!"],
-          character: "maya"
+          character: "maya",
+          video: "Characters/Videos/hop.mp4"
         },
         {
           id: "slide",
@@ -1731,7 +1760,8 @@
           shortDesc: "Drag one foot across to the other foot like gliding on smooth ice!",
           coachCue: "Step wide to the right, then smoothly drag your left sneaker across to meet it!",
           energyLines: ["GLIDE LIKE ICE!", "STEP AND DRAG!", "SMOOTH FOOTWORK!"],
-          character: "kai"
+          character: "kai",
+          video: "Characters/Videos/slide.mp4"
         },
         {
           id: "shift",
@@ -1743,7 +1773,8 @@
           shortDesc: "Shift your weight onto both tippy toes and glide cleanly to one side!",
           coachCue: "Rise up on both tippy toes, shift your hips right, drop heels—then shift left!",
           energyLines: ["UP ON TIPPY TOES!", "SHIFT LEFT, SHIFT RIGHT!", "CLEAN WEIGHT TRANSFER!"],
-          character: "luna"
+          character: "luna",
+          video: "Characters/Videos/shift.mp4"
         },
         {
           id: "shake",
@@ -1755,7 +1786,8 @@
           shortDesc: "Move your shoulders fast and shake your whole body loose to the beat!",
           coachCue: "Pop those shoulders forward and back super fast—then FREEZE on count 8!",
           energyLines: ["SHIMMY YOUR SHOULDERS!", "SHAKE IT OUT LOUD!", "GET READY TO FREEZE!"],
-          character: "kiara"
+          character: "kiara",
+          video: "Characters/Videos/shake.mp4"
         },
         {
           id: "twist",
@@ -1767,7 +1799,8 @@
           shortDesc: "Swivel your hips, knees, and heels side-to-side like twisting a bottle cap!",
           coachCue: "Keep your shoulders facing the Smartboard while your knees and hips twist left and right!",
           energyLines: ["TWIST THOSE HEELS!", "SWIVEL SIDE TO SIDE!", "CLASSIC PARTY GROOVE!"],
-          character: "darius"
+          character: "darius",
+          video: "Characters/Videos/twist.mp4"
         },
         {
           id: "tick",
@@ -1779,7 +1812,8 @@
           shortDesc: "A super-fast robot snap! Hit the beat sharp and freeze like a statue.",
           coachCue: "Snap one arm or head angle super fast on the beat—then lock completely still!",
           energyLines: ["ROBOT SNAP & FREEZE!", "SHARP FAST HITS!", "STATUE MODE!"],
-          character: "eli"
+          character: "eli",
+          video: "Characters/Videos/tick.mp4"
         },
         {
           id: "roll",
@@ -1791,7 +1825,8 @@
           shortDesc: "Circle any body part 360 degrees—shoulders, chest, wrists, or hips!",
           coachCue: "Draw big smooth 360-degree circles with your shoulders for 8 counts, then switch directions!",
           energyLines: ["360-DEGREE CIRCLES!", "ROLL THOSE SHOULDERS!", "SMOOTH CONTROL!"],
-          character: "remi"
+          character: "remi",
+          video: "Characters/Videos/roll.mp4"
         },
         {
           id: "wave",
@@ -1803,19 +1838,45 @@
           shortDesc: "Send an ocean wave across your arms and body, one joint at a time!",
           coachCue: "Fingers → wrist → elbow → shoulder → chest → other arm! Pass the wave across the room!",
           energyLines: ["PASS THE OCEAN WAVE!", "FINGERS TO SHOULDERS!", "BODY ISOLATION!"],
-          character: "nico"
+          character: "nico",
+          video: "Characters/Videos/wave.mp4"
         }
       ];
 
-      function renderMoveMedia(g, wrapAnim = false) {
-        const spriteHtml = `<img class="groove-char-img" src="images/characters/${g.character}.png" alt="${g.name}" loading="lazy" />`;
-        const animHtml = wrapAnim ? `<div class="${g.animClass}">${spriteHtml}</div>` : spriteHtml;
+      const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      function isMotionReduced() {
+        return reducedMotionQuery.matches || document.body.classList.contains("calm-motion");
+      }
+
+      function syncVideoMotion() {
+        const reduced = isMotionReduced();
+        document.querySelectorAll("video.move-video").forEach((video) => {
+          const isStageVideo = Boolean(video.closest("#stageDancerWrap"));
+          if (reduced) {
+            video.removeAttribute("autoplay");
+            video.pause();
+          } else if (!isStageVideo || isPlaying) {
+            video.setAttribute("autoplay", "");
+            video.play().catch(() => {});
+          }
+        });
+      }
+
+      function renderMoveMedia(g, isStage = false) {
+        const posterPath = `images/characters/${g.character}.png`;
+        const spriteHtml = `<img class="groove-char-img" src="${posterPath}" alt="${g.name}" loading="lazy" />`;
+        const fallbackHtml = isStage
+          ? `<div class="move-fallback ${g.animClass}" hidden>${spriteHtml}</div>`
+          : `<div class="move-fallback" hidden>${spriteHtml}</div>`;
+        const loadingAttr = isStage ? "" : ` loading="lazy"`;
+        const preloadAttr = isStage ? ` preload="auto"` : ` preload="metadata"`;
+        const autoplayAttr = isMotionReduced() ? "" : " autoplay";
         return `
-          <video class="move-video" src="assets/videos/${g.id}.mp4" autoplay muted loop playsinline
-            style="display:none; width:100%; height:100%; object-fit:contain; border-radius:12px;"
-            onloadeddata="this.style.display='block'; this.play().catch(()=>{}); if(this.nextElementSibling) this.nextElementSibling.style.display='none';"
-            onerror="this.remove();"></video>
-          ${animHtml}
+          <video class="move-video" src="${g.video}" poster="${posterPath}" width="720" height="1280"${loadingAttr}${preloadAttr}${autoplayAttr} loop muted playsinline
+            aria-label="${g.name} dance animation"
+            onerror="if(this.nextElementSibling) this.nextElementSibling.hidden=false; this.remove();"></video>
+          ${fallbackHtml}
         `;
       }
 
@@ -1839,6 +1900,8 @@
           </button>
         </article>
       `).join("");
+
+      reducedMotionQuery.addEventListener("change", syncVideoMotion);
 
       // 3. Crew Tap Interaction (Hero Stage)
       const CREW_QUOTES = {
@@ -2056,6 +2119,14 @@
 
         stageVisual.style.backgroundColor = `${g.color}44`;
         stageDancerWrap.innerHTML = renderMoveMedia(g, true);
+        const stageVideo = stageDancerWrap.querySelector("video.move-video");
+        if (stageVideo) {
+          if (isPlaying && !isMotionReduced()) {
+            stageVideo.play().catch(() => {});
+          } else {
+            stageVideo.pause();
+          }
+        }
         playerMoveNumber.textContent = `TECHNIQUE ${g.num} OF 10 · ${g.tag.toUpperCase()}`;
         playerMoveTitle.textContent = `${g.num} · THE ${g.name.toUpperCase()}`;
         playerMoveDesc.textContent = g.shortDesc;
@@ -2112,6 +2183,8 @@
         isPlaying = false;
         playerStage.classList.remove("is-playing");
         playPauseBtn.textContent = "▶ Resume (Space)";
+        const stageVideo = stageDancerWrap.querySelector("video.move-video");
+        if (stageVideo) stageVideo.pause();
         if (secondTimerId) clearInterval(secondTimerId);
         if (beatTimerId) clearInterval(beatTimerId);
         secondTimerId = null;
@@ -2214,6 +2287,8 @@
         isPlaying = true;
         playerStage.classList.add("is-playing");
         playPauseBtn.textContent = "⏸ Pause (Space)";
+        const stageVideo = stageDancerWrap.querySelector("video.move-video");
+        if (stageVideo && !isMotionReduced()) stageVideo.play().catch(() => {});
         ensureAudio();
         syncBpmUI();
 
@@ -2401,6 +2476,7 @@
             const active = document.body.classList.toggle("calm-motion");
             calmMotionBtn.setAttribute("aria-pressed", String(active));
             calmMotionBtn.textContent = active ? "Calm Motion: ON" : "Calm Motion: OFF";
+            syncVideoMotion();
           });
 
           let confirmReset = false;
@@ -2435,9 +2511,11 @@
           document.getElementById("toggleOfflineBtn").addEventListener("click", () => {
             document.body.classList.toggle("offline-mode");
             document.body.classList.toggle("calm-motion", document.body.classList.contains("offline-mode"));
+            syncVideoMotion();
           });
           document.getElementById("exitOfflineBtn").addEventListener("click", () => {
             document.body.classList.remove("offline-mode", "calm-motion");
+            syncVideoMotion();
           });
 
           const workshopForm = document.getElementById("workshopForm");

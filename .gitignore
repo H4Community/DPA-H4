@@ -1,0 +1,12 @@
+# Large raw video sources & unedited backups
+Characters/Videos/Not Edited/
+Khaylen-Tutorials/
+
+# Uncropped raw character model sheets & reference art
+Characters/*.png
+CharacterSheet_ChatGPT.png
+Dance-Girl1.png
+
+# OS & editor clutter
+.DS_Store
+Thumbs.db
