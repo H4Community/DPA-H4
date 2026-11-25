@@ -32,6 +32,13 @@
       --radius-md: 18px;
       --radius-lg: 22px;
       --radius-sketch: 20px 23px 19px 22px / 22px 19px 23px 20px;
+      --in-oklab: ;
+    }
+
+    @supports (background: linear-gradient(in oklab, white, black)) {
+      :root {
+        --in-oklab: in oklab;
+      }
     }
 
     * {
@@ -570,7 +577,22 @@
       justify-content: center;
       overflow: hidden;
       position: relative;
+      isolation: isolate;
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+    }
+
+    .groove-art::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 5px;
+      width: 52%;
+      height: 16px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center var(--in-oklab), rgba(20, 20, 20, 0.24) 0%, rgba(20, 20, 20, 0.08) 55%, transparent 74%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .groove-card:hover .groove-art svg,
@@ -578,14 +600,26 @@
       transform: scale(1.08) rotate(-2deg);
     }
 
+    .groove-art .move-video {
+      transform: scale(1.28);
+      transform-origin: center bottom;
+    }
+
     .groove-card:hover .groove-art .move-video {
-      transform: scale(1.03);
+      transform: scale(1.33);
     }
 
     .groove-art svg,
     .groove-art .groove-char-img,
     .groove-art .move-video {
       transition: transform 0.2s ease;
+    }
+
+    .groove-char-img {
+      position: relative;
+      z-index: 1;
+      mix-blend-mode: multiply;
+      filter: contrast(1.04) brightness(1.02);
     }
 
     .groove-art .groove-char-img {
@@ -600,7 +634,15 @@
       height: 100%;
       object-fit: contain;
       display: block;
-      border-radius: 12px;
+      position: relative;
+      z-index: 1;
+      mix-blend-mode: multiply;
+      filter: contrast(1.12) brightness(1.06);
+    }
+
+    .move-fallback {
+      position: relative;
+      z-index: 1;
     }
 
     .move-fallback[hidden] {
@@ -979,7 +1021,8 @@
       padding: 48px 14px 14px;
       text-align: center;
       position: relative;
-      min-height: 350px;
+      isolation: isolate;
+      min-height: 360px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1018,37 +1061,43 @@
     /* 10 Live Dance Animations on Stage Dancer */
     .stage-dancer-wrap {
       --beat-ms: 522ms;
-      width: 186px;
-      max-width: 100%;
+      width: 100%;
+      max-width: 260px;
       height: 296px;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      border: 3.5px dashed rgba(20, 20, 20, 0.35);
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.65);
-      box-shadow: 4px 4px 0px rgba(20, 20, 20, 0.18);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background: transparent;
     }
 
-    .is-playing .stage-dancer-wrap {
-      border-style: solid;
-      border-color: var(--ink);
-      background: rgba(255, 255, 255, 0.85);
-      box-shadow: 5px 5px 0px var(--ink);
+    .stage-dancer-wrap::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      width: 50%;
+      height: 22px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center var(--in-oklab), rgba(20, 20, 20, 0.26) 0%, rgba(20, 20, 20, 0.1) 55%, transparent 74%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .stage-dancer-wrap .move-video {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      border-radius: 16px;
+      transform: scale(1.28);
+      transform-origin: center bottom;
     }
 
     .stage-dancer-wrap .groove-char-img {
-      width: 164px;
-      height: 240px;
+      width: 190px;
+      height: 260px;
       object-fit: contain;
       display: block;
     }
