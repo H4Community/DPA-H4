@@ -609,6 +609,24 @@
       transform: scale(1.33);
     }
 
+    .groove-art .move-video[data-move="roll"] {
+      transform: translateY(22%) scale(1.26);
+      transform-origin: center 76%;
+    }
+
+    .groove-card:hover .groove-art .move-video[data-move="roll"] {
+      transform: translateY(22%) scale(1.31);
+    }
+
+    .groove-art .move-video[data-move="twist"] {
+      transform: translateY(12%) scale(1.22);
+      transform-origin: center 85%;
+    }
+
+    .groove-card:hover .groove-art .move-video[data-move="twist"] {
+      transform: translateY(12%) scale(1.27);
+    }
+
     .groove-art svg,
     .groove-art .groove-char-img,
     .groove-art .move-video {
@@ -1222,6 +1240,16 @@
       object-fit: contain;
       transform: scale(1.28);
       transform-origin: center bottom;
+    }
+
+    .stage-dancer-wrap .move-video[data-move="roll"] {
+      transform: translateY(22%) scale(1.26);
+      transform-origin: center 76%;
+    }
+
+    .stage-dancer-wrap .move-video[data-move="twist"] {
+      transform: translateY(12%) scale(1.22);
+      transform-origin: center 85%;
     }
 
     .stage-dancer-wrap .groove-char-img {
@@ -2086,7 +2114,7 @@
         const preloadAttr = isStage ? ` preload="auto"` : ` preload="metadata"`;
         const autoplayAttr = isMotionReduced() ? "" : " autoplay";
         return `
-          <video class="move-video" src="${g.video}" poster="${posterPath}" width="720" height="1280"${loadingAttr}${preloadAttr}${autoplayAttr} loop muted playsinline
+          <video class="move-video" data-move="${g.id}" src="${g.video}" poster="${posterPath}" width="720" height="1280"${loadingAttr}${preloadAttr}${autoplayAttr} loop muted playsinline
             aria-label="${g.name} dance animation"
             onerror="if(this.nextElementSibling) this.nextElementSibling.hidden=false; this.remove();"></video>
           ${fallbackHtml}
