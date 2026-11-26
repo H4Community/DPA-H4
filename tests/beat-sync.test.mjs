@@ -406,8 +406,8 @@ test("All 24 SONGS have valid files, exactBpm, beatOffsetSec, and monotonic beat
     assert.ok(Number.isFinite(song.beatOffsetSec) && song.beatOffsetSec >= 0 && song.beatOffsetSec < 5);
     if (song.countOneBeat !== undefined) {
       assert.ok(
-        Number.isInteger(song.countOneBeat) && song.countOneBeat >= 0,
-        `${song.id} countOneBeat must be a non-negative integer`
+        Number.isInteger(song.countOneBeat) && song.countOneBeat >= 0 && song.countOneBeat % 2 === 0,
+        `${song.id} countOneBeat must be an even non-negative integer to keep backbeat snares on 2/4/6/8`
       );
     }
     const c1Beat = h.getSongCountOneBeat(song);
@@ -533,11 +533,13 @@ test("Manual Switch Move Now preserves live 1..8 musical phase and aligns next a
   await h.flushMicrotasks();
 
   const song = h.SONGS.find((s) => s.id === "115-arcade-bounce");
+  const c1 = h.getSongCountOneBeat(song);
+  const c1Sec = h.getSongFirstCountOneSec(song);
   const T = 60 / song.exactBpm;
 
-  // Advance to Beat 5 (beat index 4)
+  // Advance to phrase Beat 5 (phrase beat index 4 -> raw beat c1 + 4)
   for (let b = 0; b <= 4; b++) {
-    h.audio.currentTime = song.beatOffsetSec + (b + 0.05) * T;
+    h.audio.currentTime = c1Sec + (b + 0.05) * T;
     h.stepRaf();
   }
   assert.equal(h.getActiveBeatNumber(), 5);
@@ -554,14 +556,14 @@ test("Manual Switch Move Now preserves live 1..8 musical phase and aligns next a
 
   // Beats 5..7 (Counts 6, 7, 8) finish the current bar in exact phase; beat 8 (Count 1) begins 2x8
   for (let b = 5; b <= 23; b++) {
-    h.audio.currentTime = song.beatOffsetSec + (b + 0.05) * T;
+    h.audio.currentTime = c1Sec + (b + 0.05) * T;
     h.stepRaf();
     assert.equal(h.getActiveBeatNumber(), (b % 8) + 1);
     assert.equal(h.getMoveTitle(), manualMove, `Manual move should complete 2 full 8-counts before switching (at beat ${b})`);
   }
 
   // Beat 24 (Count 1 after 2 full completed 8-counts starting at beat 8) switches automatically!
-  h.audio.currentTime = song.beatOffsetSec + 24.05 * T;
+  h.audio.currentTime = c1Sec + 24.05 * T;
   h.stepRaf();
   assert.equal(h.getActiveBeatNumber(), 1);
   assert.notEqual(h.getMoveTitle(), manualMove);
@@ -655,15 +657,18 @@ test("Rapid Next Song switching cancels stale play() promises and locks cleanly 
   h.pendingPlayResolvers[4].resolve();
   await h.flushMicrotasks();
 
-  // Before Recess Breakbeat 2 offset -> unlit; just after offset -> Count 1!
+  // Before Recess Breakbeat 2 danceable Count 1 -> unlit with "Get Ready!"; just after Count 1 -> Count 1!
   const recess2 = h.SONGS.find((s) => s.id === "115-recess-breakbeat-2");
-  h.audio.currentTime = recess2.beatOffsetSec - 0.15;
+  const c1Sec = h.getSongFirstCountOneSec(recess2);
+  h.audio.currentTime = c1Sec - 0.5;
   h.stepRaf();
   assert.equal(h.getActiveBeatNumber(), 0);
+  assert.equal(h.el("eightCountCycleLabel").textContent, "Get Ready!");
 
-  h.audio.currentTime = recess2.beatOffsetSec + 0.03;
+  h.audio.currentTime = c1Sec + 0.03;
   h.stepRaf();
   assert.equal(h.getActiveBeatNumber(), 1);
+  assert.equal(h.el("eightCountCycleLabel").textContent, "Count 1 of 2");
 });
 
 // =========================================================================
@@ -797,76 +802,89 @@ test("Own Music mode supports manual Tap BPM phase recalibration without claimin
 });
 
 // =========================================================================
-// 10. Musical Count 1 & Intro Pickup Alignment (Block Party Brass + All Intro-Offset Tracks)
+// 10. Musical Count 1, Intro Inactivity, & "Get Ready!" Status Across All 24 Tracks
 // =========================================================================
-test("Intro pickup stays inactive until true musical Count 1 without accumulating 8-counts or triggering moves", async () => {
+test("Intro stays inactive with 'Get Ready!' until first danceable Count 1 across all 24 tracks", async () => {
   const h = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: "115-block-party-brass" });
   h.el("startRandomDpaBtn").click();
   await h.flushMicrotasks();
 
   const bp = h.SONGS.find((s) => s.id === "115-block-party-brass");
-  assert.equal(h.getSongCountOneBeat(bp), 4, "Block Party Brass must have countOneBeat = 4");
+  assert.equal(h.getSongCountOneBeat(bp), 36, "Block Party Brass must wait until full drum groove at beat 36");
   const c1Sec = h.getSongFirstCountOneSec(bp);
-  assert.ok(c1Sec > 2.05 && c1Sec < 2.15, `Expected Block Party Brass Count 1 near 2.11s, got ${c1Sec.toFixed(3)}s`);
+  assert.ok(c1Sec > 18.70 && c1Sec < 18.85, `Expected Block Party Brass danceable Count 1 near 18.77s, got ${c1Sec.toFixed(3)}s`);
 
   const initialMove = h.getMoveTitle();
 
-  // Play from t = 0.00s across all 4 intro pickup beats (raw beats 0, 1, 2, 3) -> MUST stay unlit & zero move switches
-  for (const rawBeat of [-0.02, 0.05, 0.5, 1.05, 2.05, 3.05, 3.92]) {
+  // Play from t = 0.00s across the entire 36-beat intro (raw beats 0..35) -> MUST stay unlit with "Get Ready!" & zero move switches
+  for (const rawBeat of [0.05, 4.05, 12.05, 20.05, 28.05, 35.85]) {
     const t = Math.max(0, h.getSongTimeForBeat(bp, rawBeat));
     h.audio.currentTime = t;
     h.stepRaf();
-    assert.equal(h.getActiveBeatNumber(), 0, `Intro rawBeat ${rawBeat} (t=${t.toFixed(3)}s) must keep counter inactive`);
+    assert.equal(h.getActiveBeatNumber(), 0, `Intro rawBeat ${rawBeat} (t=${t.toFixed(3)}s) must keep all 8 numbers inactive`);
+    assert.equal(h.el("eightCountCycleLabel").textContent, "Get Ready!", "Must display 'Get Ready!' during intro");
+    assert.equal(h.el("eightCountCycleLabel").classList.contains("is-intro"), true, "Must apply is-intro badge class during intro");
     assert.equal(h.getMoveTitle(), initialMove, `Intro rawBeat ${rawBeat} must NOT trigger move transition`);
   }
 
-  // Right after musical Count 1 (raw beat 4.05, t ~ 2.136s): Count 1 MUST activate cleanly
-  h.audio.currentTime = h.getSongTimeForBeat(bp, 4.05);
+  // Right after danceable Count 1 (raw beat 36.05, t ~ 18.80s): Count 1 MUST activate & "Get Ready!" clears cleanly
+  h.audio.currentTime = h.getSongTimeForBeat(bp, 36.05);
   h.stepRaf();
-  assert.equal(h.getActiveBeatNumber(), 1, "Musical Count 1 must activate precisely at rawBeat 4 (firstCountOneSec)");
+  assert.equal(h.getActiveBeatNumber(), 1, "Musical Count 1 must activate precisely at rawBeat 36 (firstCountOneSec)");
+  assert.equal(h.el("eightCountCycleLabel").textContent, "Count 1 of 2");
+  assert.equal(h.el("eightCountCycleLabel").classList.contains("is-intro"), false);
   assert.equal(h.getMoveTitle(), initialMove);
 
-  // Step through 2 full musical 8-counts (phrase beats 0..15 -> raw beats 4..19)
+  // Step through 2 full musical 8-counts (phrase beats 0..15 -> raw beats 36..51)
   for (let pb = 1; pb <= 15; pb++) {
-    h.audio.currentTime = h.getSongTimeForBeat(bp, 4 + pb + 0.05);
+    h.audio.currentTime = h.getSongTimeForBeat(bp, 36 + pb + 0.05);
     h.stepRaf();
     assert.equal(h.getActiveBeatNumber(), (pb % 8) + 1, `Phrase beat ${pb} should display Count ${(pb % 8) + 1}`);
     assert.equal(h.getMoveTitle(), initialMove, `Must stay on initial move through phrase beat ${pb}`);
   }
 
-  // Phrase beat 16 (raw beat 20, ~10.44s) -> 2x8 automatic move switch fires strictly on musical Count 1!
-  h.audio.currentTime = h.getSongTimeForBeat(bp, 20.05);
+  // Phrase beat 16 (raw beat 52, ~27.09s) -> 2x8 automatic move switch fires strictly on musical Count 1!
+  h.audio.currentTime = h.getSongTimeForBeat(bp, 52.05);
   h.stepRaf();
   assert.equal(h.getActiveBeatNumber(), 1, "Auto move transition must occur on musical Count 1");
-  assert.notEqual(h.getMoveTitle(), initialMove, "2x8 automatic move switch must fire at phrase beat 16 (raw beat 20)");
+  assert.notEqual(h.getMoveTitle(), initialMove, "2x8 automatic move switch must fire at phrase beat 16 (raw beat 52)");
 
-  // Verify every song with countOneBeat > 0 waits cleanly through intro and activates Count 1 at firstCountOneSec
+  // Verify every song with countOneBeat > 0 (19 tracks) shows "Get Ready!" during intro and activates Count 1 at firstCountOneSec
   const introSongs = h.SONGS.filter((s) => h.getSongCountOneBeat(s) > 0);
-  assert.equal(introSongs.length, 5, "Expected 5 intro-offset tracks with countOneBeat > 0");
+  assert.equal(introSongs.length, 19, "Expected 19 tracks with intro countOneBeat > 0");
   for (const s of introSongs) {
     const hSong = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: s.id });
     hSong.el("startRandomDpaBtn").click();
     await hSong.flushMicrotasks();
 
     const c1 = hSong.getSongCountOneBeat(s);
-    const tMidIntro = hSong.getSongTimeForBeat(s, c1 - 1.5);
+    const tMidIntro = hSong.getSongTimeForBeat(s, Math.max(0.5, c1 - 2.5));
     hSong.audio.currentTime = tMidIntro;
     hSong.stepRaf();
     assert.equal(hSong.getActiveBeatNumber(), 0, `${s.id} must stay inactive during intro at t=${tMidIntro.toFixed(3)}s`);
+    assert.equal(hSong.el("eightCountCycleLabel").textContent, "Get Ready!", `${s.id} must display 'Get Ready!' during intro`);
 
     const tCount1 = hSong.getSongTimeForBeat(s, c1 + 0.05);
     hSong.audio.currentTime = tCount1;
     hSong.stepRaf();
     assert.equal(hSong.getActiveBeatNumber(), 1, `${s.id} must activate Count 1 at beat ${c1} (t=${tCount1.toFixed(3)}s)`);
+    assert.equal(hSong.el("eightCountCycleLabel").textContent, "Count 1 of 2");
   }
 
-  // Verify tracks with countOneBeat = 0 remain preserved (Count 1 right after beatOffsetSec)
-  for (const id of ["115-arcade-bounce", "100-boom-bap-backpack", "95-chalkboard-funk-1"]) {
+  // Verify all 5 immediate-groove tracks (countOneBeat = 0) remain preserved
+  const immediateIds = [
+    "100-boom-bap-backpack",
+    "100-robot-factory-1",
+    "95-cool-down-cypher-2",
+    "95-chalkboard-funk-1",
+    "95-chalkboard-funk-2",
+  ];
+  for (const id of immediateIds) {
     const hZero = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: id });
     hZero.el("startRandomDpaBtn").click();
     await hZero.flushMicrotasks();
     const s = hZero.SONGS.find((x) => x.id === id);
-    assert.equal(hZero.getSongCountOneBeat(s), 0);
+    assert.equal(hZero.getSongCountOneBeat(s), 0, `${id} should have countOneBeat = 0`);
     hZero.audio.currentTime = s.beatOffsetSec + 0.04;
     hZero.stepRaf();
     assert.equal(hZero.getActiveBeatNumber(), 1, `${id} must still activate Count 1 right after beatOffsetSec`);
