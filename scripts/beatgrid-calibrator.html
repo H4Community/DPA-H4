@@ -193,6 +193,7 @@
         <label><input type="radio" name="rateMode" value="tier" checked /> Normalized to Tier BPM (production)</label>
         <label><input type="radio" name="rateMode" value="native" /> Native exactBpm (1.00×)</label>
         <label><input type="checkbox" id="clickToggle" checked /> Scheduled Metronome (1=Hi, 5=Mid, 2/4/6/8=Rim, 3/7=Soft)</label>
+        <label><input type="checkbox" id="introClickToggle" /> Tick during intro</label>
         <label>Click <input type="range" id="clickVol" min="0" max="1" step="0.05" value="0.6" style="width:74px;" /></label>
         <label>Music <input type="range" id="musicVol" min="0" max="1" step="0.05" value="0.75" style="width:74px;" /></label>
       </div>
@@ -245,10 +246,11 @@
       </div>
     </div>
 
-    <!-- Fine Timing & Phrase Controls -->
+    <!-- Fine Timing (Beatgrid) & Independent Musical Phrase (Count 1) Controls -->
     <div class="card">
       <div class="row">
-        <label>beatOffsetSec <input type="number" id="offsetInput" step="0.005" style="width:92px;" /></label>
+        <strong style="font-size:0.84rem; color:var(--muted); min-width:128px;">Beatgrid Timing:</strong>
+        <label>beatOffsetSec <input type="number" id="offsetInput" step="0.005" style="width:88px;" /></label>
         <button data-nudge-ms="-50">-50ms</button>
         <button data-nudge-ms="-25">-25ms</button>
         <button data-nudge-ms="-10">-10ms</button>
@@ -257,16 +259,21 @@
         <button data-nudge-ms="10">+10ms</button>
         <button data-nudge-ms="25">+25ms</button>
         <button data-nudge-ms="50">+50ms</button>
+        <label style="margin-left:6px;">exactBpm <input type="number" id="bpmInput" step="0.01" style="width:84px;" /></label>
+        <button data-nudge-bpm="-0.05">-0.05</button>
+        <button data-nudge-bpm="0.05">+0.05</button>
       </div>
       <div class="row">
-        <label>exactBpm <input type="number" id="bpmInput" step="0.01" style="width:88px;" /></label>
-        <button data-nudge-bpm="-0.05">-0.05 BPM</button>
-        <button data-nudge-bpm="0.05">+0.05 BPM</button>
-        <button data-shift-beats="-1" class="blue">-1 Beat Phase</button>
-        <button data-shift-beats="1" class="blue">+1 Beat Phase</button>
-        <button data-shift-beats="4" class="warn">Flip Count 1 ↔ 5 (+4 Beats)</button>
-        <button id="tapOneBtn" class="warn">Set Count 1 Here</button>
-        <button id="resetTrackBtn">Reset Track</button>
+        <strong style="font-size:0.84rem; color:var(--accent); min-width:128px;">Musical Count 1:</strong>
+        <label>countOneBeat <input type="number" id="countOneInput" step="1" min="0" style="width:70px;" /></label>
+        <span id="firstCountOneReadout" class="badge ok">Count 1 @ 0.000s</span>
+        <button data-c1-delta="-4" class="warn">-4 Beats (Flip 1↔5)</button>
+        <button data-c1-delta="-1" class="blue">-1 Beat</button>
+        <button data-c1-delta="1" class="blue">+1 Beat</button>
+        <button data-c1-delta="4" class="warn">+4 Beats (Flip 1↔5)</button>
+        <button id="tapOneBtn" class="primary">Set Musical Count 1 Here</button>
+        <button id="jumpCountOneBtn">Jump to Count 1</button>
+        <button id="resetTrackBtn" style="margin-left:auto;">Reset Track</button>
       </div>
     </div>
 
@@ -290,6 +297,8 @@
       const trackBadge = document.getElementById("trackBadge");
       const offsetInput = document.getElementById("offsetInput");
       const bpmInput = document.getElementById("bpmInput");
+      const countOneInput = document.getElementById("countOneInput");
+      const firstCountOneReadout = document.getElementById("firstCountOneReadout");
       const exportBox = document.getElementById("exportBox");
       const timeReadout = document.getElementById("timeReadout");
       const snareStats = document.getElementById("snareStats");
@@ -299,6 +308,7 @@
       const bigSubText = document.getElementById("bigSubText");
       const beatEls = Array.from(document.querySelectorAll("#beatGrid .beat"));
       const clickToggle = document.getElementById("clickToggle");
+      const introClickToggle = document.getElementById("introClickToggle");
       const clickVol = document.getElementById("clickVol");
       const musicVol = document.getElementById("musicVol");
       const overviewCanvas = document.getElementById("overviewCanvas");
@@ -372,6 +382,18 @@
           }
         }
         return song.beatOffsetSec + beatIdx * (60 / song.exactBpm);
+      }
+
+      function getSongCountOneBeat(song) {
+        return song && Number.isFinite(song.countOneBeat) ? Math.max(0, Math.round(song.countOneBeat)) : 0;
+      }
+
+      function getSongPhraseBeatsElapsed(song, timeSec) {
+        return getSongBeatsElapsed(song, timeSec) - getSongCountOneBeat(song);
+      }
+
+      function getSongFirstCountOneSec(song) {
+        return getSongTimeForBeat(song, getSongCountOneBeat(song));
       }
 
       // Device visual sync offset (mirrors index.html localStorage key)
@@ -500,7 +522,9 @@
 
         const bNow = getSongBeatsElapsed(s, tAudioNow);
         const bEnd = getSongBeatsElapsed(s, tAudioHorizon);
-        const firstBeat = Math.max(0, Math.floor(bNow));
+        const c1 = getSongCountOneBeat(s);
+        const minBeat = introClickToggle.checked ? 0 : c1;
+        const firstBeat = Math.max(minBeat, Math.floor(bNow));
         const lastBeat = Math.floor(bEnd);
 
         // Clean old scheduled beat indices
@@ -515,7 +539,8 @@
           // Only schedule upcoming beats (within -12ms tolerance so we never burst stale beats)
           if (deltaWall < -0.012) continue;
           scheduledBeats.add(b);
-          const in8 = ((b % 8) + 8) % 8;
+          const phraseBeat = b - c1;
+          const in8 = phraseBeat < 0 ? 2 : (((phraseBeat % 8) + 8) % 8);
           scheduleClickAt(ctx, in8, tCtxNow + deltaWall);
         }
       }
@@ -655,7 +680,7 @@
         const errs = [];
         let bbCount = 0;
         for (const ts of trackAnalysis.snares) {
-          const b = getSongBeatsElapsed(s, ts);
+          const b = getSongPhraseBeatsElapsed(s, ts);
           if (b < -0.5) continue;
           const nr = Math.round(b);
           const errMs = (b - nr) * T * 1000;
@@ -735,7 +760,24 @@
           }
         }
 
-        // 2. Predicted Beat Markers
+        // 1b. Shade pre-Count-1 intro lead-in region clearly
+        const c1 = getSongCountOneBeat(s);
+        const tCount1 = getSongFirstCountOneSec(s);
+        if (tCount1 > tLeft) {
+          const xEnd = Math.min(w, toX(tCount1));
+          if (xEnd > 0) {
+            zCtx.fillStyle = "rgba(148, 163, 184, 0.12)";
+            zCtx.fillRect(0, 0, xEnd, h);
+            if (xEnd > 72) {
+              zCtx.fillStyle = "#94a3b8";
+              zCtx.font = "bold 11px ui-monospace, monospace";
+              zCtx.textAlign = "left";
+              zCtx.fillText("INTRO / LEAD-IN", 8, 14);
+            }
+          }
+        }
+
+        // 2. Predicted Beat Markers (intro beats dimmed; 1..8 starts strictly at countOneBeat)
         const bStart = Math.max(0, Math.floor(getSongBeatsElapsed(s, Math.max(0, tLeft))) - 1);
         const bEnd = Math.ceil(getSongBeatsElapsed(s, tRight)) + 1;
         zCtx.font = "bold 12px ui-monospace, monospace";
@@ -744,12 +786,25 @@
           const tb = getSongTimeForBeat(s, b);
           if (tb < tLeft || tb > tRight) continue;
           const x = toX(tb);
-          const in8 = ((b % 8) + 8) % 8;
+          if (b < c1) {
+            zCtx.strokeStyle = "rgba(148, 163, 184, 0.38)";
+            zCtx.lineWidth = 1;
+            zCtx.setLineDash([2, 4]);
+            zCtx.beginPath();
+            zCtx.moveTo(x, 22);
+            zCtx.lineTo(x, h);
+            zCtx.stroke();
+            zCtx.setLineDash([]);
+            continue;
+          }
+          const phraseBeat = b - c1;
+          const in8 = ((phraseBeat % 8) + 8) % 8;
+          const isFirstC1 = b === c1;
           const is1 = in8 === 0;
           const is5 = in8 === 4;
           const isSnare = in8 % 2 === 1;
           zCtx.strokeStyle = is1 ? "#a3e635" : (is5 ? "#38bdf8" : (isSnare ? "#fb923c" : "#64748b"));
-          zCtx.lineWidth = is1 || is5 ? 2.2 : 1.3;
+          zCtx.lineWidth = isFirstC1 ? 3.2 : (is1 || is5 ? 2.2 : 1.3);
           zCtx.setLineDash(isSnare ? [4, 3] : []);
           zCtx.beginPath();
           zCtx.moveTo(x, 22);
@@ -757,7 +812,7 @@
           zCtx.stroke();
           zCtx.setLineDash([]);
           zCtx.fillStyle = zCtx.strokeStyle;
-          zCtx.fillText(String(in8 + 1), x, 14);
+          zCtx.fillText(isFirstC1 ? "1★" : String(in8 + 1), x, 14);
         }
 
         // 3. Independently Detected Snare Transients (red triangles + ticks)
@@ -807,16 +862,27 @@
       }
 
       function formatSongLine(s, trailingComma = true) {
+        const c1 = getSongCountOneBeat(s);
+        const c1Str = c1 > 0 ? `, countOneBeat: ${c1}` : "";
         const anchorsStr = s.beatAnchors && s.beatAnchors.length
           ? `, beatAnchors: ${JSON.stringify(s.beatAnchors)}`
           : "";
         const bpmStr = Math.abs(s.exactBpm * 100 - Math.round(s.exactBpm * 100)) > 1e-4
           ? s.exactBpm.toFixed(3)
           : s.exactBpm.toFixed(2);
-        return `{ id: "${s.id}", title: "${s.title}", bpm: ${s.bpm}, exactBpm: ${bpmStr}, beatOffsetSec: ${s.beatOffsetSec.toFixed(3)}${anchorsStr}, src: "${s.src}" }${trailingComma ? "," : ""}`;
+        return `{ id: "${s.id}", title: "${s.title}", bpm: ${s.bpm}, exactBpm: ${bpmStr}, beatOffsetSec: ${s.beatOffsetSec.toFixed(3)}${c1Str}${anchorsStr}, src: "${s.src}" }${trailingComma ? "," : ""}`;
+      }
+
+      function updateCountOneUI() {
+        const s = curSong();
+        const c1 = getSongCountOneBeat(s);
+        countOneInput.value = String(c1);
+        const t1 = getSongFirstCountOneSec(s);
+        firstCountOneReadout.textContent = `Count 1 @ beat ${c1} (${t1.toFixed(3)}s)`;
       }
 
       function renderExport() {
+        updateCountOneUI();
         exportBox.value = formatSongLine(curSong(), true);
         updateSnareStats();
       }
@@ -832,7 +898,7 @@
         beatEls.forEach((b) => b.classList.remove("on"));
         bigCounter.className = "big-num";
         bigNumText.textContent = "--";
-        bigSubText.textContent = "LEAD-IN";
+        bigSubText.textContent = "INTRO / LEAD-IN";
         offsetInput.value = s.beatOffsetSec.toFixed(3);
         bpmInput.value = String(s.exactBpm);
         trackBadge.textContent = s.beatAnchors ? `PIECEWISE (${s.beatAnchors.length} anchors)` : "CONSTANT BPM";
@@ -847,7 +913,7 @@
         }
       }
 
-      // Keeps beatOffsetSec and beatAnchors 100% consistent on every timing nudge!
+      // Keeps beatOffsetSec and beatAnchors 100% consistent on timing nudges without altering countOneBeat
       function shiftOffsetAndAnchors(deltaSec) {
         const s = curSong();
         const newOff = Math.max(0, Number((s.beatOffsetSec + deltaSec).toFixed(3)));
@@ -864,37 +930,19 @@
         renderExport();
       }
 
-      // Shifts phase by integer beats while keeping beatAnchors[0] === [beatOffsetSec, 0] and preserving segment slopes!
-      function shiftByBeats(deltaBeats) {
+      // Adjusts musical Count 1 INDEPENDENTLY without disturbing exactBpm, beatOffsetSec, or beatAnchors!
+      function setCountOneBeat(nextBeat) {
         const s = curSong();
-        if (s.beatAnchors && s.beatAnchors.length >= 2) {
-          const newBeat0Time = Math.max(0, Number(getSongTimeForBeat(s, deltaBeats).toFixed(3)));
-          const shifted = [[newBeat0Time, 0]];
-          for (const [t, b] of s.beatAnchors) {
-            const nb = b - deltaBeats;
-            if (nb > 0 && t > newBeat0Time) {
-              shifted.push([Number(t.toFixed(3)), nb]);
-            }
-          }
-          // Ensure at least 2 anchors remain
-          if (shifted.length < 2) {
-            const last = s.beatAnchors[s.beatAnchors.length - 1];
-            const T = 60 / s.exactBpm;
-            shifted.push([Number((newBeat0Time + Math.max(16, last[1]) * T).toFixed(3)), Math.max(16, last[1])]);
-          }
-          s.beatOffsetSec = newBeat0Time;
-          s.beatAnchors = shifted;
-        } else {
-          const T = 60 / s.exactBpm;
-          s.beatOffsetSec = Math.max(0, Number((s.beatOffsetSec + deltaBeats * T).toFixed(3)));
-        }
-        offsetInput.value = s.beatOffsetSec.toFixed(3);
+        const clamped = Math.max(0, Math.round(nextBeat));
+        if (clamped > 0) s.countOneBeat = clamped;
+        else delete s.countOneBeat;
+        lastVisualBeat = -999;
         cancelScheduledClicks();
         renderExport();
       }
 
       trackSelect.innerHTML = SONGS.map((s, i) =>
-        `<option value="${i}">[${s.bpm}] ${s.title} (${s.exactBpm} BPM, off ${s.beatOffsetSec.toFixed(3)}s${s.beatAnchors ? ", PW" : ""})</option>`
+        `<option value="${i}">[${s.bpm}] ${s.title} (${s.exactBpm} BPM, off ${s.beatOffsetSec.toFixed(3)}s${s.countOneBeat ? `, C1@${s.countOneBeat}` : ""}${s.beatAnchors ? ", PW" : ""})</option>`
       ).join("");
 
       trackSelect.addEventListener("change", () => loadTrack(Number(trackSelect.value), !audio.paused));
@@ -961,8 +1009,24 @@
           renderExport();
         });
       });
-      document.querySelectorAll("[data-shift-beats]").forEach((btn) => {
-        btn.addEventListener("click", () => shiftByBeats(Number(btn.getAttribute("data-shift-beats"))));
+      document.querySelectorAll("[data-c1-delta]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const s = curSong();
+          setCountOneBeat(getSongCountOneBeat(s) + Number(btn.getAttribute("data-c1-delta")));
+        });
+      });
+
+      countOneInput.addEventListener("change", () => {
+        const v = Number(countOneInput.value);
+        if (Number.isFinite(v)) setCountOneBeat(v);
+      });
+
+      document.getElementById("jumpCountOneBtn").addEventListener("click", () => {
+        const s = curSong();
+        const t1 = Math.max(0, getSongFirstCountOneSec(s) - 0.8);
+        audio.currentTime = t1;
+        lastVisualBeat = -999;
+        cancelScheduledClicks();
       });
 
       offsetInput.addEventListener("change", () => {
@@ -982,11 +1046,8 @@
 
       document.getElementById("tapOneBtn").addEventListener("click", () => {
         const s = curSong();
-        const b = getSongBeatsElapsed(s, audio.currentTime);
-        const beatInEight = ((Math.round(b) % 8) + 8) % 8;
-        if (beatInEight !== 0) {
-          shiftByBeats(beatInEight <= 4 ? beatInEight : beatInEight - 8);
-        }
+        const rawBeat = Math.round(getSongBeatsElapsed(s, audio.currentTime));
+        setCountOneBeat(Math.max(0, rawBeat));
       });
 
       document.getElementById("resetTrackBtn").addEventListener("click", () => {
@@ -1015,9 +1076,10 @@
         const rate = Number.isFinite(audio.playbackRate) && audio.playbackRate > 0 ? audio.playbackRate : 1;
         const tRaw = audio.currentTime;
         const tVis = tRaw + (visualOffsetMs / 1000) * rate;
-        const beats = getSongBeatsElapsed(s, tVis);
+        const rawBeats = getSongBeatsElapsed(s, tVis);
+        const beats = getSongPhraseBeatsElapsed(s, tVis);
 
-        timeReadout.textContent = `t=${tRaw.toFixed(3)}s · beat=${beats >= 0 ? beats.toFixed(2) : "lead-in"} · rate=${rate.toFixed(3)}×`;
+        timeReadout.textContent = `t=${tRaw.toFixed(3)}s · grid=${rawBeats >= 0 ? rawBeats.toFixed(2) : "pre"} · phrase=${beats >= 0 ? beats.toFixed(2) : "INTRO"} · rate=${rate.toFixed(3)}×`;
 
         if (!audio.paused && audio.readyState >= 2) {
           if (beats < 0) {
@@ -1026,7 +1088,7 @@
               beatEls.forEach((el) => el.classList.remove("on"));
               bigCounter.className = "big-num";
               bigNumText.textContent = "--";
-              bigSubText.textContent = "LEAD-IN";
+              bigSubText.textContent = "INTRO / LEAD-IN";
             }
           } else {
             const bi = Math.floor(beats);

@@ -2183,9 +2183,11 @@
       // Drum-transient verified beatgrids (48 kHz HPSS snare/kick attack alignment).
       // Constant-BPM tracks use exactBpm + beatOffsetSec; variable-tempo tracks include
       // smooth monotonic piecewise beatAnchors ([timeSec, beatIdx]) with zero anchor discontinuities.
+      // Optional countOneBeat (integer beat index >= 0, default 0) separates musical phrase Count 1
+      // from beat-grid timing so intro pickups stay unlit until the true musical 8-count begins.
       const SONGS = [
         // 115 BPM — High-Energy Hype
-        { id: "115-block-party-brass", title: "Block Party Brass", bpm: 115, exactBpm: 115.78, beatOffsetSec: 0.027, beatAnchors: [[0.027, 0], [16.69, 32], [34.886, 67], [65.527, 126], [87.313, 168], [105.959, 204], [119.923, 231], [158.683, 306], [177.779, 343]], src: "Music/115 - Block Party Brass.mp3" },
+        { id: "115-block-party-brass", title: "Block Party Brass", bpm: 115, exactBpm: 115.78, beatOffsetSec: 0.027, countOneBeat: 4, beatAnchors: [[0.027, 0], [16.69, 32], [34.886, 67], [65.527, 126], [87.313, 168], [105.959, 204], [119.923, 231], [158.683, 306], [177.779, 343]], src: "Music/115 - Block Party Brass.mp3" },
         { id: "115-jumpstart-jam", title: "Jumpstart Jam", bpm: 115, exactBpm: 115.56, beatOffsetSec: 0.015, beatAnchors: [[0.015, 0], [21.823, 42], [96.124, 185], [196.285, 378]], src: "Music/115 - Jumpstart Jam.mp3" },
         { id: "115-arcade-bounce", title: "Arcade Bounce", bpm: 115, exactBpm: 115.00, beatOffsetSec: 0.016, src: "Music/115-Arcade Bounce.mp3" },
         { id: "115-recess-breakbeat-1", title: "Recess Breakbeat (Mix 1)", bpm: 115, exactBpm: 113.17, beatOffsetSec: 0.016, beatAnchors: [[0.016, 0], [62.603, 118], [109.796, 207], [189.815, 358]], src: "Music/115 - Recess Breakbeat.mp3" },
@@ -2193,19 +2195,19 @@
         // 110 BPM — Upbeat Bounce
         { id: "110-golden-era-groove", title: "Golden Era Groove", bpm: 110, exactBpm: 106.87, beatOffsetSec: 0.289, beatAnchors: [[0.289, 0], [66.599, 118], [117.712, 209], [143.518, 255], [155.312, 276], [188.394, 335], [205.793, 366], [213.077, 379]], src: "Music/110 - Golden Era Groove.mp3" },
         { id: "110-locker-room-pep", title: "Locker Room Pep", bpm: 110, exactBpm: 108.03, beatOffsetSec: 0.317, beatAnchors: [[0.317, 0], [14.277, 25], [17.639, 31], [28.224, 50], [46.067, 82], [57.187, 102], [70.001, 125], [74.443, 133], [85.018, 152], [90.575, 162], [102.215, 183], [117.205, 210], [128.32, 230], [156.581, 281], [163.215, 293], [168.177, 302], [170.95, 307], [173.71, 312], [180.365, 324], [190.848, 343], [201.377, 362]], src: "Music/110 - Locker Room Pep.mp3" },
-        { id: "110-neon-streetlight", title: "Neon Streetlight", bpm: 110, exactBpm: 112.24, beatOffsetSec: 0.572, beatAnchors: [[0.572, 0], [19.475, 35], [26.946, 49], [56.229, 104], [57.291, 106], [57.816, 107], [58.331, 108], [59.387, 110], [71.756, 133], [83.04, 154], [88.942, 165], [105.54, 196], [119.445, 222], [125.857, 234], [138.115, 257], [169.055, 315], [194.115, 362], [206.4, 385], [219.207, 409]], src: "Music/110 - Neon Streetlight.mp3" },
+        { id: "110-neon-streetlight", title: "Neon Streetlight", bpm: 110, exactBpm: 112.24, beatOffsetSec: 0.572, countOneBeat: 4, beatAnchors: [[0.572, 0], [19.475, 35], [26.946, 49], [56.229, 104], [57.291, 106], [57.816, 107], [58.331, 108], [59.387, 110], [71.756, 133], [83.04, 154], [88.942, 165], [105.54, 196], [119.445, 222], [125.857, 234], [138.115, 257], [169.055, 315], [194.115, 362], [206.4, 385], [219.207, 409]], src: "Music/110 - Neon Streetlight.mp3" },
         { id: "110-taco-tuesday-bounce", title: "Taco Tuesday Bounce", bpm: 110, exactBpm: 113.61, beatOffsetSec: 1.135, beatAnchors: [[1.135, 0], [26.464, 48], [119.929, 225], [149.488, 281], [159.541, 300], [178.558, 336], [204.986, 386]], src: "Music/110 - Taco Tuesday Bounce.mp3" },
-        { id: "110-skate-floor-funk-1", title: "Skate Floor Funk (Mix 1)", bpm: 110, exactBpm: 113.43, beatOffsetSec: 1.347, beatAnchors: [[1.347, 0], [14.651, 25], [30.599, 55], [51.829, 95], [82.569, 153], [133.383, 249], [159.819, 299], [191.484, 359], [206.254, 387], [257.894, 485]], src: "Music/110 -1- Skate Floor Funk.mp3" },
+        { id: "110-skate-floor-funk-1", title: "Skate Floor Funk (Mix 1)", bpm: 110, exactBpm: 113.43, beatOffsetSec: 1.347, countOneBeat: 4, beatAnchors: [[1.347, 0], [14.651, 25], [30.599, 55], [51.829, 95], [82.569, 153], [133.383, 249], [159.819, 299], [191.484, 359], [206.254, 387], [257.894, 485]], src: "Music/110 -1- Skate Floor Funk.mp3" },
         { id: "110-skate-floor-funk-2", title: "Skate Floor Funk (Mix 2)", bpm: 110, exactBpm: 114.11, beatOffsetSec: 0.012, beatAnchors: [[0.012, 0], [44.74, 85], [152.518, 290], [171.955, 327], [202.965, 386], [256.613, 488]], src: "Music/110-2-Skate Floor Funk.mp3" },
         // 100 BPM — Classic Pocket
         { id: "100-boom-bap-backpack", title: "Boom-Bap Backpack", bpm: 100, exactBpm: 92.50, beatOffsetSec: 0.670, src: "Music/100 - Boom-Bap Backpack.mp3" },
         { id: "100-playground-pocket", title: "Playground Pocket", bpm: 100, exactBpm: 100.00, beatOffsetSec: 0.000, src: "Music/100 - Playground Pocket.mp3" },
-        { id: "100-sunday-sneakers", title: "Sunday Sneakers", bpm: 100, exactBpm: 100.49, beatOffsetSec: 1.310, beatAnchors: [[1.31, 0], [48.494, 79], [123.127, 204], [186.986, 311], [208.496, 347]], src: "Music/100 - Sunday Sneakers.mp3" },
+        { id: "100-sunday-sneakers", title: "Sunday Sneakers", bpm: 100, exactBpm: 100.49, beatOffsetSec: 1.310, countOneBeat: 4, beatAnchors: [[1.31, 0], [48.494, 79], [123.127, 204], [186.986, 311], [208.496, 347]], src: "Music/100 - Sunday Sneakers.mp3" },
         { id: "100-west-coast-cruise", title: "West Coast Cruise", bpm: 100, exactBpm: 100.00, beatOffsetSec: 0.310, src: "Music/100 - West Coast Cruise.mp3" },
         { id: "100-robot-factory-1", title: "Robot Factory (Mix 1)", bpm: 100, exactBpm: 102.02, beatOffsetSec: 0.010, beatAnchors: [[0.01, 0], [18.28, 31], [56.51, 96], [102.379, 174], [164.106, 279], [239.373, 407]], src: "Music/100-1-Robot Factory.mp3" },
         { id: "100-robot-factory-2", title: "Robot Factory (Mix 2)", bpm: 100, exactBpm: 100.90, beatOffsetSec: 0.019, beatAnchors: [[0.019, 0], [16.081, 27], [140.914, 237], [152.827, 257], [158.165, 266], [177.186, 298], [205.746, 346], [216.467, 364]], src: "Music/100-2-Robot Factory.mp3" },
         // 95 BPM — Chill & Learn
-        { id: "95-liquid-motion", title: "Liquid Motion", bpm: 95, exactBpm: 95.10, beatOffsetSec: 0.476, beatAnchors: [[0.476, 0], [16.893, 26], [18.796, 29], [32.041, 50], [96.467, 152], [123.61, 195], [146.937, 232], [175.269, 277], [209.938, 332]], src: "Music/95 - 2- Liquid Motion.mp3" },
+        { id: "95-liquid-motion", title: "Liquid Motion", bpm: 95, exactBpm: 95.10, beatOffsetSec: 0.476, countOneBeat: 4, beatAnchors: [[0.476, 0], [16.893, 26], [18.796, 29], [32.041, 50], [96.467, 152], [123.61, 195], [146.937, 232], [175.269, 277], [209.938, 332]], src: "Music/95 - 2- Liquid Motion.mp3" },
         { id: "95-slow-mo-swagger", title: "Slow-Mo Swagger", bpm: 95, exactBpm: 94.41, beatOffsetSec: 0.144, beatAnchors: [[0.144, 0], [23.656, 37], [62.493, 98], [90.496, 142], [107.664, 169], [117.189, 184], [136.207, 214], [144.436, 227], [164.667, 259], [173.54, 273], [175.464, 276], [176.121, 277], [176.763, 278], [183.146, 288], [187.582, 295], [213.039, 335]], src: "Music/95-1-Slow-mo Swagger.mp3" },
         { id: "95-lofi-study-break", title: "Lo-Fi Study Break", bpm: 95, exactBpm: 97.14, beatOffsetSec: 1.085, beatAnchors: [[1.085, 0], [15.942, 24], [84.594, 135], [124.767, 200], [159.951, 257], [190.123, 306], [201.83, 325]], src: "Music/95-2-Lo-Fi Study Break.mp3" },
         { id: "95-cool-down-cypher-1", title: "Cool Down Cypher (Mix 1)", bpm: 95, exactBpm: 96.93, beatOffsetSec: 0.201, beatAnchors: [[0.201, 0], [33.063, 53], [54.775, 88], [88.84, 143], [130.927, 211], [157.529, 254], [187.208, 302], [218.093, 352]], src: "Music/95 -1-Cool Down Cypher.mp3" },
@@ -2237,6 +2239,43 @@
           }
         }
         return (timeSec - song.beatOffsetSec) * (song.exactBpm / 60);
+      }
+
+      function getSongTimeForBeat(song, beatIdx) {
+        const anchors = song && song.beatAnchors;
+        if (anchors && anchors.length >= 2) {
+          if (beatIdx <= anchors[0][1]) {
+            const dt = anchors[1][0] - anchors[0][0];
+            const db = anchors[1][1] - anchors[0][1];
+            return anchors[0][0] + (beatIdx - anchors[0][1]) * (dt / db);
+          }
+          const last = anchors.length - 1;
+          if (beatIdx >= anchors[last][1]) {
+            const dt = anchors[last][0] - anchors[last - 1][0];
+            const db = anchors[last][1] - anchors[last - 1][1];
+            return anchors[last][0] + (beatIdx - anchors[last][1]) * (dt / db);
+          }
+          for (let i = 0; i < last; i++) {
+            const [t0, b0] = anchors[i];
+            const [t1, b1] = anchors[i + 1];
+            if (beatIdx >= b0 && beatIdx <= b1) {
+              return t0 + (beatIdx - b0) * ((t1 - t0) / (b1 - b0));
+            }
+          }
+        }
+        return song.beatOffsetSec + beatIdx * (60 / song.exactBpm);
+      }
+
+      function getSongCountOneBeat(song) {
+        return song && Number.isFinite(song.countOneBeat) ? Math.max(0, Math.round(song.countOneBeat)) : 0;
+      }
+
+      function getSongPhraseBeatsElapsed(song, timeSec) {
+        return getSongBeatsElapsed(song, timeSec) - getSongCountOneBeat(song);
+      }
+
+      function getSongFirstCountOneSec(song) {
+        return getSongTimeForBeat(song, getSongCountOneBeat(song));
       }
 
       let audioCtx = null;
@@ -2766,11 +2805,13 @@
             return;
           }
           if (!songAudio.paused && songAudio.readyState >= 2) {
-            const beatsElapsed = getSongBeatsElapsed(song, getEffectiveSongTimeSec(songAudio));
+            const beatsElapsed = getSongPhraseBeatsElapsed(song, getEffectiveSongTimeSec(songAudio));
             if (beatsElapsed < 0) {
-              // Wait cleanly during pre-downbeat lead-in without falsely advancing beats
+              // Wait cleanly during pre-Count-1 intro pickup without lighting beats or counting bars
               if (hasActiveBeat || lastRenderedBeatIndex !== -1) {
                 lastRenderedBeatIndex = -1;
+                moveBarsCompleted = 0;
+                waitForBarOneAfterManualSwitch = false;
                 clearBeatHighlights();
                 updateTimersUI();
               }
@@ -3058,7 +3099,7 @@
       songAudio.addEventListener("seeked", () => {
         if (!isPlaying || !isSongPlaybackEnabled()) return;
         const song = getCurrentSong();
-        const beatsElapsed = getSongBeatsElapsed(song, getEffectiveSongTimeSec(songAudio));
+        const beatsElapsed = getSongPhraseBeatsElapsed(song, getEffectiveSongTimeSec(songAudio));
         moveBarsCompleted = 0;
         waitForBarOneAfterManualSwitch = false;
         if (beatsElapsed < 0) {
@@ -3646,6 +3687,10 @@
             getVisualOffsetMs: () => visualSyncOffsetMs,
             setVisualOffsetMs: setVisualSyncOffsetMs,
             getSongBeatsElapsed,
+            getSongPhraseBeatsElapsed,
+            getSongTimeForBeat,
+            getSongCountOneBeat,
+            getSongFirstCountOneSec,
             getCurrentSong,
             getAudioElement: () => songAudio,
             getState: () => ({

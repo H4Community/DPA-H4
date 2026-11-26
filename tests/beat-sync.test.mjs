@@ -340,12 +340,9 @@ function createAppHarness(initialStorage = {}) {
   // Run the actual production inline script
   vm.runInNewContext(INLINE_JS, sandbox, { filename: "index.html#script" });
 
-  // Extract SONGS and getSongBeatsElapsed for direct inspection
-  const songsExtract = vm.runInNewContext(
-    INLINE_JS.match(/const SONGS = \[[\s\S]*?\];/)[0] + "\n" +
-    INLINE_JS.match(/function getSongBeatsElapsed[\s\S]*?\n      \}/)[0] +
-    "\n({ SONGS, getSongBeatsElapsed });"
-  );
+  // Use the real production sync helpers exposed on window.__h4DpaSync
+  const syncApi = windowMock.__h4DpaSync;
+  assert.ok(syncApi, "index.html must expose window.__h4DpaSync");
 
   return {
     el: (id) => documentMock.getElementById(id),
@@ -355,8 +352,13 @@ function createAppHarness(initialStorage = {}) {
     document: documentMock,
     get audio() { return createdAudioEl; },
     get audioCtx() { return createdAudioCtx; },
-    SONGS: songsExtract.SONGS,
-    getSongBeatsElapsed: songsExtract.getSongBeatsElapsed,
+    SONGS: syncApi.SONGS,
+    getSongBeatsElapsed: syncApi.getSongBeatsElapsed,
+    getSongPhraseBeatsElapsed: syncApi.getSongPhraseBeatsElapsed,
+    getSongTimeForBeat: syncApi.getSongTimeForBeat,
+    getSongCountOneBeat: syncApi.getSongCountOneBeat,
+    getSongFirstCountOneSec: syncApi.getSongFirstCountOneSec,
+    getSyncState: syncApi.getState,
     scheduledAudioEvents,
     pendingPlayResolvers,
     setDeferAudioPlay(flag) { deferAudioPlay = flag; },
@@ -402,6 +404,17 @@ test("All 24 SONGS have valid files, exactBpm, beatOffsetSec, and monotonic beat
     assert.ok(fs.existsSync(path.join(ROOT, song.src)), `Missing audio file: ${song.src}`);
     assert.ok(Number.isFinite(song.exactBpm) && song.exactBpm > 80 && song.exactBpm < 140);
     assert.ok(Number.isFinite(song.beatOffsetSec) && song.beatOffsetSec >= 0 && song.beatOffsetSec < 5);
+    if (song.countOneBeat !== undefined) {
+      assert.ok(
+        Number.isInteger(song.countOneBeat) && song.countOneBeat >= 0,
+        `${song.id} countOneBeat must be a non-negative integer`
+      );
+    }
+    const c1Beat = h.getSongCountOneBeat(song);
+    const c1Sec = h.getSongFirstCountOneSec(song);
+    assert.ok(Number.isFinite(c1Sec) && c1Sec >= song.beatOffsetSec - 1e-9, `${song.id} firstCountOneSec must be >= beatOffsetSec`);
+    assert.ok(Math.abs(h.getSongBeatsElapsed(song, c1Sec) - c1Beat) < 1e-6, `${song.id} time/beat round-trip at countOneBeat`);
+    assert.ok(Math.abs(h.getSongPhraseBeatsElapsed(song, c1Sec)) < 1e-6, `${song.id} phrase beat must be 0 at firstCountOneSec`);
     if (song.beatAnchors) {
       assert.ok(song.beatAnchors.length >= 2);
       assert.equal(song.beatAnchors[0][0], song.beatOffsetSec, `${song.id} anchor 0 time must match beatOffsetSec`);
@@ -570,19 +583,17 @@ test("Background-tab rAF throttling and skipped beats never cause duplicate move
     if (cur !== lastMove) { moveSwitchCount++; lastMove = cur; }
   };
 
-  // Start at beat 0..3
+  // Start at phrase beats 0..3 (starting at firstCountOneSec, after the 4-beat intro pickup)
   for (let b = 0; b <= 3; b++) {
-    h.audio.currentTime = song.beatOffsetSec + (b + 0.1) * (60 / song.exactBpm);
+    h.audio.currentTime = h.getSongTimeForBeat(song, h.getSongCountOneBeat(song) + b + 0.1);
     h.stepRaf();
     trackSwitch();
   }
   assert.equal(moveSwitchCount, 0);
 
-  // Simulate background tab sleeping for ~22 seconds (jumping straight to anchor near beat 45, mid-bar Count 6)
-  // Beat 45 is Count 6 (45 % 8 = 5 -> display 6), crossing 5 bars (>= 2x8)!
-  // Compute exact time for beat 45.1 via binary search on getSongBeatsElapsed
-  let tJump = 23.5;
-  while (h.getSongBeatsElapsed(song, tJump) < 45.1) tJump += 0.01;
+  // Simulate background tab sleeping for ~22 seconds (jumping straight to phrase beat 45.1, mid-bar Count 6)
+  // Phrase beat 45 is Count 6 (45 % 8 = 5 -> display 6), crossing 5 bars (>= 2x8)!
+  let tJump = h.getSongTimeForBeat(song, h.getSongCountOneBeat(song) + 45.1);
   h.audio.currentTime = tJump;
   h.stepRaf();
   trackSwitch();
@@ -590,30 +601,30 @@ test("Background-tab rAF throttling and skipped beats never cause duplicate move
   assert.equal(moveSwitchCount, 1, "Multi-bar tab sleep must trigger AT MOST ONE move transition");
   assert.equal(h.getActiveBeatNumber(), 6, "Must lock immediately to Beat 6 of the music");
 
-  // Because we woke up mid-bar on Beat 6, Beats 46..47 finish the bar, Beat 48 starts Count 1 of 2,
-  // and next switch must NOT happen until Beat 64 (2 full 8-counts after Beat 48)!
+  // Because we woke up mid-bar on Beat 6, phrase beats 46..47 finish the bar, beat 48 starts Count 1 of 2,
+  // and next switch must NOT happen until phrase beat 64 (2 full 8-counts after beat 48)!
   let tCur = tJump;
   for (let targetBeat = 46; targetBeat <= 63; targetBeat++) {
-    while (h.getSongBeatsElapsed(song, tCur) < targetBeat + 0.1) tCur += 0.005;
+    while (h.getSongPhraseBeatsElapsed(song, tCur) < targetBeat + 0.1) tCur += 0.005;
     h.audio.currentTime = tCur;
     h.stepRaf();
     trackSwitch();
-    assert.equal(moveSwitchCount, 1, `Should not switch early on beat ${targetBeat} after background wake`);
+    assert.equal(moveSwitchCount, 1, `Should not switch early on phrase beat ${targetBeat} after background wake`);
   }
-  while (h.getSongBeatsElapsed(song, tCur) < 64.1) tCur += 0.005;
+  while (h.getSongPhraseBeatsElapsed(song, tCur) < 64.1) tCur += 0.005;
   h.audio.currentTime = tCur;
   h.stepRaf();
   trackSwitch();
-  assert.equal(moveSwitchCount, 2, "Must switch cleanly on Count 1 at beat 64");
+  assert.equal(moveSwitchCount, 2, "Must switch cleanly on Count 1 at phrase beat 64");
   assert.equal(h.getActiveBeatNumber(), 1);
 
-  // Backward seek / loop must NOT trigger an erratic move switch
-  h.audio.currentTime = Math.max(0, song.beatOffsetSec - 0.015);
+  // Backward seek into the intro pickup (before firstCountOneSec) must NOT trigger an erratic move switch
+  h.audio.currentTime = Math.max(0, h.getSongFirstCountOneSec(song) - 0.5);
   h.audio.emit("seeked");
   h.stepRaf();
   trackSwitch();
   assert.equal(moveSwitchCount, 2, "Backward seek must not trigger spurious move switch");
-  assert.equal(h.getActiveBeatNumber(), 0, "Pre-offset seek must clear beat highlight cleanly");
+  assert.equal(h.getActiveBeatNumber(), 0, "Pre-Count-1 intro seek must clear beat highlight cleanly");
 });
 
 // =========================================================================
@@ -783,4 +794,81 @@ test("Own Music mode supports manual Tap BPM phase recalibration without claimin
   h.advancePerfNow(510);
   h.stepRaf();
   assert.equal(h.getActiveBeatNumber(), 5, "After 4-beat tap-in, Count 5 must follow cleanly in phase");
+});
+
+// =========================================================================
+// 10. Musical Count 1 & Intro Pickup Alignment (Block Party Brass + All Intro-Offset Tracks)
+// =========================================================================
+test("Intro pickup stays inactive until true musical Count 1 without accumulating 8-counts or triggering moves", async () => {
+  const h = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: "115-block-party-brass" });
+  h.el("startRandomDpaBtn").click();
+  await h.flushMicrotasks();
+
+  const bp = h.SONGS.find((s) => s.id === "115-block-party-brass");
+  assert.equal(h.getSongCountOneBeat(bp), 4, "Block Party Brass must have countOneBeat = 4");
+  const c1Sec = h.getSongFirstCountOneSec(bp);
+  assert.ok(c1Sec > 2.05 && c1Sec < 2.15, `Expected Block Party Brass Count 1 near 2.11s, got ${c1Sec.toFixed(3)}s`);
+
+  const initialMove = h.getMoveTitle();
+
+  // Play from t = 0.00s across all 4 intro pickup beats (raw beats 0, 1, 2, 3) -> MUST stay unlit & zero move switches
+  for (const rawBeat of [-0.02, 0.05, 0.5, 1.05, 2.05, 3.05, 3.92]) {
+    const t = Math.max(0, h.getSongTimeForBeat(bp, rawBeat));
+    h.audio.currentTime = t;
+    h.stepRaf();
+    assert.equal(h.getActiveBeatNumber(), 0, `Intro rawBeat ${rawBeat} (t=${t.toFixed(3)}s) must keep counter inactive`);
+    assert.equal(h.getMoveTitle(), initialMove, `Intro rawBeat ${rawBeat} must NOT trigger move transition`);
+  }
+
+  // Right after musical Count 1 (raw beat 4.05, t ~ 2.136s): Count 1 MUST activate cleanly
+  h.audio.currentTime = h.getSongTimeForBeat(bp, 4.05);
+  h.stepRaf();
+  assert.equal(h.getActiveBeatNumber(), 1, "Musical Count 1 must activate precisely at rawBeat 4 (firstCountOneSec)");
+  assert.equal(h.getMoveTitle(), initialMove);
+
+  // Step through 2 full musical 8-counts (phrase beats 0..15 -> raw beats 4..19)
+  for (let pb = 1; pb <= 15; pb++) {
+    h.audio.currentTime = h.getSongTimeForBeat(bp, 4 + pb + 0.05);
+    h.stepRaf();
+    assert.equal(h.getActiveBeatNumber(), (pb % 8) + 1, `Phrase beat ${pb} should display Count ${(pb % 8) + 1}`);
+    assert.equal(h.getMoveTitle(), initialMove, `Must stay on initial move through phrase beat ${pb}`);
+  }
+
+  // Phrase beat 16 (raw beat 20, ~10.44s) -> 2x8 automatic move switch fires strictly on musical Count 1!
+  h.audio.currentTime = h.getSongTimeForBeat(bp, 20.05);
+  h.stepRaf();
+  assert.equal(h.getActiveBeatNumber(), 1, "Auto move transition must occur on musical Count 1");
+  assert.notEqual(h.getMoveTitle(), initialMove, "2x8 automatic move switch must fire at phrase beat 16 (raw beat 20)");
+
+  // Verify every song with countOneBeat > 0 waits cleanly through intro and activates Count 1 at firstCountOneSec
+  const introSongs = h.SONGS.filter((s) => h.getSongCountOneBeat(s) > 0);
+  assert.equal(introSongs.length, 5, "Expected 5 intro-offset tracks with countOneBeat > 0");
+  for (const s of introSongs) {
+    const hSong = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: s.id });
+    hSong.el("startRandomDpaBtn").click();
+    await hSong.flushMicrotasks();
+
+    const c1 = hSong.getSongCountOneBeat(s);
+    const tMidIntro = hSong.getSongTimeForBeat(s, c1 - 1.5);
+    hSong.audio.currentTime = tMidIntro;
+    hSong.stepRaf();
+    assert.equal(hSong.getActiveBeatNumber(), 0, `${s.id} must stay inactive during intro at t=${tMidIntro.toFixed(3)}s`);
+
+    const tCount1 = hSong.getSongTimeForBeat(s, c1 + 0.05);
+    hSong.audio.currentTime = tCount1;
+    hSong.stepRaf();
+    assert.equal(hSong.getActiveBeatNumber(), 1, `${s.id} must activate Count 1 at beat ${c1} (t=${tCount1.toFixed(3)}s)`);
+  }
+
+  // Verify tracks with countOneBeat = 0 remain preserved (Count 1 right after beatOffsetSec)
+  for (const id of ["115-arcade-bounce", "100-boom-bap-backpack", "95-chalkboard-funk-1"]) {
+    const hZero = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: id });
+    hZero.el("startRandomDpaBtn").click();
+    await hZero.flushMicrotasks();
+    const s = hZero.SONGS.find((x) => x.id === id);
+    assert.equal(hZero.getSongCountOneBeat(s), 0);
+    hZero.audio.currentTime = s.beatOffsetSec + 0.04;
+    hZero.stepRaf();
+    assert.equal(hZero.getActiveBeatNumber(), 1, `${id} must still activate Count 1 right after beatOffsetSec`);
+  }
 });
