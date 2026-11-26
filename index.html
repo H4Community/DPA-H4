@@ -79,6 +79,10 @@
     }
 
     /* Calm Motion Accessibility Mode */
+    html:has(body.calm-motion) {
+      scroll-behavior: auto;
+    }
+
     body.calm-motion *,
     body.calm-motion *::before,
     body.calm-motion *::after {
@@ -4383,7 +4387,7 @@
               const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
               window.scrollTo({
                 top: targetTop,
-                behavior: isMotionReduced() ? "auto" : "smooth"
+                behavior: isMotionReduced() ? "instant" : "smooth"
               });
               if (teacherTutorialHeading && typeof teacherTutorialHeading.focus === "function") {
                 teacherTutorialHeading.focus({ preventScroll: true });
