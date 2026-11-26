@@ -707,7 +707,7 @@
       box-shadow: 1px 1px 0px var(--ink);
     }
 
-    /* DanceStash Promotional Card (static grid item, separate from the 10 grooves) */
+    /* Promotional Cards (static grid items, separate from the 10 grooves) */
     .promo-badge-bonus {
       font-size: 0.8rem;
       letter-spacing: 0.04em;
@@ -715,6 +715,10 @@
 
     .promo-badge-explore {
       background: var(--cobalt);
+    }
+
+    .promo-badge-teachers {
+      background: var(--tangerine);
     }
 
     .promo-art {
@@ -737,7 +741,13 @@
       box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45);
     }
 
-    .promo-logo-frame {
+    .promo-art-tutorial {
+      background-color: #FFEDD5;
+      gap: 8px;
+    }
+
+    .promo-logo-frame,
+    .promo-illustration-frame {
       width: 104px;
       height: 104px;
       display: flex;
@@ -748,8 +758,22 @@
       transition: transform 0.2s ease;
     }
 
-    .promo-card:hover .promo-logo-frame {
+    .promo-illustration-frame {
+      width: 158px;
+      height: 108px;
+      overflow: visible;
+    }
+
+    .promo-card:hover .promo-logo-frame,
+    .promo-card:hover .promo-illustration-frame {
       transform: scale(1.06) rotate(-2deg);
+    }
+
+    .promo-tutorial-svg {
+      width: 158px;
+      height: 108px;
+      display: block;
+      pointer-events: none;
     }
 
     .promo-logo-img {
@@ -770,6 +794,13 @@
       line-height: 1.1;
       letter-spacing: 0.01em;
       color: var(--ink);
+    }
+
+    .promo-brand-tutorial {
+      font-size: 0.88rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-align: center;
     }
 
     .promo-cta {
@@ -796,20 +827,27 @@
 
     body.calm-motion .promo-card:hover,
     body.calm-motion .promo-card:hover .promo-logo-frame,
+    body.calm-motion .promo-card:hover .promo-illustration-frame,
     body.calm-motion .promo-cta:hover,
     body.calm-motion .promo-cta:active {
       transform: none;
     }
 
     @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
       .promo-card,
       .promo-logo-frame,
+      .promo-illustration-frame,
       .promo-cta {
         transition: none;
       }
 
       .promo-card:hover,
       .promo-card:hover .promo-logo-frame,
+      .promo-card:hover .promo-illustration-frame,
       .promo-cta:hover,
       .promo-cta:active {
         transform: none;
@@ -894,6 +932,104 @@
       font-size: 0.92rem;
     }
 
+    /* Compact Free Online Tutorial Explanation */
+    .tutorial-explainer {
+      background: #FFFDF7;
+      border: var(--border-w) solid var(--ink);
+      border-radius: 22px;
+      box-shadow: var(--shadow-md);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      scroll-margin-top: 96px;
+    }
+
+    .tutorial-explainer-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px 24px;
+      align-items: start;
+    }
+
+    .tutorial-explainer h3 {
+      font-size: clamp(1.38rem, 2.4vw, 1.75rem);
+      line-height: 1.15;
+      color: var(--ink);
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+
+    .tutorial-explainer h3:focus {
+      outline: none;
+    }
+
+    .tutorial-explainer h3:focus-visible {
+      outline: 3px solid var(--coral);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+
+    .tutorial-explainer-lead {
+      font-size: 0.96rem;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .tutorial-explainer-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      background: #FFEDD5;
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      padding: 9px 13px;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+
+    .tutorial-explainer-meta strong {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .tutorial-bullets-box {
+      background: var(--bg-paper);
+      border: 2.5px solid var(--ink);
+      border-radius: 16px;
+      padding: 13px 16px;
+    }
+
+    .tutorial-bullets-title {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .tutorial-bullets {
+      list-style: none;
+      display: grid;
+      gap: 5px;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    .tutorial-bullets li {
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .tutorial-bullets li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      color: var(--lime-dark);
+    }
+
     /* Paid Conversion Strip */
     .conversion-strip {
       background: var(--ink);
@@ -906,6 +1042,7 @@
       grid-template-columns: 1.1fr 0.9fr;
       gap: 24px;
       align-items: center;
+      scroll-margin-top: 96px;
     }
 
     .conversion-strip h2 {
@@ -946,40 +1083,170 @@
     }
 
     .form-field {
-      margin-bottom: 11px;
+      margin-bottom: 12px;
     }
 
-    .form-field label {
+    .form-field label,
+    .form-fieldset legend {
       display: block;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.86rem;
       margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .form-fieldset {
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      padding: 8px 10px 10px;
+      background: var(--bg-paper);
+      margin-bottom: 12px;
+    }
+
+    .form-fieldset legend {
+      padding: 0 6px;
+      margin-bottom: 4px;
+    }
+
+    .interest-radio-stack {
+      display: grid;
+      gap: 7px;
+    }
+
+    .interest-choice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 4px 10px;
+      border: 2px solid rgba(20, 20, 20, 0.24);
+      border-radius: 10px;
+      background: #FFFFFF;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .interest-choice:has(input:checked) {
+      border-color: var(--ink);
+      background: #ECFCCB;
+    }
+
+    .interest-choice-tutorial:has(input:checked) {
+      background: #FEF08A;
+    }
+
+    .interest-choice input[type="radio"] {
+      width: 19px;
+      height: 19px;
+      flex-shrink: 0;
+      accent-color: var(--ink);
+      cursor: pointer;
+    }
+
+    .interest-choice label {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.25;
+      cursor: pointer;
+      flex: 1;
     }
 
     .form-field input,
     .form-field select {
       width: 100%;
       padding: 10px 12px;
+      min-height: 44px;
       border: 2.5px solid var(--ink);
       border-radius: 12px;
-      font-family: inherit;
-      font-size: 0.95rem;
+      font: inherit;
+      font-size: max(1rem, 1em);
+      color: var(--ink);
       background: var(--bg-paper);
     }
 
+    .form-field :is(input, select):is(:user-invalid, .is-field-invalid) {
+      border-color: #BE123C;
+      background-color: #FFF1F2;
+    }
+
     .form-error {
-      color: #BE123C;
-      font-size: 0.83rem;
+      color: #9F1239;
+      background: #FFF1F2;
+      border: 2px solid #BE123C;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.84rem;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .form-error[hidden],
+    .form-success[hidden] {
       display: none;
+    }
+
+    .form-submit-btn {
+      width: 100%;
+      min-height: 48px;
+      background: var(--lime);
+      padding: 12px;
+      font-size: 1rem;
+    }
+
+    .form-submit-btn:disabled {
+      opacity: 0.72;
+      cursor: wait;
+      transform: none;
     }
 
     .form-success {
       background: #ECFCCB;
       border: 2.5px solid var(--ink);
       border-radius: 14px;
-      padding: 14px;
+      padding: 15px;
+      color: var(--ink);
+    }
+
+    .form-success p {
+      color: var(--ink);
+      font-size: 0.92rem;
+      margin-bottom: 12px;
+    }
+
+    .form-success-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .form-edit-btn {
+      width: 100%;
+      min-height: 44px;
+      background: #FFFDF7;
+      padding: 9px 12px;
+      font-size: 0.9rem;
+    }
+
+    @media (pointer: coarse) {
+      .interest-choice,
+      .form-field input,
+      .form-field select,
+      .form-submit-btn,
+      .form-edit-btn {
+        min-height: 48px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .tutorial-explainer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tutorial-explainer,
+      .conversion-strip {
+        scroll-margin-top: 136px;
+      }
     }
 
     /* Footer */
@@ -1842,6 +2109,64 @@
             </svg>
           </a>
         </article>
+
+        <article class="promo-card promo-card-tutorial" id="teacherTutorialPromoCard" data-promo-card="teacher-tutorial"
+          aria-labelledby="teacher-tutorial-promo-heading">
+          <div>
+            <div class="groove-top">
+              <span class="groove-num promo-badge-bonus">BONUS</span>
+              <span class="groove-tag promo-badge-teachers">For Teachers</span>
+            </div>
+            <div class="promo-art promo-art-tutorial">
+              <div class="promo-illustration-frame">
+                <svg class="promo-tutorial-svg" width="158" height="108" viewBox="0 0 158 108" fill="none"
+                  aria-hidden="true" focusable="false">
+                  <!-- Soft comic ground shadow -->
+                  <ellipse cx="79" cy="98" rx="58" ry="6.5" fill="rgba(20,20,20,0.16)" />
+                  <!-- Comic sparkles (top-left & top-right) -->
+                  <path d="M21 16L23.2 21.8L29 24L23.2 26.2L21 32L18.8 26.2L13 24L18.8 21.8L21 16Z"
+                    fill="#FACC15" stroke="#141414" stroke-width="2.4" stroke-linejoin="round" />
+                  <path d="M138 12L140 16.5L144.5 18.5L140 20.5L138 25L136 20.5L131.5 18.5L136 16.5L138 12Z"
+                    fill="#FFFDF7" stroke="#141414" stroke-width="2.4" stroke-linejoin="round" />
+                  <circle cx="143" cy="36" r="3.4" fill="#FB923C" stroke="#141414" stroke-width="2" />
+                  <circle cx="15" cy="43" r="3" fill="#A3E635" stroke="#141414" stroke-width="2" />
+                  <!-- Laptop lid outer yellow shell -->
+                  <rect x="33" y="16" width="92" height="63" rx="9" fill="#FACC15" stroke="#141414"
+                    stroke-width="3.8" stroke-linejoin="round" />
+                  <!-- Subtle lid highlight strip -->
+                  <path d="M40 20.5H118" stroke="#FEF08A" stroke-width="2.2" stroke-linecap="round" />
+                  <!-- Webcam dot -->
+                  <circle cx="79" cy="21" r="1.9" fill="#141414" />
+                  <!-- Cream laptop screen -->
+                  <rect x="41" y="25" width="76" height="46" rx="5" fill="#FFFDF7" stroke="#141414"
+                    stroke-width="3.2" stroke-linejoin="round" />
+                  <!-- Screen decorative progress bar -->
+                  <rect x="48" y="63" width="62" height="4" rx="2" fill="#FFEDD5" stroke="#141414" stroke-width="1.6" />
+                  <rect x="48" y="63" width="28" height="4" rx="2" fill="#FB923C" />
+                  <!-- Prominent comic play badge & triangle -->
+                  <circle cx="79" cy="44" r="14.5" fill="#A3E635" stroke="#141414" stroke-width="3.2" />
+                  <path d="M74.8 37.6L86.8 44L74.8 50.4V37.6Z" fill="#141414" stroke="#141414"
+                    stroke-width="1.8" stroke-linejoin="round" />
+                  <!-- Laptop keyboard deck & base -->
+                  <path d="M22 79H136L142 90C142.8 91.8 141.5 94 139.5 94H18.5C16.5 94 15.2 91.8 16 90L22 79Z"
+                    fill="#FACC15" stroke="#141414" stroke-width="3.8" stroke-linejoin="round" />
+                  <path d="M23 89.5H135" stroke="#EAB308" stroke-width="3" stroke-linecap="round" />
+                  <!-- Center thumb notch -->
+                  <rect x="66" y="79.5" width="26" height="4.8" rx="2.4" fill="#FFFDF7" stroke="#141414"
+                    stroke-width="2.2" />
+                </svg>
+              </div>
+              <span class="promo-brand promo-brand-tutorial">FREE ONLINE TUTORIAL</span>
+            </div>
+            <h3 class="groove-title" id="teacher-tutorial-promo-heading">Need a Little Help?</h3>
+            <p class="groove-desc">Teachers! Need help leading the dance warm-up? We'll help you learn the moves, step by step.</p>
+          </div>
+          <a href="#teacher-tutorial-section" class="comic-btn groove-btn promo-cta" id="requestTutorialPromoCta"
+            data-select-interest="Free Online Dance Tutorial">
+            <span>Request a Free Tutorial</span>
+            <span aria-hidden="true">↓</span>
+          </a>
+        </article>
       </div>
     </section>
 
@@ -1881,7 +2206,37 @@
         </div>
       </div>
 
-      <!-- Paid Workshop Conversion Strip -->
+      <!-- Compact Free Online Tutorial Explanation -->
+      <div class="tutorial-explainer" id="teacher-tutorial-section" aria-labelledby="teacher-tutorial-heading">
+        <div class="tutorial-explainer-grid">
+          <div>
+            <span class="tag-chip" style="background: #FFEDD5; color: var(--ink);">
+              Free Online Tutorial · For Teachers
+            </span>
+            <h3 id="teacher-tutorial-heading" tabindex="-1">Teach Dance with Confidence.</h3>
+            <p class="tutorial-explainer-lead">
+              <strong>No dance experience? No problem!</strong> Our free online tutorial helps teachers feel comfortable
+              leading the H4 dance warm-up in their classrooms.
+            </p>
+            <div class="tutorial-explainer-meta">
+              <strong>Request Your Free Online Tutorial</strong>
+              <span>Designed for educators. No dance experience required.</span>
+            </div>
+          </div>
+
+          <div class="tutorial-bullets-box">
+            <p class="tutorial-bullets-title">We'll help you:</p>
+            <ul class="tutorial-bullets">
+              <li>Learn the 10 foundational dance moves.</li>
+              <li>Understand how to count and move to music.</li>
+              <li>Put together a simple classroom warm-up.</li>
+              <li>Build confidence leading your students.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paid Workshop & Teacher Request Conversion Strip -->
       <div class="conversion-strip" id="book-workshop">
         <div>
           <span class="tag-chip" style="background: var(--tangerine); color: var(--ink); margin-bottom: 10px;">
@@ -1907,34 +2262,64 @@
         </div>
 
         <div class="booking-card" id="bookingCard">
-          <h3>Request a School Date &amp; Quote</h3>
-          <form id="workshopForm" novalidate>
+          <h3 id="bookingFormHeading">Request a Workshop or Free Tutorial</h3>
+          <form id="workshopForm" method="POST" action="" data-endpoint="" aria-labelledby="bookingFormHeading" novalidate>
+            <fieldset class="form-fieldset" id="inquiryTypeFieldset">
+              <legend>How can H4 help? <span aria-hidden="true">*</span></legend>
+              <div class="interest-radio-stack">
+                <div class="interest-choice">
+                  <input type="radio" id="interestWorkshop" name="inquiryType" value="Full-Day School Workshop"
+                    checked required />
+                  <label for="interestWorkshop">Full-Day School Workshop</label>
+                </div>
+                <div class="interest-choice interest-choice-tutorial">
+                  <input type="radio" id="interestFreeTutorial" name="inquiryType" value="Free Online Dance Tutorial" />
+                  <label for="interestFreeTutorial">Free Online Dance Tutorial</label>
+                </div>
+              </div>
+            </fieldset>
+
             <div class="form-field">
-              <label for="teacherName">Teacher or Principal Name *</label>
-              <input type="text" id="teacherName" name="teacherName" placeholder="e.g., Ms. Jordan Lee" required />
+              <label for="teacherName">Teacher or Principal Name <span aria-hidden="true">*</span></label>
+              <input type="text" id="teacherName" name="teacherName" placeholder="e.g., Ms. Jordan Lee"
+                autocomplete="name" enterkeyhint="next" required />
             </div>
             <div class="form-field">
-              <label for="schoolName">School Name &amp; Board *</label>
+              <label for="schoolName">School Name &amp; Board <span aria-hidden="true">*</span></label>
               <input type="text" id="schoolName" name="schoolName" placeholder="e.g., St. Mother Teresa / TCDSB"
-                required />
+                autocomplete="organization" enterkeyhint="next" required />
             </div>
             <div class="form-field">
-              <label for="targetMonth">Preferred Month *</label>
+              <label for="targetMonth" id="targetMonthLabel">Preferred Month</label>
               <select id="targetMonth" name="targetMonth">
                 <option value="January 2027">January 2027</option>
                 <option value="February 2027">February 2027</option>
                 <option value="March 2027">March 2027</option>
                 <option value="Spring 2027 (April–June)">Spring 2027 (April–June)</option>
+                <option value="Flexible / Anytime">Flexible / Anytime</option>
               </select>
             </div>
-            <div class="form-error" id="formError" role="alert">
-              Please enter both your name and school name so we can prepare your quote.
+            <div class="form-error" id="formError" role="alert" hidden>
+              Please enter both your name and school name so we can follow up on your request.
             </div>
-            <button type="submit" class="comic-btn"
-              style="width: 100%; background: var(--lime); padding: 12px; font-size: 1.02rem;">
+            <button type="submit" class="comic-btn form-submit-btn" id="workshopSubmitBtn">
               Teachers &amp; Principals: Request School Dates →
             </button>
           </form>
+
+          <div class="form-success" id="formReadyPanel" role="status" tabindex="-1" hidden>
+            <h3 id="formReadyTitle" style="margin-bottom: 6px;"></h3>
+            <p id="formReadyBody"></p>
+            <div class="form-success-actions">
+              <a href="mailto:info@h4community.org" id="formMailtoLink" class="comic-btn"
+                style="width: 100%; background: var(--lime); padding: 11px; min-height: 48px;">
+                ✉️ Open Email to info@h4community.org
+              </a>
+              <button type="button" class="comic-btn form-edit-btn" id="formEditBtn">
+                ← Edit Request
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -3836,40 +4221,255 @@
         }
       });
 
+          const FREE_TUTORIAL_INTEREST = "Free Online Dance Tutorial";
+          const WORKSHOP_INTEREST = "Full-Day School Workshop";
           const workshopForm = document.getElementById("workshopForm");
           const formError = document.getElementById("formError");
-          const bookingCard = document.getElementById("bookingCard");
+          const teacherNameInput = document.getElementById("teacherName");
+          const schoolNameInput = document.getElementById("schoolName");
+          const targetMonthSelect = document.getElementById("targetMonth");
+          const targetMonthLabel = document.getElementById("targetMonthLabel");
+          const workshopSubmitBtn = document.getElementById("workshopSubmitBtn");
+          const formReadyPanel = document.getElementById("formReadyPanel");
+          const formReadyTitle = document.getElementById("formReadyTitle");
+          const formReadyBody = document.getElementById("formReadyBody");
+          const formMailtoLink = document.getElementById("formMailtoLink");
+          const formEditBtn = document.getElementById("formEditBtn");
+          const inquiryRadios = Array.from(workshopForm.querySelectorAll('input[name="inquiryType"]'));
+          const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
+          const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
+          const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
+          let isTeacherFormSubmitting = false;
 
-          workshopForm.addEventListener("submit", (e) => {
+          function getSelectedInquiryType() {
+            const checked = inquiryRadios.find((r) => r.checked);
+            return checked ? checked.value : WORKSHOP_INTEREST;
+          }
+
+          function getTeacherFormEndpoint() {
+            if (window.H4_TEACHER_FORM_CONFIG && typeof window.H4_TEACHER_FORM_CONFIG.endpoint === "string" && window.H4_TEACHER_FORM_CONFIG.endpoint.trim()) {
+              return window.H4_TEACHER_FORM_CONFIG.endpoint.trim();
+            }
+            return (workshopForm.getAttribute("data-endpoint") || "").trim();
+          }
+
+          function syncInquiryFormUI() {
+            const isTutorial = getSelectedInquiryType() === FREE_TUTORIAL_INTEREST;
+            if (targetMonthLabel) {
+              targetMonthLabel.textContent = isTutorial ? "Preferred Timing / Month" : "Preferred Month";
+            }
+            if (workshopSubmitBtn && !isTeacherFormSubmitting) {
+              workshopSubmitBtn.textContent = isTutorial
+                ? "Request Your Free Online Tutorial →"
+                : "Teachers & Principals: Request School Dates →";
+            }
+          }
+
+          function clearTeacherFormError() {
+            formError.hidden = true;
+            teacherNameInput.removeAttribute("aria-invalid");
+            teacherNameInput.classList.remove("is-field-invalid");
+            schoolNameInput.removeAttribute("aria-invalid");
+            schoolNameInput.classList.remove("is-field-invalid");
+          }
+
+          function showTeacherFormError(message, focusEl) {
+            formError.textContent = message;
+            formError.hidden = false;
+            if (focusEl && typeof focusEl.focus === "function") {
+              focusEl.focus();
+            }
+          }
+
+          function selectTeacherInterest(interestValue) {
+            const match = inquiryRadios.find((r) => r.value === interestValue);
+            if (match) {
+              match.checked = true;
+            }
+            if (formReadyPanel && !formReadyPanel.hidden) {
+              formReadyPanel.hidden = true;
+              workshopForm.hidden = false;
+            }
+            syncInquiryFormUI();
+          }
+
+          function buildTeacherInquiryPayload() {
+            return {
+              interest: getSelectedInquiryType(),
+              teacherName: teacherNameInput.value.trim(),
+              schoolName: schoolNameInput.value.trim(),
+              targetMonth: targetMonthSelect.value,
+              source: "dance.h4community.org"
+            };
+          }
+
+          function buildTeacherMailtoHref(payload) {
+            const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
+            const subject = isTutorial
+              ? `H4 Free Online Dance Tutorial Request — ${payload.schoolName}`
+              : `H4 Full-Day Dance Workshop Inquiry — ${payload.schoolName} (${payload.targetMonth})`;
+            const intro = isTutorial
+              ? "I'd love to request a Free Online Dance Tutorial to help lead the H4 dance warm-up in my classroom."
+              : "We'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.";
+            const body =
+              `Hi H4 Community Team,\n\n${intro}\n\n` +
+              `Interest: ${payload.interest}\n` +
+              `Contact Name: ${payload.teacherName}\n` +
+              `School / Board: ${payload.schoolName}\n` +
+              `${isTutorial ? "Preferred Timing" : "Preferred Month"}: ${payload.targetMonth}\n\n` +
+              `Sent from ${payload.source}`;
+            return `mailto:info@h4community.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          }
+
+          function showTeacherConfirmation(payload, confirmedByBackend) {
+            const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
+            workshopForm.hidden = true;
+            formReadyPanel.hidden = false;
+            if (confirmedByBackend) {
+              formReadyTitle.textContent = isTutorial
+                ? "✅ Tutorial Request Received!"
+                : `✅ Request Saved for ${payload.schoolName}!`;
+              formReadyBody.textContent = isTutorial
+                ? "Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
+                : `Thanks, ${payload.teacherName}! H4 received your ${payload.interest} request for ${payload.schoolName} and will follow up soon.`;
+              formMailtoLink.hidden = true;
+            } else {
+              formReadyTitle.textContent = isTutorial
+                ? "✅ Free Tutorial Request Ready!"
+                : `✅ Request Ready for ${payload.schoolName}!`;
+              formReadyBody.textContent = isTutorial
+                ? "Click below to send your pre-filled Free Online Dance Tutorial request to info@h4community.org. Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
+                : "Click below to send your pre-filled date request straight to info@h4community.org.";
+              formMailtoLink.href = buildTeacherMailtoHref(payload);
+              formMailtoLink.hidden = false;
+            }
+            formReadyPanel.focus();
+          }
+
+          inquiryRadios.forEach((radio) => {
+            radio.addEventListener("change", () => {
+              syncInquiryFormUI();
+              clearTeacherFormError();
+            });
+          });
+
+          [teacherNameInput, schoolNameInput].forEach((input) => {
+            input.addEventListener("input", () => {
+              if (input.value.trim()) {
+                input.removeAttribute("aria-invalid");
+                input.classList.remove("is-field-invalid");
+              }
+              if (teacherNameInput.value.trim() && schoolNameInput.value.trim()) {
+                formError.hidden = true;
+              }
+            });
+          });
+
+          if (formEditBtn) {
+            formEditBtn.addEventListener("click", () => {
+              formReadyPanel.hidden = true;
+              workshopForm.hidden = false;
+              syncInquiryFormUI();
+              teacherNameInput.focus();
+            });
+          }
+
+          if (requestTutorialPromoCta && teacherTutorialSection) {
+            requestTutorialPromoCta.addEventListener("click", (e) => {
+              e.preventDefault();
+              selectTeacherInterest(FREE_TUTORIAL_INTEREST);
+              const topbar = document.querySelector(".topbar");
+              const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
+              const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
+              window.scrollTo({
+                top: targetTop,
+                behavior: isMotionReduced() ? "auto" : "smooth"
+              });
+              if (teacherTutorialHeading && typeof teacherTutorialHeading.focus === "function") {
+                teacherTutorialHeading.focus({ preventScroll: true });
+              }
+            });
+          }
+
+          syncInquiryFormUI();
+
+          workshopForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const teacher = document.getElementById("teacherName").value.trim();
-            const school = document.getElementById("schoolName").value.trim();
-            const month = document.getElementById("targetMonth").value;
+            if (isTeacherFormSubmitting) return;
+            clearTeacherFormError();
 
-            if (!teacher || !school) {
-              formError.style.display = "block";
+            const payload = buildTeacherInquiryPayload();
+            let firstInvalid = null;
+            if (!payload.teacherName) {
+              teacherNameInput.setAttribute("aria-invalid", "true");
+              teacherNameInput.classList.add("is-field-invalid");
+              firstInvalid = firstInvalid || teacherNameInput;
+            }
+            if (!payload.schoolName) {
+              schoolNameInput.setAttribute("aria-invalid", "true");
+              schoolNameInput.classList.add("is-field-invalid");
+              firstInvalid = firstInvalid || schoolNameInput;
+            }
+            if (firstInvalid) {
+              showTeacherFormError(
+                "Please enter both your name and school name so we can follow up on your request.",
+                firstInvalid
+              );
               return;
             }
-            formError.style.display = "none";
 
-            const subject = encodeURIComponent(`H4 Full-Day Dance Workshop Inquiry — ${school} (${month})`);
-            const body = encodeURIComponent(
-              `Hi H4 Community Team,\n\nWe'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.\n\nContact Name: ${teacher}\nSchool / Board: ${school}\nPreferred Month: ${month}\n\nSent from dance.h4community.org`
-            );
-            const mailtoHref = `mailto:info@h4community.org?subject=${subject}&body=${body}`;
+            const endpoint = getTeacherFormEndpoint();
+            if (!endpoint) {
+              showTeacherConfirmation(payload, false);
+              return;
+            }
 
-            bookingCard.innerHTML = `
-          <div class="form-success" role="status">
-            <h3 style="margin-bottom: 6px;">✅ Request Ready for ${school}!</h3>
-            <p style="font-size: 0.92rem; margin-bottom: 12px;">
-              Click below to send your pre-filled date request straight to <strong>info@h4community.org</strong>, or visit <a href="https://h4community.org" target="_blank" rel="noopener noreferrer" style="font-weight: 700;">h4community.org</a>.
-            </p>
-            <a href="${mailtoHref}" class="comic-btn" style="width: 100%; background: var(--lime); padding: 11px; margin-bottom: 8px;">
-              ✉️ Open Email to info@h4community.org
-            </a>
-          </div>
-        `;
+            isTeacherFormSubmitting = true;
+            workshopSubmitBtn.disabled = true;
+            workshopSubmitBtn.setAttribute("aria-busy", "true");
+            workshopSubmitBtn.textContent = "Sending Request...";
+
+            try {
+              const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+              });
+              let data = null;
+              try {
+                data = await response.json();
+              } catch (_) {
+                data = null;
+              }
+              if (!response.ok || !data || data.ok !== true || data.saved !== true) {
+                const msg = (data && data.error)
+                  ? data.error
+                  : "We could not confirm your request right now. Your details are still below—please try again.";
+                showTeacherFormError(msg, workshopSubmitBtn);
+                return;
+              }
+              showTeacherConfirmation(payload, true);
+            } catch (_) {
+              showTeacherFormError(
+                "Connection error while sending your request. Your details are still below—please try again.",
+                workshopSubmitBtn
+              );
+            } finally {
+              isTeacherFormSubmitting = false;
+              workshopSubmitBtn.disabled = false;
+              workshopSubmitBtn.setAttribute("aria-busy", "false");
+              syncInquiryFormUI();
+            }
           });
+
+          window.__h4TeacherForm = {
+            FREE_TUTORIAL_INTEREST,
+            WORKSHOP_INTEREST,
+            getSelectedInquiryType,
+            selectTeacherInterest,
+            buildTeacherInquiryPayload,
+            buildTeacherMailtoHref
+          };
 
           // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
           window.__h4DpaSync = {
