@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H4 DPA — Developer Beatgrid Calibrator &amp; Audible Verifier</title>
+  <style>
+    :root {
+      --bg: #0f1218;
+      --panel: #171c26;
+      --panel2: #121620;
+      --border: #2c3547;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #a3e635;
+      --warn: #fb923c;
+      --danger: #f43f5e;
+      --blue: #38bdf8;
+      --purple: #c084fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 18px;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-size: 1.35rem; }
+    .sub { color: var(--muted); font-size: 0.88rem; margin: 0 0 14px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .row + .row { margin-top: 9px; }
+    select, input[type="number"], button {
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.86rem;
+    }
+    button { cursor: pointer; font-weight: 600; }
+    button:hover { border-color: var(--blue); }
+    button.primary { background: var(--accent); color: #111; border-color: var(--accent); }
+    button.warn { background: #3b2314; border-color: var(--warn); color: #fed7aa; }
+    button.blue { background: #14304a; border-color: var(--blue); color: #bae6fd; }
+    .counter-hero {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .big-num {
+      height: 112px;
+      border-radius: 14px;
+      background: var(--panel2);
+      border: 3px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.4rem;
+      font-weight: 900;
+      line-height: 1;
+      transition: transform 0.03s ease-out, background-color 0.03s ease-out;
+    }
+    .big-num .big-sub {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+    .big-num.is-1 { background: var(--accent); color: #111; border-color: #d9f99d; transform: scale(1.03); }
+    .big-num.is-5 { background: var(--blue); color: #111; border-color: #bae6fd; transform: scale(1.02); }
+    .big-num.is-snare { background: var(--warn); color: #111; border-color: #fed7aa; }
+    .big-num.is-other { background: #334155; color: #fff; border-color: #64748b; }
+    .grid-8 {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+    }
+    .beat {
+      text-align: center;
+      padding: 18px 0;
+      border-radius: 10px;
+      background: var(--panel2);
+      border: 2px solid var(--border);
+      font-size: 1.45rem;
+      font-weight: 800;
+      transition: transform 0.025s ease-out, background-color 0.025s ease-out;
+    }
+    .beat.is-1 { border-color: var(--accent); }
+    .beat.is-5 { border-color: var(--blue); }
+    .beat.is-snare { border-style: dashed; }
+    .beat.on { background: #475569; color: #fff; transform: scale(1.06); }
+    .beat.is-1.on { background: var(--accent); color: #111; }
+    .beat.is-5.on { background: var(--blue); color: #111; }
+    .beat.is-snare.on { background: var(--warn); color: #111; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+    .wave-wrap { position: relative; margin-top: 8px; }
+    canvas {
+      display: block;
+      width: 100%;
+      background: #0b0e14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    #overviewCanvas { height: 54px; cursor: pointer; margin-bottom: 8px; }
+    #zoomCanvas { height: 168px; cursor: pointer; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+    textarea {
+      width: 100%;
+      min-height: 76px;
+      background: #0b0d12;
+      color: #a3e635;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.8rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: #243045;
+      color: var(--blue);
+    }
+    .badge.pw { background: #3f2a15; color: var(--warn); }
+    .badge.ok { background: #1e3a1e; color: var(--accent); }
+    .badge.bad { background: #4c1522; color: #fda4af; }
+    .err { color: var(--danger); font-weight: 700; }
+    label { font-size: 0.82rem; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+    .stat-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 8px 10px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    @media (max-width: 720px) {
+      .counter-hero { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>H4 DPA — Developer Beatgrid Calibrator &amp; Audible Verifier (Dev-Only)</h1>
+    <p class="sub">
+      Uses the exact production <code>getSongBeatsElapsed()</code> formula, a hardware-scheduled Web Audio lookahead metronome (never rAF-triggered),
+      and live browser-decoded 1–5 kHz snare transient detection overlaid on the audio waveform.
+      Serve from repo root (e.g. <code>python -m http.server 8000</code>) and open <code>/scripts/beatgrid-calibrator.html</code>.
+    </p>
+
+    <div id="loadErr" class="card err" hidden></div>
+
+    <!-- Transport & Playback Mode -->
+    <div class="card">
+      <div class="row">
+        <select id="trackSelect" style="min-width: 340px;"></select>
+        <span id="trackBadge" class="badge">CONST</span>
+        <button id="playBtn" class="primary">▶ Play</button>
+        <button id="pauseBtn">⏸ Pause</button>
+        <button id="restartBtn">⏮ 0:00</button>
+        <span id="timeReadout" class="mono" style="margin-left:auto;">t=0.000s · beat=-- · rate=1.000×</span>
+      </div>
+      <div class="row">
+        <label><input type="radio" name="rateMode" value="tier" checked /> Normalized to Tier BPM (production)</label>
+        <label><input type="radio" name="rateMode" value="native" /> Native exactBpm (1.00×)</label>
+        <label><input type="checkbox" id="clickToggle" checked /> Scheduled Metronome (1=Hi, 5=Mid, 2/4/6/8=Rim, 3/7=Soft)</label>
+        <label>Click <input type="range" id="clickVol" min="0" max="1" step="0.05" value="0.6" style="width:74px;" /></label>
+        <label>Music <input type="range" id="musicVol" min="0" max="1" step="0.05" value="0.75" style="width:74px;" /></label>
+      </div>
+      <div class="row">
+        <span class="mono" style="color:var(--muted);">Section test:</span>
+        <button data-jump="0">Start (0%)</button>
+        <button data-jump="0.15">Early (15%)</button>
+        <button data-jump="0.50">Middle (50%)</button>
+        <button data-jump="0.80">Late (80%)</button>
+        <button data-jump="0.90">End (90%)</button>
+        <span class="mono" style="color:var(--muted); margin-left: 10px;">Device visual offset:</span>
+        <button data-vis-ms="-10">-10ms</button>
+        <span id="visOffsetReadout" class="mono">0ms</span>
+        <button data-vis-ms="10">+10ms</button>
+        <button id="resetVisBtn">0ms</button>
+      </div>
+    </div>
+
+    <!-- Large Visual 1-8 Counter + Waveform & Snare Overlay -->
+    <div class="card">
+      <div class="counter-hero">
+        <div id="bigCounter" class="big-num">
+          <span id="bigNumText">--</span>
+          <span id="bigSubText" class="big-sub">READY</span>
+        </div>
+        <div class="grid-8" id="beatGrid">
+          <div class="beat is-1">1</div>
+          <div class="beat is-snare">2</div>
+          <div class="beat">3</div>
+          <div class="beat is-snare">4</div>
+          <div class="beat is-5">5</div>
+          <div class="beat is-snare">6</div>
+          <div class="beat">7</div>
+          <div class="beat is-snare">8</div>
+        </div>
+      </div>
+
+      <div class="wave-wrap">
+        <canvas id="overviewCanvas" width="1080" height="54" title="Click anywhere to seek"></canvas>
+        <canvas id="zoomCanvas" width="1080" height="168" title="Scrolling high-res waveform: predicted beats vs independently detected snare transients"></canvas>
+        <div class="legend">
+          <span><i class="dot" style="background:#a3e635;"></i> Count 1 (Downbeat)</span>
+          <span><i class="dot" style="background:#38bdf8;"></i> Count 5 (Mid-phrase)</span>
+          <span><i class="dot" style="background:#fb923c;"></i> Counts 2, 4, 6, 8 (Backbeat)</span>
+          <span><i class="dot" style="background:#64748b;"></i> Counts 3, 7</span>
+          <span><i class="dot" style="background:#f43f5e;"></i> Independently Detected Snare/Clap Transient</span>
+          <span><i class="dot" style="background:#c084fc;"></i> Piecewise Anchor</span>
+        </div>
+        <div class="stat-strip mono" id="snareStats">Decoding audio waveform &amp; detecting independent 1–5 kHz snare transients...</div>
+      </div>
+    </div>
+
+    <!-- Fine Timing & Phrase Controls -->
+    <div class="card">
+      <div class="row">
+        <label>beatOffsetSec <input type="number" id="offsetInput" step="0.005" style="width:92px;" /></label>
+        <button data-nudge-ms="-50">-50ms</button>
+        <button data-nudge-ms="-25">-25ms</button>
+        <button data-nudge-ms="-10">-10ms</button>
+        <button data-nudge-ms="-5">-5ms</button>
+        <button data-nudge-ms="5">+5ms</button>
+        <button data-nudge-ms="10">+10ms</button>
+        <button data-nudge-ms="25">+25ms</button>
+        <button data-nudge-ms="50">+50ms</button>
+      </div>
+      <div class="row">
+        <label>exactBpm <input type="number" id="bpmInput" step="0.01" style="width:88px;" /></label>
+        <button data-nudge-bpm="-0.05">-0.05 BPM</button>
+        <button data-nudge-bpm="0.05">+0.05 BPM</button>
+        <button data-shift-beats="-1" class="blue">-1 Beat Phase</button>
+        <button data-shift-beats="1" class="blue">+1 Beat Phase</button>
+        <button data-shift-beats="4" class="warn">Flip Count 1 ↔ 5 (+4 Beats)</button>
+        <button id="tapOneBtn" class="warn">Set Count 1 Here</button>
+        <button id="resetTrackBtn">Reset Track</button>
+      </div>
+    </div>
+
+    <!-- Production Metadata Export -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; margin-bottom: 6px;">
+        <strong style="font-size:0.9rem;">Export Production Metadata (synchronized <code>beatOffsetSec</code> &amp; <code>beatAnchors</code>)</strong>
+        <div class="row">
+          <button id="copyLineBtn" class="primary">Copy Track Entry</button>
+          <button id="copyAllBtn">Copy Full SONGS Array</button>
+        </div>
+      </div>
+      <textarea id="exportBox" readonly></textarea>
+    </div>
+  </div>
+
+  <script>
+    (async function () {
+      const loadErr = document.getElementById("loadErr");
+      const trackSelect = document.getElementById("trackSelect");
+      const trackBadge = document.getElementById("trackBadge");
+      const offsetInput = document.getElementById("offsetInput");
+      const bpmInput = document.getElementById("bpmInput");
+      const exportBox = document.getElementById("exportBox");
+      const timeReadout = document.getElementById("timeReadout");
+      const snareStats = document.getElementById("snareStats");
+      const visOffsetReadout = document.getElementById("visOffsetReadout");
+      const bigCounter = document.getElementById("bigCounter");
+      const bigNumText = document.getElementById("bigNumText");
+      const bigSubText = document.getElementById("bigSubText");
+      const beatEls = Array.from(document.querySelectorAll("#beatGrid .beat"));
+      const clickToggle = document.getElementById("clickToggle");
+      const clickVol = document.getElementById("clickVol");
+      const musicVol = document.getElementById("musicVol");
+      const overviewCanvas = document.getElementById("overviewCanvas");
+      const zoomCanvas = document.getElementById("zoomCanvas");
+      const oCtx = overviewCanvas.getContext("2d");
+      const zCtx = zoomCanvas.getContext("2d");
+
+      let SONGS = [];
+      let ORIGINALS = [];
+      try {
+        const resp = await fetch("../index.html");
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const html = await resp.text();
+        const m = html.match(/const SONGS = (\[[\s\S]*?\]);/);
+        if (!m) throw new Error("Could not parse SONGS array from ../index.html");
+        SONGS = Function("return " + m[1])();
+        ORIGINALS = JSON.parse(JSON.stringify(SONGS));
+      } catch (e) {
+        loadErr.hidden = false;
+        loadErr.textContent = "Failed to load ../index.html (" + e.message + "). Run a local HTTP server from the repo root (e.g. python -m http.server 8000).";
+        return;
+      }
+
+      // Exact same production beat calculation as index.html
+      function getSongBeatsElapsed(song, timeSec) {
+        const anchors = song && song.beatAnchors;
+        if (anchors && anchors.length >= 2) {
+          if (timeSec <= anchors[0][0]) {
+            const dt = anchors[1][0] - anchors[0][0];
+            const db = anchors[1][1] - anchors[0][1];
+            return anchors[0][1] + (timeSec - anchors[0][0]) * (db / dt);
+          }
+          const last = anchors.length - 1;
+          if (timeSec >= anchors[last][0]) {
+            const dt = anchors[last][0] - anchors[last - 1][0];
+            const db = anchors[last][1] - anchors[last - 1][1];
+            return anchors[last][1] + (timeSec - anchors[last][0]) * (db / dt);
+          }
+          for (let i = 0; i < last; i++) {
+            const [t0, b0] = anchors[i];
+            const [t1, b1] = anchors[i + 1];
+            if (timeSec >= t0 && timeSec <= t1) {
+              return b0 + (timeSec - t0) * ((b1 - b0) / (t1 - t0));
+            }
+          }
+        }
+        return (timeSec - song.beatOffsetSec) * (song.exactBpm / 60);
+      }
+
+      // Exact inverse of getSongBeatsElapsed for lookahead audio scheduling & waveform rendering
+      function getSongTimeForBeat(song, beatIdx) {
+        const anchors = song && song.beatAnchors;
+        if (anchors && anchors.length >= 2) {
+          if (beatIdx <= anchors[0][1]) {
+            const dt = anchors[1][0] - anchors[0][0];
+            const db = anchors[1][1] - anchors[0][1];
+            return anchors[0][0] + (beatIdx - anchors[0][1]) * (dt / db);
+          }
+          const last = anchors.length - 1;
+          if (beatIdx >= anchors[last][1]) {
+            const dt = anchors[last][0] - anchors[last - 1][0];
+            const db = anchors[last][1] - anchors[last - 1][1];
+            return anchors[last][0] + (beatIdx - anchors[last][1]) * (dt / db);
+          }
+          for (let i = 0; i < last; i++) {
+            const [t0, b0] = anchors[i];
+            const [t1, b1] = anchors[i + 1];
+            if (beatIdx >= b0 && beatIdx <= b1) {
+              return t0 + (beatIdx - b0) * ((t1 - t0) / (b1 - b0));
+            }
+          }
+        }
+        return song.beatOffsetSec + beatIdx * (60 / song.exactBpm);
+      }
+
+      // Device visual sync offset (mirrors index.html localStorage key)
+      let visualOffsetMs = Number(localStorage.getItem("h4_dpa_visual_offset_ms") || "0");
+      if (!Number.isFinite(visualOffsetMs)) visualOffsetMs = 0;
+      function updateVisOffsetUI() {
+        visOffsetReadout.textContent = `${visualOffsetMs >= 0 ? "+" : ""}${visualOffsetMs}ms`;
+      }
+      updateVisOffsetUI();
+
+      const audio = new Audio();
+      audio.preload = "auto";
+      if ("preservesPitch" in audio) audio.preservesPitch = true;
+      if ("mozPreservesPitch" in audio) audio.mozPreservesPitch = true;
+      if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = true;
+
+      let ctx = null;
+      let clickBus = null;
+      const activeClickNodes = new Set();
+      const scheduledBeats = new Set();
+      let schedulerTimer = null;
+
+      let curIdx = 0;
+      let lastVisualBeat = -999;
+      let analysisSeq = 0;
+
+      // Decoded waveform & independently detected snare onset cache for current track
+      let trackAnalysis = {
+        id: null,
+        duration: 0,
+        peaks: null,       // Float32Array of 10ms RMS/peak amplitude bins for fast rendering
+        peakBinSec: 0.01,
+        snares: [],        // Array of independently detected snare attack timestamps (sec)
+      };
+
+      function ensureCtx() {
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === "suspended") ctx.resume().catch(() => {});
+        return ctx;
+      }
+
+      function getClickBus(c) {
+        if (!clickBus) {
+          clickBus = c.createGain();
+          clickBus.gain.setValueAtTime(1, c.currentTime);
+          clickBus.connect(c.destination);
+        }
+        return clickBus;
+      }
+
+      function cancelScheduledClicks() {
+        scheduledBeats.clear();
+        if (clickBus && ctx) {
+          try {
+            const now = ctx.currentTime;
+            clickBus.gain.cancelScheduledValues(now);
+            clickBus.gain.setValueAtTime(0, now);
+            clickBus.disconnect();
+          } catch (_) {}
+        }
+        clickBus = null;
+        activeClickNodes.forEach((n) => {
+          try { n.stop(); } catch (_) {}
+          try { n.disconnect(); } catch (_) {}
+        });
+        activeClickNodes.clear();
+      }
+
+      // Hardware-scheduled Web Audio metronome click (NOT rAF-triggered!)
+      function scheduleClickAt(c, beatInEight, when) {
+        if (!clickToggle.checked) return;
+        const t = Math.max(c.currentTime, when);
+        const bus = getClickBus(c);
+        const volBase = Number(clickVol.value);
+        if (volBase <= 0.001) return;
+
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+
+        let freq, amp, dur;
+        if (beatInEight === 0) {
+          // Count 1: distinct bright accent
+          osc.type = "triangle";
+          freq = 1568; // G6
+          amp = volBase * 0.95;
+          dur = 0.055;
+        } else if (beatInEight === 4) {
+          // Count 5: clear secondary accent
+          osc.type = "triangle";
+          freq = 1175; // D6
+          amp = volBase * 0.72;
+          dur = 0.048;
+        } else if (beatInEight % 2 === 1) {
+          // Counts 2, 4, 6, 8 (backbeat snares): crisp rim-click tone
+          osc.type = "sine";
+          freq = 880; // A5
+          amp = volBase * 0.50;
+          dur = 0.036;
+        } else {
+          // Counts 3, 7: soft pulse
+          osc.type = "sine";
+          freq = 622; // Eb5
+          amp = volBase * 0.30;
+          dur = 0.030;
+        }
+
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(Math.max(0.001, amp), t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(gain);
+        gain.connect(bus);
+        activeClickNodes.add(osc);
+        osc.onended = () => activeClickNodes.delete(osc);
+        osc.start(t);
+        osc.stop(t + dur + 0.008);
+      }
+
+      function runMetronomeScheduler() {
+        if (!ctx || ctx.state !== "running" || audio.paused || audio.readyState < 2 || !clickToggle.checked) return;
+        const s = curSong();
+        const rate = Number.isFinite(audio.playbackRate) && audio.playbackRate > 0 ? audio.playbackRate : 1;
+        const tAudioNow = audio.currentTime;
+        const tCtxNow = ctx.currentTime;
+        const lookaheadWallSec = 0.14;
+        const tAudioHorizon = tAudioNow + lookaheadWallSec * rate;
+
+        const bNow = getSongBeatsElapsed(s, tAudioNow);
+        const bEnd = getSongBeatsElapsed(s, tAudioHorizon);
+        const firstBeat = Math.max(0, Math.floor(bNow));
+        const lastBeat = Math.floor(bEnd);
+
+        // Clean old scheduled beat indices
+        for (const b of scheduledBeats) {
+          if (b < firstBeat - 4 || b > lastBeat + 8) scheduledBeats.delete(b);
+        }
+
+        for (let b = firstBeat; b <= lastBeat; b++) {
+          if (scheduledBeats.has(b)) continue;
+          const tBeatSong = getSongTimeForBeat(s, b);
+          const deltaWall = (tBeatSong - tAudioNow) / rate;
+          // Only schedule upcoming beats (within -12ms tolerance so we never burst stale beats)
+          if (deltaWall < -0.012) continue;
+          scheduledBeats.add(b);
+          const in8 = ((b % 8) + 8) % 8;
+          scheduleClickAt(ctx, in8, tCtxNow + deltaWall);
+        }
+      }
+
+      function startScheduler() {
+        if (schedulerTimer) clearInterval(schedulerTimer);
+        schedulerTimer = setInterval(runMetronomeScheduler, 25);
+        runMetronomeScheduler();
+      }
+
+      function stopScheduler() {
+        if (schedulerTimer) { clearInterval(schedulerTimer); schedulerTimer = null; }
+        cancelScheduledClicks();
+      }
+
+      // Independent browser-side 1-5 kHz snare/clap onset detector + waveform peak extractor
+      async function decodeAndAnalyzeTrack(song, seq) {
+        snareStats.textContent = "Decoding MP3 & independently detecting 1–5 kHz snare transients...";
+        try {
+          const resp = await fetch("../" + encodeURI(song.src));
+          if (!resp.ok || seq !== analysisSeq) return;
+          const ab = await resp.arrayBuffer();
+          if (seq !== analysisSeq) return;
+          const offCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 1, 48000);
+          const decoded = await offCtx.decodeAudioData(ab);
+          if (seq !== analysisSeq) return;
+
+          const sr = decoded.sampleRate;
+          const n = decoded.length;
+          const c0 = decoded.getChannelData(0);
+          const c1 = decoded.numberOfChannels > 1 ? decoded.getChannelData(1) : null;
+          const mono = new Float32Array(n);
+          if (c1) {
+            for (let i = 0; i < n; i++) mono[i] = 0.5 * (c0[i] + c1[i]);
+          } else {
+            mono.set(c0);
+          }
+
+          // 1) Waveform peak envelope at 10ms resolution for crisp canvas rendering
+          const binSamples = Math.max(1, Math.round(sr * 0.01));
+          const nBins = Math.ceil(n / binSamples);
+          const peaks = new Float32Array(nBins);
+          for (let b = 0; b < nBins; b++) {
+            const s0 = b * binSamples;
+            const s1 = Math.min(n, s0 + binSamples);
+            let mx = 0;
+            for (let i = s0; i < s1; i += 2) {
+              const a = Math.abs(mono[i]);
+              if (a > mx) mx = a;
+            }
+            peaks[b] = mx;
+          }
+
+          // 2) Independent 2nd-order Biquad Bandpass (fc=2400 Hz, Q=0.85 -> ~1.1-4.8 kHz snare crack!)
+          const fc = 2400;
+          const Q = 0.85;
+          const w0 = (2 * Math.PI * fc) / sr;
+          const alpha = Math.sin(w0) / (2 * Q);
+          const b0 = alpha, b1 = 0, b2 = -alpha;
+          const a0 = 1 + alpha, a1 = -2 * Math.cos(w0), a2 = 1 - alpha;
+          const nb0 = b0 / a0, nb2 = b2 / a0, na1 = a1 / a0, na2 = a2 / a0;
+
+          // Compute 2ms RMS envelope of bandpass signal at 2ms step (500 Hz envelope)
+          const step = Math.max(1, Math.round(sr * 0.002));
+          const nEnv = Math.floor(n / step);
+          const env = new Float32Array(nEnv);
+          let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+          for (let e = 0; e < nEnv; e++) {
+            let sq = 0;
+            const base = e * step;
+            for (let j = 0; j < step; j++) {
+              const x0 = mono[base + j];
+              const y0 = nb0 * x0 + nb2 * x2 - na1 * y1 - na2 * y2;
+              x2 = x1; x1 = x0; y2 = y1; y1 = y0;
+              sq += y0 * y0;
+            }
+            env[e] = Math.sqrt(sq / step);
+          }
+
+          // Causal transient novelty: env[i] - 1.2 * mean(env[i-22..i-4])
+          const nov = new Float32Array(nEnv);
+          for (let i = 22; i < nEnv; i++) {
+            let sum = 0;
+            for (let k = i - 22; k < i - 4; k++) sum += env[k];
+            const pre = sum / 18;
+            nov[i] = Math.max(0, env[i] - 1.2 * pre);
+          }
+
+          // Adaptive threshold (93rd percentile * 0.55)
+          const sorted = Float32Array.from(nov).sort();
+          const p93 = sorted[Math.floor(sorted.length * 0.93)] || 0.01;
+          const thr = p93 * 0.58;
+          const minGap = Math.round((0.68 * (60 / song.exactBpm)) / 0.002);
+
+          const snares = [];
+          let lastPk = -minGap;
+          for (let i = 3; i < nEnv - 3; i++) {
+            if (nov[i] < thr) continue;
+            if (nov[i] >= nov[i - 1] && nov[i] >= nov[i + 1] && nov[i] >= nov[i - 2] && nov[i] >= nov[i + 2]) {
+              if (i - lastPk >= minGap) {
+                // Walk back to 30% attack rise on env
+                const pkVal = env[i];
+                let lo = Math.max(0, i - 14);
+                let floorVal = pkVal;
+                for (let k = lo; k < i; k++) if (env[k] < floorVal) floorVal = env[k];
+                const riseThr = floorVal + 0.30 * (pkVal - floorVal);
+                let att = i;
+                while (att > lo && env[att] > riseThr) att--;
+                snares.push((att * step) / sr);
+                lastPk = i;
+              } else if (nov[i] > nov[lastPk]) {
+                // Replace weaker nearby peak
+                snares[snares.length - 1] = (i * step) / sr;
+                lastPk = i;
+              }
+            }
+          }
+
+          trackAnalysis = {
+            id: song.id,
+            duration: decoded.duration,
+            peaks,
+            peakBinSec: binSamples / sr,
+            snares,
+          };
+          updateSnareStats();
+          drawOverview();
+        } catch (err) {
+          snareStats.textContent = "Waveform decode unavailable (" + err.message + ")";
+        }
+      }
+
+      function updateSnareStats() {
+        const s = curSong();
+        if (trackAnalysis.id !== s.id || !trackAnalysis.snares.length) return;
+        const T = 60 / s.exactBpm;
+        const errs = [];
+        let bbCount = 0;
+        for (const ts of trackAnalysis.snares) {
+          const b = getSongBeatsElapsed(s, ts);
+          if (b < -0.5) continue;
+          const nr = Math.round(b);
+          const errMs = (b - nr) * T * 1000;
+          const mod4 = ((nr % 4) + 4) % 4;
+          if ((mod4 === 1 || mod4 === 3) && Math.abs(errMs) < 75) {
+            errs.push(errMs);
+            bbCount++;
+          }
+        }
+        if (!errs.length) {
+          snareStats.innerHTML = `<span class="badge bad">NO BACKBEAT MATCH</span> Detected ${trackAnalysis.snares.length} transients — check Beat Offset / ±1 Beat Phase!`;
+          return;
+        }
+        const absSorted = errs.map(Math.abs).sort((a, b) => a - b);
+        const sgnSorted = errs.slice().sort((a, b) => a - b);
+        const medAbs = absSorted[Math.floor(absSorted.length * 0.5)];
+        const p95Abs = absSorted[Math.min(absSorted.length - 1, Math.floor(absSorted.length * 0.95))];
+        const medSgn = sgnSorted[Math.floor(sgnSorted.length * 0.5)];
+        const cls = medAbs <= 15 ? "ok" : (medAbs <= 30 ? "pw" : "bad");
+        snareStats.innerHTML =
+          `<span class="badge ${cls}">INDEPENDENT SNARE CHECK</span> ` +
+          `Matched <strong>${bbCount}</strong> backbeat snares (counts 2,4,6,8) of ${trackAnalysis.snares.length} transients · ` +
+          `Median err: <strong>${medAbs.toFixed(1)} ms</strong> · P95: <strong>${p95Abs.toFixed(1)} ms</strong> · ` +
+          `Signed bias: <strong>${medSgn >= 0 ? "+" : ""}${medSgn.toFixed(1)} ms</strong>`;
+      }
+
+      function drawOverview() {
+        const w = overviewCanvas.width, h = overviewCanvas.height;
+        oCtx.clearRect(0, 0, w, h);
+        const s = curSong();
+        const dur = trackAnalysis.duration || audio.duration || 1;
+        const peaks = trackAnalysis.peaks;
+        if (peaks) {
+          oCtx.fillStyle = "#334155";
+          const mid = h / 2;
+          for (let x = 0; x < w; x++) {
+            const idx = Math.min(peaks.length - 1, Math.floor((x / w) * peaks.length));
+            const amp = peaks[idx] * (h * 0.44);
+            oCtx.fillRect(x, mid - amp, 1, Math.max(1, amp * 2));
+          }
+        }
+        // Piecewise anchors
+        if (s.beatAnchors && s.beatAnchors.length) {
+          oCtx.fillStyle = "#c084fc";
+          for (const [ta] of s.beatAnchors) {
+            const x = (ta / dur) * w;
+            oCtx.fillRect(x - 1, 0, 2, h);
+          }
+        }
+        // Playhead
+        const px = (audio.currentTime / dur) * w;
+        oCtx.fillStyle = "#ffffff";
+        oCtx.fillRect(px - 1, 0, 2, h);
+      }
+
+      function drawZoomWaveform(tNow) {
+        const w = zoomCanvas.width, h = zoomCanvas.height;
+        zCtx.clearRect(0, 0, w, h);
+        const s = curSong();
+        const spanSec = 6.0; // -1.5s to +4.5s around playhead
+        const tLeft = tNow - 1.5;
+        const tRight = tLeft + spanSec;
+        const toX = (t) => ((t - tLeft) / spanSec) * w;
+
+        // 1. Waveform
+        const peaks = trackAnalysis.peaks;
+        if (peaks && trackAnalysis.peakBinSec > 0) {
+          zCtx.fillStyle = "#2b3b52";
+          const mid = h * 0.56;
+          for (let x = 0; x < w; x++) {
+            const t = tLeft + (x / w) * spanSec;
+            if (t < 0) continue;
+            const idx = Math.floor(t / trackAnalysis.peakBinSec);
+            if (idx < 0 || idx >= peaks.length) continue;
+            const amp = peaks[idx] * (h * 0.38);
+            zCtx.fillRect(x, mid - amp, 1, Math.max(1, amp * 2));
+          }
+        }
+
+        // 2. Predicted Beat Markers
+        const bStart = Math.max(0, Math.floor(getSongBeatsElapsed(s, Math.max(0, tLeft))) - 1);
+        const bEnd = Math.ceil(getSongBeatsElapsed(s, tRight)) + 1;
+        zCtx.font = "bold 12px ui-monospace, monospace";
+        zCtx.textAlign = "center";
+        for (let b = bStart; b <= bEnd; b++) {
+          const tb = getSongTimeForBeat(s, b);
+          if (tb < tLeft || tb > tRight) continue;
+          const x = toX(tb);
+          const in8 = ((b % 8) + 8) % 8;
+          const is1 = in8 === 0;
+          const is5 = in8 === 4;
+          const isSnare = in8 % 2 === 1;
+          zCtx.strokeStyle = is1 ? "#a3e635" : (is5 ? "#38bdf8" : (isSnare ? "#fb923c" : "#64748b"));
+          zCtx.lineWidth = is1 || is5 ? 2.2 : 1.3;
+          zCtx.setLineDash(isSnare ? [4, 3] : []);
+          zCtx.beginPath();
+          zCtx.moveTo(x, 22);
+          zCtx.lineTo(x, h);
+          zCtx.stroke();
+          zCtx.setLineDash([]);
+          zCtx.fillStyle = zCtx.strokeStyle;
+          zCtx.fillText(String(in8 + 1), x, 14);
+        }
+
+        // 3. Independently Detected Snare Transients (red triangles + ticks)
+        const snares = trackAnalysis.snares;
+        if (snares && snares.length) {
+          zCtx.strokeStyle = "#f43f5e";
+          zCtx.fillStyle = "#f43f5e";
+          zCtx.lineWidth = 1.6;
+          for (let i = 0; i < snares.length; i++) {
+            const ts = snares[i];
+            if (ts < tLeft) continue;
+            if (ts > tRight) break;
+            const x = toX(ts);
+            zCtx.beginPath();
+            zCtx.moveTo(x, h - 22);
+            zCtx.lineTo(x, h);
+            zCtx.stroke();
+            zCtx.beginPath();
+            zCtx.moveTo(x, h - 18);
+            zCtx.lineTo(x - 5, h - 27);
+            zCtx.lineTo(x + 5, h - 27);
+            zCtx.closePath();
+            zCtx.fill();
+          }
+        }
+
+        // 4. Playhead line
+        const px = toX(tNow);
+        zCtx.strokeStyle = "#ffffff";
+        zCtx.lineWidth = 2;
+        zCtx.beginPath();
+        zCtx.moveTo(px, 0);
+        zCtx.lineTo(px, h);
+        zCtx.stroke();
+      }
+
+      function curSong() { return SONGS[curIdx]; }
+
+      function updateRate() {
+        const s = curSong();
+        const mode = document.querySelector('input[name="rateMode"]:checked').value;
+        const rate = mode === "tier" ? (s.bpm / s.exactBpm) : 1.0;
+        if ("preservesPitch" in audio) audio.preservesPitch = true;
+        audio.playbackRate = Math.abs(rate - 1) < 0.002 ? 1 : rate;
+        audio.volume = Number(musicVol.value);
+        cancelScheduledClicks();
+      }
+
+      function formatSongLine(s, trailingComma = true) {
+        const anchorsStr = s.beatAnchors && s.beatAnchors.length
+          ? `, beatAnchors: ${JSON.stringify(s.beatAnchors)}`
+          : "";
+        const bpmStr = Math.abs(s.exactBpm * 100 - Math.round(s.exactBpm * 100)) > 1e-4
+          ? s.exactBpm.toFixed(3)
+          : s.exactBpm.toFixed(2);
+        return `{ id: "${s.id}", title: "${s.title}", bpm: ${s.bpm}, exactBpm: ${bpmStr}, beatOffsetSec: ${s.beatOffsetSec.toFixed(3)}${anchorsStr}, src: "${s.src}" }${trailingComma ? "," : ""}`;
+      }
+
+      function renderExport() {
+        exportBox.value = formatSongLine(curSong(), true);
+        updateSnareStats();
+      }
+
+      function loadTrack(idx, autoplay = false) {
+        curIdx = idx;
+        const s = curSong();
+        stopScheduler();
+        audio.pause();
+        audio.src = "../" + encodeURI(s.src);
+        audio.currentTime = 0;
+        lastVisualBeat = -999;
+        beatEls.forEach((b) => b.classList.remove("on"));
+        bigCounter.className = "big-num";
+        bigNumText.textContent = "--";
+        bigSubText.textContent = "LEAD-IN";
+        offsetInput.value = s.beatOffsetSec.toFixed(3);
+        bpmInput.value = String(s.exactBpm);
+        trackBadge.textContent = s.beatAnchors ? `PIECEWISE (${s.beatAnchors.length} anchors)` : "CONSTANT BPM";
+        trackBadge.classList.toggle("pw", Boolean(s.beatAnchors));
+        updateRate();
+        renderExport();
+        const mySeq = ++analysisSeq;
+        decodeAndAnalyzeTrack(s, mySeq);
+        if (autoplay) {
+          ensureCtx();
+          audio.play().then(() => startScheduler()).catch(() => {});
+        }
+      }
+
+      // Keeps beatOffsetSec and beatAnchors 100% consistent on every timing nudge!
+      function shiftOffsetAndAnchors(deltaSec) {
+        const s = curSong();
+        const newOff = Math.max(0, Number((s.beatOffsetSec + deltaSec).toFixed(3)));
+        const appliedDelta = newOff - s.beatOffsetSec;
+        s.beatOffsetSec = newOff;
+        if (s.beatAnchors && s.beatAnchors.length) {
+          s.beatAnchors = s.beatAnchors.map(([t, b], i) => [
+            i === 0 ? s.beatOffsetSec : Number(Math.max(s.beatOffsetSec + 0.001, t + appliedDelta).toFixed(3)),
+            b,
+          ]);
+        }
+        offsetInput.value = s.beatOffsetSec.toFixed(3);
+        cancelScheduledClicks();
+        renderExport();
+      }
+
+      // Shifts phase by integer beats while keeping beatAnchors[0] === [beatOffsetSec, 0] and preserving segment slopes!
+      function shiftByBeats(deltaBeats) {
+        const s = curSong();
+        if (s.beatAnchors && s.beatAnchors.length >= 2) {
+          const newBeat0Time = Math.max(0, Number(getSongTimeForBeat(s, deltaBeats).toFixed(3)));
+          const shifted = [[newBeat0Time, 0]];
+          for (const [t, b] of s.beatAnchors) {
+            const nb = b - deltaBeats;
+            if (nb > 0 && t > newBeat0Time) {
+              shifted.push([Number(t.toFixed(3)), nb]);
+            }
+          }
+          // Ensure at least 2 anchors remain
+          if (shifted.length < 2) {
+            const last = s.beatAnchors[s.beatAnchors.length - 1];
+            const T = 60 / s.exactBpm;
+            shifted.push([Number((newBeat0Time + Math.max(16, last[1]) * T).toFixed(3)), Math.max(16, last[1])]);
+          }
+          s.beatOffsetSec = newBeat0Time;
+          s.beatAnchors = shifted;
+        } else {
+          const T = 60 / s.exactBpm;
+          s.beatOffsetSec = Math.max(0, Number((s.beatOffsetSec + deltaBeats * T).toFixed(3)));
+        }
+        offsetInput.value = s.beatOffsetSec.toFixed(3);
+        cancelScheduledClicks();
+        renderExport();
+      }
+
+      trackSelect.innerHTML = SONGS.map((s, i) =>
+        `<option value="${i}">[${s.bpm}] ${s.title} (${s.exactBpm} BPM, off ${s.beatOffsetSec.toFixed(3)}s${s.beatAnchors ? ", PW" : ""})</option>`
+      ).join("");
+
+      trackSelect.addEventListener("change", () => loadTrack(Number(trackSelect.value), !audio.paused));
+      document.getElementById("playBtn").addEventListener("click", () => {
+        ensureCtx();
+        updateRate();
+        audio.play().then(() => startScheduler()).catch(() => {});
+      });
+      document.getElementById("pauseBtn").addEventListener("click", () => {
+        audio.pause();
+        stopScheduler();
+      });
+      document.getElementById("restartBtn").addEventListener("click", () => {
+        audio.currentTime = 0;
+        lastVisualBeat = -999;
+        cancelScheduledClicks();
+      });
+      musicVol.addEventListener("input", () => { audio.volume = Number(musicVol.value); });
+      clickToggle.addEventListener("change", () => { if (!clickToggle.checked) cancelScheduledClicks(); });
+      document.querySelectorAll('input[name="rateMode"]').forEach((r) => r.addEventListener("change", updateRate));
+
+      document.querySelectorAll("[data-jump]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const dur = audio.duration || trackAnalysis.duration;
+          if (!Number.isFinite(dur) || dur <= 0) return;
+          audio.currentTime = dur * Number(btn.getAttribute("data-jump"));
+          lastVisualBeat = -999;
+          cancelScheduledClicks();
+        });
+      });
+
+      overviewCanvas.addEventListener("click", (e) => {
+        const dur = audio.duration || trackAnalysis.duration;
+        if (!Number.isFinite(dur) || dur <= 0) return;
+        const rect = overviewCanvas.getBoundingClientRect();
+        const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        audio.currentTime = frac * dur;
+        lastVisualBeat = -999;
+        cancelScheduledClicks();
+      });
+
+      document.querySelectorAll("[data-vis-ms]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          visualOffsetMs = Math.max(-150, Math.min(150, visualOffsetMs + Number(btn.getAttribute("data-vis-ms"))));
+          localStorage.setItem("h4_dpa_visual_offset_ms", String(visualOffsetMs));
+          updateVisOffsetUI();
+        });
+      });
+      document.getElementById("resetVisBtn").addEventListener("click", () => {
+        visualOffsetMs = 0;
+        localStorage.setItem("h4_dpa_visual_offset_ms", "0");
+        updateVisOffsetUI();
+      });
+
+      document.querySelectorAll("[data-nudge-ms]").forEach((btn) => {
+        btn.addEventListener("click", () => shiftOffsetAndAnchors(Number(btn.getAttribute("data-nudge-ms")) / 1000));
+      });
+      document.querySelectorAll("[data-nudge-bpm]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const s = curSong();
+          s.exactBpm = Number((s.exactBpm + Number(btn.getAttribute("data-nudge-bpm"))).toFixed(3));
+          bpmInput.value = String(s.exactBpm);
+          updateRate();
+          renderExport();
+        });
+      });
+      document.querySelectorAll("[data-shift-beats]").forEach((btn) => {
+        btn.addEventListener("click", () => shiftByBeats(Number(btn.getAttribute("data-shift-beats"))));
+      });
+
+      offsetInput.addEventListener("change", () => {
+        const s = curSong();
+        const delta = Number(offsetInput.value) - s.beatOffsetSec;
+        if (Number.isFinite(delta)) shiftOffsetAndAnchors(delta);
+      });
+      bpmInput.addEventListener("change", () => {
+        const s = curSong();
+        const v = Number(bpmInput.value);
+        if (Number.isFinite(v) && v > 50 && v < 200) {
+          s.exactBpm = Number(v.toFixed(3));
+          updateRate();
+          renderExport();
+        }
+      });
+
+      document.getElementById("tapOneBtn").addEventListener("click", () => {
+        const s = curSong();
+        const b = getSongBeatsElapsed(s, audio.currentTime);
+        const beatInEight = ((Math.round(b) % 8) + 8) % 8;
+        if (beatInEight !== 0) {
+          shiftByBeats(beatInEight <= 4 ? beatInEight : beatInEight - 8);
+        }
+      });
+
+      document.getElementById("resetTrackBtn").addEventListener("click", () => {
+        SONGS[curIdx] = JSON.parse(JSON.stringify(ORIGINALS[curIdx]));
+        loadTrack(curIdx, !audio.paused);
+      });
+
+      document.getElementById("copyLineBtn").addEventListener("click", async () => {
+        await navigator.clipboard.writeText(exportBox.value);
+        const btn = document.getElementById("copyLineBtn");
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = "Copy Track Entry"; }, 1200);
+      });
+
+      document.getElementById("copyAllBtn").addEventListener("click", async () => {
+        const allLines = SONGS.map((s, i) => "        " + formatSongLine(s, i < SONGS.length - 1)).join("\n");
+        const fullBlock = `const SONGS = [\n${allLines}\n      ];`;
+        await navigator.clipboard.writeText(fullBlock);
+        const btn = document.getElementById("copyAllBtn");
+        btn.textContent = "Copied All 24!";
+        setTimeout(() => { btn.textContent = "Copy Full SONGS Array"; }, 1400);
+      });
+
+      function tickVisual() {
+        const s = curSong();
+        const rate = Number.isFinite(audio.playbackRate) && audio.playbackRate > 0 ? audio.playbackRate : 1;
+        const tRaw = audio.currentTime;
+        const tVis = tRaw + (visualOffsetMs / 1000) * rate;
+        const beats = getSongBeatsElapsed(s, tVis);
+
+        timeReadout.textContent = `t=${tRaw.toFixed(3)}s · beat=${beats >= 0 ? beats.toFixed(2) : "lead-in"} · rate=${rate.toFixed(3)}×`;
+
+        if (!audio.paused && audio.readyState >= 2) {
+          if (beats < 0) {
+            if (lastVisualBeat !== -1) {
+              lastVisualBeat = -1;
+              beatEls.forEach((el) => el.classList.remove("on"));
+              bigCounter.className = "big-num";
+              bigNumText.textContent = "--";
+              bigSubText.textContent = "LEAD-IN";
+            }
+          } else {
+            const bi = Math.floor(beats);
+            if (bi !== lastVisualBeat) {
+              lastVisualBeat = bi;
+              const in8 = ((bi % 8) + 8) % 8;
+              beatEls.forEach((el, i) => el.classList.toggle("on", i === in8));
+              bigNumText.textContent = String(in8 + 1);
+              if (in8 === 0) {
+                bigCounter.className = "big-num is-1";
+                bigSubText.textContent = "COUNT 1 · DOWNBEAT";
+              } else if (in8 === 4) {
+                bigCounter.className = "big-num is-5";
+                bigSubText.textContent = "COUNT 5 · BAR 2";
+              } else if (in8 % 2 === 1) {
+                bigCounter.className = "big-num is-snare";
+                bigSubText.textContent = "BACKBEAT SNARE";
+              } else {
+                bigCounter.className = "big-num is-other";
+                bigSubText.textContent = "PULSE";
+              }
+            }
+          }
+        }
+
+        drawOverview();
+        drawZoomWaveform(tRaw);
+        requestAnimationFrame(tickVisual);
+      }
+
+      loadTrack(0, false);
+      requestAnimationFrame(tickVisual);
+    })();
+  </script>
+</body>
+</html>

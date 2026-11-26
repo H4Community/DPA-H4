@@ -1486,7 +1486,7 @@
       font-size: 1.05rem;
       background: var(--bg-paper);
       box-shadow: 3px 3px 0px var(--ink);
-      transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
+      transition: transform 0.025s ease-out, background 0.025s ease-out, box-shadow 0.025s ease-out;
     }
 
     .beat-box.is-active {
@@ -1846,7 +1846,7 @@
             <button type="button" class="mini-ctrl" id="bpmDownBtn" title="Slow down by 5 BPM">-5</button>
             <span class="bpm-readout" id="bpmDisplay">115 BPM</span>
             <button type="button" class="mini-ctrl" id="bpmUpBtn" title="Speed up by 5 BPM">+5</button>
-            <button type="button" class="mini-ctrl" id="tapBpmBtn" title="Tap along with your music to set BPM">
+            <button type="button" class="mini-ctrl" id="tapBpmBtn" title="Tap along with your music to set BPM, or tap once on Count 1 to manually re-align phase">
               👆 Tap BPM
             </button>
           </div>
@@ -2180,38 +2180,68 @@
 
       // 4. H4 Curated Music Library + Web Audio Boom-Bap Synthesizer
       const BPM_TIERS = [95, 100, 110, 115];
+      // Drum-transient verified beatgrids (48 kHz HPSS snare/kick attack alignment).
+      // Constant-BPM tracks use exactBpm + beatOffsetSec; variable-tempo tracks include
+      // smooth monotonic piecewise beatAnchors ([timeSec, beatIdx]) with zero anchor discontinuities.
       const SONGS = [
         // 115 BPM — High-Energy Hype
-        { id: "115-block-party-brass", title: "Block Party Brass", bpm: 115, src: "Music/115 - Block Party Brass.mp3" },
-        { id: "115-jumpstart-jam", title: "Jumpstart Jam", bpm: 115, src: "Music/115 - Jumpstart Jam.mp3" },
-        { id: "115-arcade-bounce", title: "Arcade Bounce", bpm: 115, src: "Music/115-Arcade Bounce.mp3" },
-        { id: "115-recess-breakbeat-1", title: "Recess Breakbeat (Mix 1)", bpm: 115, src: "Music/115 - Recess Breakbeat.mp3" },
-        { id: "115-recess-breakbeat-2", title: "Recess Breakbeat (Mix 2)", bpm: 115, src: "Music/115-Recess Breakbeat.mp3" },
+        { id: "115-block-party-brass", title: "Block Party Brass", bpm: 115, exactBpm: 115.78, beatOffsetSec: 0.027, beatAnchors: [[0.027, 0], [16.69, 32], [34.886, 67], [65.527, 126], [87.313, 168], [105.959, 204], [119.923, 231], [158.683, 306], [177.779, 343]], src: "Music/115 - Block Party Brass.mp3" },
+        { id: "115-jumpstart-jam", title: "Jumpstart Jam", bpm: 115, exactBpm: 115.56, beatOffsetSec: 0.015, beatAnchors: [[0.015, 0], [21.823, 42], [96.124, 185], [196.285, 378]], src: "Music/115 - Jumpstart Jam.mp3" },
+        { id: "115-arcade-bounce", title: "Arcade Bounce", bpm: 115, exactBpm: 115.00, beatOffsetSec: 0.016, src: "Music/115-Arcade Bounce.mp3" },
+        { id: "115-recess-breakbeat-1", title: "Recess Breakbeat (Mix 1)", bpm: 115, exactBpm: 113.17, beatOffsetSec: 0.016, beatAnchors: [[0.016, 0], [62.603, 118], [109.796, 207], [189.815, 358]], src: "Music/115 - Recess Breakbeat.mp3" },
+        { id: "115-recess-breakbeat-2", title: "Recess Breakbeat (Mix 2)", bpm: 115, exactBpm: 113.00, beatOffsetSec: 1.075, src: "Music/115-Recess Breakbeat.mp3" },
         // 110 BPM — Upbeat Bounce
-        { id: "110-golden-era-groove", title: "Golden Era Groove", bpm: 110, src: "Music/110 - Golden Era Groove.mp3" },
-        { id: "110-locker-room-pep", title: "Locker Room Pep", bpm: 110, src: "Music/110 - Locker Room Pep.mp3" },
-        { id: "110-neon-streetlight", title: "Neon Streetlight", bpm: 110, src: "Music/110 - Neon Streetlight.mp3" },
-        { id: "110-taco-tuesday-bounce", title: "Taco Tuesday Bounce", bpm: 110, src: "Music/110 - Taco Tuesday Bounce.mp3" },
-        { id: "110-skate-floor-funk-1", title: "Skate Floor Funk (Mix 1)", bpm: 110, src: "Music/110 -1- Skate Floor Funk.mp3" },
-        { id: "110-skate-floor-funk-2", title: "Skate Floor Funk (Mix 2)", bpm: 110, src: "Music/110-2-Skate Floor Funk.mp3" },
+        { id: "110-golden-era-groove", title: "Golden Era Groove", bpm: 110, exactBpm: 106.87, beatOffsetSec: 0.289, beatAnchors: [[0.289, 0], [66.599, 118], [117.712, 209], [143.518, 255], [155.312, 276], [188.394, 335], [205.793, 366], [213.077, 379]], src: "Music/110 - Golden Era Groove.mp3" },
+        { id: "110-locker-room-pep", title: "Locker Room Pep", bpm: 110, exactBpm: 108.03, beatOffsetSec: 0.317, beatAnchors: [[0.317, 0], [14.277, 25], [17.639, 31], [28.224, 50], [46.067, 82], [57.187, 102], [70.001, 125], [74.443, 133], [85.018, 152], [90.575, 162], [102.215, 183], [117.205, 210], [128.32, 230], [156.581, 281], [163.215, 293], [168.177, 302], [170.95, 307], [173.71, 312], [180.365, 324], [190.848, 343], [201.377, 362]], src: "Music/110 - Locker Room Pep.mp3" },
+        { id: "110-neon-streetlight", title: "Neon Streetlight", bpm: 110, exactBpm: 112.24, beatOffsetSec: 0.572, beatAnchors: [[0.572, 0], [19.475, 35], [26.946, 49], [56.229, 104], [57.291, 106], [57.816, 107], [58.331, 108], [59.387, 110], [71.756, 133], [83.04, 154], [88.942, 165], [105.54, 196], [119.445, 222], [125.857, 234], [138.115, 257], [169.055, 315], [194.115, 362], [206.4, 385], [219.207, 409]], src: "Music/110 - Neon Streetlight.mp3" },
+        { id: "110-taco-tuesday-bounce", title: "Taco Tuesday Bounce", bpm: 110, exactBpm: 113.61, beatOffsetSec: 1.135, beatAnchors: [[1.135, 0], [26.464, 48], [119.929, 225], [149.488, 281], [159.541, 300], [178.558, 336], [204.986, 386]], src: "Music/110 - Taco Tuesday Bounce.mp3" },
+        { id: "110-skate-floor-funk-1", title: "Skate Floor Funk (Mix 1)", bpm: 110, exactBpm: 113.43, beatOffsetSec: 1.347, beatAnchors: [[1.347, 0], [14.651, 25], [30.599, 55], [51.829, 95], [82.569, 153], [133.383, 249], [159.819, 299], [191.484, 359], [206.254, 387], [257.894, 485]], src: "Music/110 -1- Skate Floor Funk.mp3" },
+        { id: "110-skate-floor-funk-2", title: "Skate Floor Funk (Mix 2)", bpm: 110, exactBpm: 114.11, beatOffsetSec: 0.012, beatAnchors: [[0.012, 0], [44.74, 85], [152.518, 290], [171.955, 327], [202.965, 386], [256.613, 488]], src: "Music/110-2-Skate Floor Funk.mp3" },
         // 100 BPM — Classic Pocket
-        { id: "100-boom-bap-backpack", title: "Boom-Bap Backpack", bpm: 100, src: "Music/100 - Boom-Bap Backpack.mp3" },
-        { id: "100-playground-pocket", title: "Playground Pocket", bpm: 100, src: "Music/100 - Playground Pocket.mp3" },
-        { id: "100-sunday-sneakers", title: "Sunday Sneakers", bpm: 100, src: "Music/100 - Sunday Sneakers.mp3" },
-        { id: "100-west-coast-cruise", title: "West Coast Cruise", bpm: 100, src: "Music/100 - West Coast Cruise.mp3" },
-        { id: "100-robot-factory-1", title: "Robot Factory (Mix 1)", bpm: 100, src: "Music/100-1-Robot Factory.mp3" },
-        { id: "100-robot-factory-2", title: "Robot Factory (Mix 2)", bpm: 100, src: "Music/100-2-Robot Factory.mp3" },
+        { id: "100-boom-bap-backpack", title: "Boom-Bap Backpack", bpm: 100, exactBpm: 92.50, beatOffsetSec: 0.670, src: "Music/100 - Boom-Bap Backpack.mp3" },
+        { id: "100-playground-pocket", title: "Playground Pocket", bpm: 100, exactBpm: 100.00, beatOffsetSec: 0.000, src: "Music/100 - Playground Pocket.mp3" },
+        { id: "100-sunday-sneakers", title: "Sunday Sneakers", bpm: 100, exactBpm: 100.49, beatOffsetSec: 1.310, beatAnchors: [[1.31, 0], [48.494, 79], [123.127, 204], [186.986, 311], [208.496, 347]], src: "Music/100 - Sunday Sneakers.mp3" },
+        { id: "100-west-coast-cruise", title: "West Coast Cruise", bpm: 100, exactBpm: 100.00, beatOffsetSec: 0.310, src: "Music/100 - West Coast Cruise.mp3" },
+        { id: "100-robot-factory-1", title: "Robot Factory (Mix 1)", bpm: 100, exactBpm: 102.02, beatOffsetSec: 0.010, beatAnchors: [[0.01, 0], [18.28, 31], [56.51, 96], [102.379, 174], [164.106, 279], [239.373, 407]], src: "Music/100-1-Robot Factory.mp3" },
+        { id: "100-robot-factory-2", title: "Robot Factory (Mix 2)", bpm: 100, exactBpm: 100.90, beatOffsetSec: 0.019, beatAnchors: [[0.019, 0], [16.081, 27], [140.914, 237], [152.827, 257], [158.165, 266], [177.186, 298], [205.746, 346], [216.467, 364]], src: "Music/100-2-Robot Factory.mp3" },
         // 95 BPM — Chill & Learn
-        { id: "95-liquid-motion", title: "Liquid Motion", bpm: 95, src: "Music/95 - 2- Liquid Motion.mp3" },
-        { id: "95-slow-mo-swagger", title: "Slow-Mo Swagger", bpm: 95, src: "Music/95-1-Slow-mo Swagger.mp3" },
-        { id: "95-lofi-study-break", title: "Lo-Fi Study Break", bpm: 95, src: "Music/95-2-Lo-Fi Study Break.mp3" },
-        { id: "95-cool-down-cypher-1", title: "Cool Down Cypher (Mix 1)", bpm: 95, src: "Music/95 -1-Cool Down Cypher.mp3" },
-        { id: "95-cool-down-cypher-2", title: "Cool Down Cypher (Mix 2)", bpm: 95, src: "Music/95-2-Cool Down Cypher.mp3" },
-        { id: "95-chalkboard-funk-1", title: "Chalkboard Funk (Mix 1)", bpm: 95, src: "Music/95-1-Chalkboard Funk.mp3" },
-        { id: "95-chalkboard-funk-2", title: "Chalkboard Funk (Mix 2)", bpm: 95, src: "Music/95 -2-Chalkboard Funk.mp3" }
+        { id: "95-liquid-motion", title: "Liquid Motion", bpm: 95, exactBpm: 95.10, beatOffsetSec: 0.476, beatAnchors: [[0.476, 0], [16.893, 26], [18.796, 29], [32.041, 50], [96.467, 152], [123.61, 195], [146.937, 232], [175.269, 277], [209.938, 332]], src: "Music/95 - 2- Liquid Motion.mp3" },
+        { id: "95-slow-mo-swagger", title: "Slow-Mo Swagger", bpm: 95, exactBpm: 94.41, beatOffsetSec: 0.144, beatAnchors: [[0.144, 0], [23.656, 37], [62.493, 98], [90.496, 142], [107.664, 169], [117.189, 184], [136.207, 214], [144.436, 227], [164.667, 259], [173.54, 273], [175.464, 276], [176.121, 277], [176.763, 278], [183.146, 288], [187.582, 295], [213.039, 335]], src: "Music/95-1-Slow-mo Swagger.mp3" },
+        { id: "95-lofi-study-break", title: "Lo-Fi Study Break", bpm: 95, exactBpm: 97.14, beatOffsetSec: 1.085, beatAnchors: [[1.085, 0], [15.942, 24], [84.594, 135], [124.767, 200], [159.951, 257], [190.123, 306], [201.83, 325]], src: "Music/95-2-Lo-Fi Study Break.mp3" },
+        { id: "95-cool-down-cypher-1", title: "Cool Down Cypher (Mix 1)", bpm: 95, exactBpm: 96.93, beatOffsetSec: 0.201, beatAnchors: [[0.201, 0], [33.063, 53], [54.775, 88], [88.84, 143], [130.927, 211], [157.529, 254], [187.208, 302], [218.093, 352]], src: "Music/95 -1-Cool Down Cypher.mp3" },
+        { id: "95-cool-down-cypher-2", title: "Cool Down Cypher (Mix 2)", bpm: 95, exactBpm: 95.23, beatOffsetSec: 2.762, beatAnchors: [[2.762, 0], [72.236, 110], [106.943, 165], [120.162, 186], [141.537, 220], [166.093, 259], [224.531, 352]], src: "Music/95-2-Cool Down Cypher.mp3" },
+        { id: "95-chalkboard-funk-1", title: "Chalkboard Funk (Mix 1)", bpm: 95, exactBpm: 94.715, beatOffsetSec: 0.033, src: "Music/95-1-Chalkboard Funk.mp3" },
+        { id: "95-chalkboard-funk-2", title: "Chalkboard Funk (Mix 2)", bpm: 95, exactBpm: 94.98, beatOffsetSec: 0.033, beatAnchors: [[0.033, 0], [12.658, 20], [134.554, 213], [236.89, 375], [337.985, 535]], src: "Music/95 -2-Chalkboard Funk.mp3" }
       ];
 
+      function getSongBeatsElapsed(song, timeSec) {
+        const anchors = song && song.beatAnchors;
+        if (anchors && anchors.length >= 2) {
+          if (timeSec <= anchors[0][0]) {
+            const dt = anchors[1][0] - anchors[0][0];
+            const db = anchors[1][1] - anchors[0][1];
+            return anchors[0][1] + (timeSec - anchors[0][0]) * (db / dt);
+          }
+          const last = anchors.length - 1;
+          if (timeSec >= anchors[last][0]) {
+            const dt = anchors[last][0] - anchors[last - 1][0];
+            const db = anchors[last][1] - anchors[last - 1][1];
+            return anchors[last][1] + (timeSec - anchors[last][0]) * (db / dt);
+          }
+          for (let i = 0; i < last; i++) {
+            const [t0, b0] = anchors[i];
+            const [t1, b1] = anchors[i + 1];
+            if (timeSec >= t0 && timeSec <= t1) {
+              return b0 + (timeSec - t0) * ((b1 - b0) / (t1 - t0));
+            }
+          }
+        }
+        return (timeSec - song.beatOffsetSec) * (song.exactBpm / 60);
+      }
+
       let audioCtx = null;
+      let synthBusGain = null;
+      const scheduledSynthSources = new Set();
       const MIN_BPM = 75;
       const MAX_BPM = 145;
       const savedBpm = Number(localStorage.getItem("h4_dpa_bpm"));
@@ -2222,13 +2252,67 @@
       let musicVolume = Number.isFinite(savedVol) && savedVol >= 0.1 && savedVol <= 1 ? savedVol : 0.85;
       let songFallbackActive = false;
 
+      // Optional device-level visual sync offset (ms, default 0): positive = visuals lead audio
+      // (compensates display lag), negative = visuals lag audio (compensates Bluetooth/HDMI speaker latency).
+      const MAX_VISUAL_SYNC_OFFSET_MS = 150;
+      function clampVisualSyncOffsetMs(ms) {
+        return Number.isFinite(ms)
+          ? Math.max(-MAX_VISUAL_SYNC_OFFSET_MS, Math.min(MAX_VISUAL_SYNC_OFFSET_MS, Math.round(ms)))
+          : 0;
+      }
+      function loadVisualSyncOffsetMs() {
+        try {
+          if (typeof URLSearchParams === "function" && window.location && window.location.search) {
+            const q = new URLSearchParams(window.location.search).get("syncOffsetMs");
+            if (q !== null && q !== "") return clampVisualSyncOffsetMs(Number(q));
+          }
+        } catch (_) { }
+        const savedOffset = localStorage.getItem("h4_dpa_visual_offset_ms");
+        return savedOffset !== null && savedOffset !== "" ? clampVisualSyncOffsetMs(Number(savedOffset)) : 0;
+      }
+      let visualSyncOffsetMs = loadVisualSyncOffsetMs();
+      function setVisualSyncOffsetMs(ms) {
+        visualSyncOffsetMs = clampVisualSyncOffsetMs(Number(ms));
+        localStorage.setItem("h4_dpa_visual_offset_ms", String(visualSyncOffsetMs));
+        return visualSyncOffsetMs;
+      }
+      function getEffectiveSongTimeSec(audioEl) {
+        const rate = Number.isFinite(audioEl.playbackRate) && audioEl.playbackRate > 0 ? audioEl.playbackRate : 1;
+        return audioEl.currentTime + (visualSyncOffsetMs / 1000) * rate;
+      }
+
       const songAudio = new Audio();
       songAudio.preload = "auto";
       songAudio.volume = musicVolume;
-      let songClockRafId = null;
-      let lastSongBeatIndex = -1;
+      function applyPreservesPitch(el) {
+        if ("preservesPitch" in el) el.preservesPitch = true;
+        if ("mozPreservesPitch" in el) el.mozPreservesPitch = true;
+        if ("webkitPreservesPitch" in el) el.webkitPreservesPitch = true;
+      }
+      applyPreservesPitch(songAudio);
+
+      let beatClockRafId = null;
+      let beatSchedulerTimerId = null;
+      let songLoadSeq = 0;
       let duckTimerId = null;
       let fadeOutTimerId = null;
+
+      // Audio-clock tracking state (H4 Songs, Beat Only Web Audio, Own Music performance.now)
+      let lastRenderedBeatIndex = -1;
+      let currentBeatInEight = 0;
+      let hasActiveBeat = false;
+      let moveBarsCompleted = 0;
+      let waitForBarOneAfterManualSwitch = false;
+
+      // Beat Only Web Audio scheduler clock
+      let synthOriginAudioTime = 0;
+      let synthNextScheduleBeat = 0;
+      let synthPausedBeatPos = 0;
+      let synthPendingInitialAccent = false;
+
+      // Own Music drift-free performance.now() clock
+      let ownOriginMs = 0;
+      let ownPausedBeatPos = 0;
 
       function isOfflineMode() {
         return document.body.classList.contains("offline-mode");
@@ -2254,8 +2338,17 @@
         return SONGS.find((s) => s.id === currentSongId) || SONGS[0];
       }
 
+      // Normalize initial BPM in H4 Songs mode to the selected song's tier BPM
+      if (audioMode === "songs") {
+        currentBpm = getCurrentSong().bpm;
+      }
+
       function isSongPlaybackEnabled() {
         return audioMode === "songs" && !songFallbackActive && !isOfflineMode();
+      }
+
+      function getDisplayBpm() {
+        return Math.round(currentBpm);
       }
 
       function getBeatMs() {
@@ -2272,6 +2365,39 @@
           audioCtx.resume().catch(() => { });
         }
         return audioCtx;
+      }
+
+      function getSynthBus(ctx) {
+        if (!synthBusGain) {
+          synthBusGain = ctx.createGain();
+          synthBusGain.gain.setValueAtTime(1, ctx.currentTime);
+          synthBusGain.connect(ctx.destination);
+        }
+        return synthBusGain;
+      }
+
+      function cancelScheduledSynthAudio() {
+        if (synthBusGain && audioCtx) {
+          try {
+            const now = audioCtx.currentTime;
+            synthBusGain.gain.cancelScheduledValues(now);
+            synthBusGain.gain.setValueAtTime(0, now);
+            synthBusGain.disconnect();
+          } catch (_) { }
+        }
+        synthBusGain = null;
+        scheduledSynthSources.forEach((node) => {
+          try { node.stop(); } catch (_) { }
+          try { node.disconnect(); } catch (_) { }
+        });
+        scheduledSynthSources.clear();
+      }
+
+      function trackSynthNode(node) {
+        scheduledSynthSources.add(node);
+        node.onended = () => {
+          scheduledSynthSources.delete(node);
+        };
       }
 
       function duckSongForCue() {
@@ -2301,29 +2427,45 @@
         osc.stop(now + 0.16);
       }
 
-      function playBeatStep(beatIndex, isSwitchAccent) {
-        if (audioMode === "own") return;
-        const ctx = ensureAudio();
-        if (!ctx) return;
-        const now = ctx.currentTime;
-        const playSynthDrums = audioMode === "beat" || songFallbackActive || isOfflineMode();
+      function playSwitchAccentAt(ctx, when, destinationNode = null) {
+        if (!ctx || audioMode === "own") return;
+        const dest = destinationNode || ctx.destination;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(523.25, when);
+        osc.frequency.setValueAtTime(659.25, when + 0.09);
+        gain.gain.setValueAtTime(0.11, when);
+        gain.gain.exponentialRampToValueAtTime(0.001, when + 0.22);
+        osc.connect(gain);
+        gain.connect(dest);
+        if (destinationNode) trackSynthNode(osc);
+        osc.start(when);
+        osc.stop(when + 0.23);
+      }
 
-        if (playSynthDrums && (beatIndex === 0 || beatIndex === 4)) {
+      function scheduleSynthDrumsAt(ctx, beatIndex, isSwitchAccent, when) {
+        if (!ctx || audioMode === "own") return;
+        const t = Math.max(ctx.currentTime, when);
+        const bus = getSynthBus(ctx);
+
+        if (beatIndex === 0 || beatIndex === 4) {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = "sine";
-          osc.frequency.setValueAtTime(135, now);
-          osc.frequency.exponentialRampToValueAtTime(42, now + 0.18);
-          gain.gain.setValueAtTime(0.32, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.frequency.setValueAtTime(135, t);
+          osc.frequency.exponentialRampToValueAtTime(42, t + 0.18);
+          gain.gain.setValueAtTime(0.32, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
           osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.21);
+          gain.connect(bus);
+          trackSynthNode(osc);
+          osc.start(t);
+          osc.stop(t + 0.21);
         }
 
-        if (playSynthDrums && beatIndex % 2 === 1) {
-          const bufferSize = ctx.sampleRate * 0.11;
+        if (beatIndex % 2 === 1) {
+          const bufferSize = Math.floor(ctx.sampleRate * 0.11);
           const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
           const data = buffer.getChannelData(0);
           for (let i = 0; i < bufferSize; i++) {
@@ -2335,28 +2477,26 @@
           filter.type = "bandpass";
           filter.frequency.value = 1400;
           const gain = ctx.createGain();
-          gain.gain.setValueAtTime(0.22, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+          gain.gain.setValueAtTime(0.22, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
           noise.connect(filter);
           filter.connect(gain);
-          gain.connect(ctx.destination);
-          noise.start(now);
+          gain.connect(bus);
+          trackSynthNode(noise);
+          noise.start(t);
         }
 
         if (isSwitchAccent) {
-          duckSongForCue();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = "square";
-          osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.09);
-          gain.gain.setValueAtTime(0.11, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.23);
+          playSwitchAccentAt(ctx, t, bus);
         }
+      }
+
+      function playSwitchCueNow() {
+        if (audioMode === "own") return;
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        duckSongForCue();
+        playSwitchAccentAt(ctx, ctx.currentTime);
       }
 
       function playVictoryFanfare() {
@@ -2413,15 +2553,13 @@
 
       let mode = "random";
       let isPlaying = false;
-      let countsPerMove = 2; // Default 2 counts of 8 (16 beats, ~8s at 115 BPM)
+      let countsPerMove = 2; // Default 2 counts of 8 (16 beats)
       let quickDemoMode = false;
       let totalSecondsLeft = 300; // 5:00
-      let beatStep = 0;
       let currentGrooveIdx = 0;
       let nextGrooveIdx = 1;
       let shuffleBag = [];
       let secondTimerId = null;
-      let beatTimerId = null;
       let stars = Number(localStorage.getItem("h4_dpa_stars") || "0");
 
       const starCountEl = document.getElementById("starCount");
@@ -2480,7 +2618,7 @@
         }
 
         if (isSwitchAccent) {
-          playBeatStep(0, true);
+          playSwitchCueNow();
         }
       }
 
@@ -2493,14 +2631,38 @@
         return getTotalCycles() * 8; // 2×8 = 16 beats, 3×8 = 24 beats, Quick Demo = 8 beats
       }
 
+      function clearBeatHighlights() {
+        hasActiveBeat = false;
+        currentBeatInEight = 0;
+        beatBoxes.forEach((box) => box.classList.remove("is-active"));
+        eightCountCycleLabel.textContent = `Count 1 of ${getTotalCycles()}`;
+      }
+
+      function resetBeatTrackingState() {
+        lastRenderedBeatIndex = -1;
+        moveBarsCompleted = 0;
+        waitForBarOneAfterManualSwitch = false;
+        clearBeatHighlights();
+      }
+
       function updateTimersUI() {
         totalTimerDisplay.textContent = formatTime(totalSecondsLeft);
         if (mode === "random") {
+          const totalCycles = getTotalCycles();
           const totalBeats = getTotalBeatsForMove();
-          const beatsLeft = Math.max(1, totalBeats - beatStep);
-          const countsLabel = quickDemoMode ? "1×8 Quick" : `${getTotalCycles()}×8 Counts`;
+          let beatsLeft = totalBeats;
+          if (hasActiveBeat) {
+            if (waitForBarOneAfterManualSwitch) {
+              beatsLeft = totalBeats;
+            } else {
+              const barIdx = moveBarsCompleted % totalCycles;
+              const beatsIntoMove = barIdx * 8 + currentBeatInEight;
+              beatsLeft = Math.max(1, totalBeats - beatsIntoMove);
+            }
+          }
+          const countsLabel = quickDemoMode ? "1×8 Quick" : `${totalCycles}×8 Counts`;
           switchTimerDisplay.textContent = `${countsLabel} · ${beatsLeft}b`;
-          if (beatsLeft <= 4 && totalSecondsLeft > 3) {
+          if (hasActiveBeat && beatsLeft <= 4 && totalSecondsLeft > 3) {
             upNextBanner.classList.add("is-alert");
             const nextG = GROOVES[nextGrooveIdx];
             upNextText.textContent = `🚨 GET READY (${beatsLeft})... NEXT: ${nextG.name.toUpperCase()}!`;
@@ -2515,43 +2677,254 @@
         }
       }
 
-      function stopSongClockRaf() {
-        if (songClockRafId) {
-          cancelAnimationFrame(songClockRafId);
-          songClockRafId = null;
+      function onDeterministicBeat(beatIndex, playSwitchAudio = true) {
+        const beatInEight = ((beatIndex % 8) + 8) % 8;
+
+        if (lastRenderedBeatIndex < 0) {
+          // If playback begins or seeks mid-bar (not on Count 1), wait for next Count 1
+          // before counting full 8-count cycles so the first move is never truncated.
+          if (beatIndex > 0 && beatInEight !== 0) {
+            waitForBarOneAfterManualSwitch = true;
+            moveBarsCompleted = 0;
+          }
+        } else if (beatIndex > lastRenderedBeatIndex) {
+          const prevBar = Math.floor(lastRenderedBeatIndex / 8);
+          const currBar = Math.floor(beatIndex / 8);
+          const barsCrossed = currBar - prevBar;
+          if (barsCrossed > 0) {
+            if (waitForBarOneAfterManualSwitch) {
+              waitForBarOneAfterManualSwitch = false;
+              moveBarsCompleted = Math.max(0, barsCrossed - 1);
+            } else {
+              moveBarsCompleted += barsCrossed;
+            }
+          }
+
+          // Trigger at most ONE automatic move switch per frame, right on Count 1 after
+          // the required number of 8-counts complete (or cleanly on recovery after tab throttling).
+          if (mode === "random" && moveBarsCompleted >= getTotalCycles() && (beatInEight === 0 || barsCrossed > 0)) {
+            currentGrooveIdx = nextGrooveIdx;
+            nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+            moveBarsCompleted = 0;
+            // If returning mid-bar after multi-bar rAF throttling, wait for next Count 1 before counting bars
+            if (barsCrossed > 1 && beatInEight !== 0) {
+              waitForBarOneAfterManualSwitch = true;
+            }
+            renderCurrentGroove(false);
+            if (playSwitchAudio) {
+              playSwitchCueNow();
+            }
+          }
         }
+
+        lastRenderedBeatIndex = beatIndex;
+        currentBeatInEight = beatInEight;
+        hasActiveBeat = true;
+
+        beatBoxes.forEach((box, idx) => {
+          box.classList.toggle("is-active", idx === beatInEight);
+        });
+
+        const totalCycles = getTotalCycles();
+        const displayCycle = waitForBarOneAfterManualSwitch
+          ? 1
+          : ((moveBarsCompleted % totalCycles) + 1);
+        eightCountCycleLabel.textContent = `Count ${displayCycle} of ${totalCycles}`;
+
+        const g = GROOVES[currentGrooveIdx];
+        if (beatInEight === 0) {
+          const lineIdx = moveBarsCompleted % g.energyLines.length;
+          stageEnergyCallout.textContent = g.energyLines[lineIdx];
+        }
+
+        updateTimersUI();
       }
 
-      function startSongClockRaf() {
-        stopSongClockRaf();
-        const activeSong = getCurrentSong();
-        lastSongBeatIndex = Math.floor(songAudio.currentTime * (activeSong.bpm / 60));
+      function stopBeatClocks() {
+        if (beatClockRafId) {
+          cancelAnimationFrame(beatClockRafId);
+          beatClockRafId = null;
+        }
+        if (beatSchedulerTimerId) {
+          clearInterval(beatSchedulerTimerId);
+          beatSchedulerTimerId = null;
+        }
+        cancelScheduledSynthAudio();
+      }
 
-        function tickClock() {
-          if (!isPlaying || !isSongPlaybackEnabled() || songAudio.paused) {
-            songClockRafId = null;
+      // 1) H4 Songs Clock: strictly driven by HTMLAudioElement.currentTime
+      function startSongClockRaf(expectedSeq, expectedSongId) {
+        stopBeatClocks();
+        function tickSongClock() {
+          if (!isPlaying || !isSongPlaybackEnabled() || expectedSeq !== songLoadSeq) {
+            beatClockRafId = null;
             return;
           }
           const song = getCurrentSong();
-          const currentSongBeat = Math.floor(songAudio.currentTime * (song.bpm / 60));
-          if (currentSongBeat > lastSongBeatIndex) {
-            // If songAudio is driving the clock, stop any fallback interval timer
-            if (beatTimerId) {
-              clearInterval(beatTimerId);
-              beatTimerId = null;
-            }
-            lastSongBeatIndex = currentSongBeat;
-            runBeatTick(false);
+          if (song.id !== expectedSongId) {
+            beatClockRafId = null;
+            return;
           }
-          songClockRafId = requestAnimationFrame(tickClock);
+          if (!songAudio.paused && songAudio.readyState >= 2) {
+            const beatsElapsed = getSongBeatsElapsed(song, getEffectiveSongTimeSec(songAudio));
+            if (beatsElapsed < 0) {
+              // Wait cleanly during pre-downbeat lead-in without falsely advancing beats
+              if (hasActiveBeat || lastRenderedBeatIndex !== -1) {
+                lastRenderedBeatIndex = -1;
+                clearBeatHighlights();
+                updateTimersUI();
+              }
+            } else {
+              const songBeatIndex = Math.floor(beatsElapsed);
+              if (songBeatIndex !== lastRenderedBeatIndex) {
+                if (songBeatIndex < lastRenderedBeatIndex) {
+                  // Track looped or sought backward — re-lock deterministically without erratic move switches
+                  lastRenderedBeatIndex = -1;
+                  moveBarsCompleted = 0;
+                  waitForBarOneAfterManualSwitch = false;
+                }
+                onDeterministicBeat(songBeatIndex, true);
+              }
+            }
+          }
+          beatClockRafId = requestAnimationFrame(tickSongClock);
         }
-        songClockRafId = requestAnimationFrame(tickClock);
+        beatClockRafId = requestAnimationFrame(tickSongClock);
+      }
+
+      // 2) Beat Only / Offline Fallback Clock: Web Audio AudioContext.currentTime scheduler + synced rAF
+      function isScheduledBeatSwitchAccent(beatIdx) {
+        if (beatIdx === 0 && synthPendingInitialAccent) {
+          return true;
+        }
+        if (mode !== "random" || beatIdx <= 0 || beatIdx % 8 !== 0) {
+          return false;
+        }
+        const totalCycles = getTotalCycles();
+        const refBar = lastRenderedBeatIndex >= 0 ? Math.floor(lastRenderedBeatIndex / 8) : 0;
+        const targetBar = Math.floor(beatIdx / 8);
+        const deltaBars = targetBar - refBar;
+        if (deltaBars <= 0) return false;
+        let predictedBars = moveBarsCompleted;
+        if (waitForBarOneAfterManualSwitch) {
+          predictedBars = Math.max(0, deltaBars - 1);
+        } else {
+          predictedBars += deltaBars;
+        }
+        return predictedBars > 0 && predictedBars % totalCycles === 0;
+      }
+
+      function scheduleSynthAhead() {
+        if (!isPlaying || isSongPlaybackEnabled() || audioMode === "own") return;
+        const ctx = ensureAudio();
+        if (!ctx || ctx.state !== "running") return;
+        const secPerBeat = 60 / currentBpm;
+        const lookaheadSec = 0.12;
+        // Skip past beats that fell behind while a tab was suspended to avoid catch-up audio bursts
+        const minAllowedTime = ctx.currentTime - 0.04;
+        if (synthOriginAudioTime + synthNextScheduleBeat * secPerBeat < minAllowedTime) {
+          const currentBeatPos = Math.max(0, (ctx.currentTime - synthOriginAudioTime) / secPerBeat);
+          synthNextScheduleBeat = Math.max(synthNextScheduleBeat, Math.ceil(currentBeatPos));
+        }
+        while (synthOriginAudioTime + synthNextScheduleBeat * secPerBeat <= ctx.currentTime + lookaheadSec) {
+          const beatIdx = synthNextScheduleBeat;
+          const when = synthOriginAudioTime + beatIdx * secPerBeat;
+          const beatInEight = ((beatIdx % 8) + 8) % 8;
+          const isAccent = isScheduledBeatSwitchAccent(beatIdx);
+          if (beatIdx === 0 && synthPendingInitialAccent) {
+            synthPendingInitialAccent = false;
+          }
+          scheduleSynthDrumsAt(ctx, beatInEight, isAccent, when);
+          synthNextScheduleBeat++;
+        }
+      }
+
+      function rescheduleFutureSynthBeats() {
+        if (!isPlaying || isSongPlaybackEnabled() || audioMode === "own" || !audioCtx) return;
+        cancelScheduledSynthAudio();
+        const secPerBeat = 60 / currentBpm;
+        const currentBeatPos = Math.max(0, (audioCtx.currentTime - synthOriginAudioTime) / secPerBeat);
+        synthNextScheduleBeat = Math.max(0, lastRenderedBeatIndex + 1, Math.ceil(currentBeatPos - 1e-6));
+        scheduleSynthAhead();
+      }
+
+      function startSynthBeatClock(restartFromZero = false, playInitialAccent = false) {
+        stopBeatClocks();
+        const ctx = ensureAudio();
+        if (!ctx) {
+          startOwnMusicClock(restartFromZero);
+          return;
+        }
+        const secPerBeat = 60 / currentBpm;
+        if (restartFromZero) {
+          synthPausedBeatPos = 0;
+          resetBeatTrackingState();
+        }
+        synthPendingInitialAccent = playInitialAccent && synthPausedBeatPos < 0.01;
+        const startLead = 0.025;
+        synthOriginAudioTime = ctx.currentTime + startLead - synthPausedBeatPos * secPerBeat;
+        synthNextScheduleBeat = Math.max(0, Math.ceil(synthPausedBeatPos - 1e-6));
+        if (lastRenderedBeatIndex >= synthNextScheduleBeat) {
+          synthNextScheduleBeat = lastRenderedBeatIndex + 1;
+        }
+
+        scheduleSynthAhead();
+        beatSchedulerTimerId = setInterval(scheduleSynthAhead, 25);
+
+        function tickSynthClock() {
+          if (!isPlaying || isSongPlaybackEnabled() || audioMode === "own") {
+            beatClockRafId = null;
+            return;
+          }
+          const activeCtx = audioCtx;
+          if (activeCtx && activeCtx.state === "running") {
+            const beatsElapsed = (activeCtx.currentTime + visualSyncOffsetMs / 1000 - synthOriginAudioTime) * (currentBpm / 60);
+            if (beatsElapsed >= 0) {
+              synthPausedBeatPos = beatsElapsed;
+              const beatIdx = Math.floor(beatsElapsed);
+              if (beatIdx > lastRenderedBeatIndex) {
+                onDeterministicBeat(beatIdx, false);
+              }
+            }
+          }
+          beatClockRafId = requestAnimationFrame(tickSynthClock);
+        }
+        beatClockRafId = requestAnimationFrame(tickSynthClock);
+      }
+
+      // 3) Own Music Clock: drift-free performance.now() anchor + manual Tap BPM phase recalibration
+      function startOwnMusicClock(restartFromZero = false) {
+        stopBeatClocks();
+        const msPerBeat = 60000 / currentBpm;
+        if (restartFromZero) {
+          ownPausedBeatPos = 0;
+          resetBeatTrackingState();
+        }
+        ownOriginMs = performance.now() - ownPausedBeatPos * msPerBeat;
+
+        function tickOwnClock() {
+          if (!isPlaying || audioMode !== "own") {
+            beatClockRafId = null;
+            return;
+          }
+          const beatsElapsed = (performance.now() - ownOriginMs) * (currentBpm / 60000);
+          if (beatsElapsed >= 0) {
+            ownPausedBeatPos = beatsElapsed;
+            const beatIdx = Math.floor(beatsElapsed);
+            if (beatIdx > lastRenderedBeatIndex) {
+              onDeterministicBeat(beatIdx, false);
+            }
+          }
+          beatClockRafId = requestAnimationFrame(tickOwnClock);
+        }
+        beatClockRafId = requestAnimationFrame(tickOwnClock);
       }
 
       function updateSongPlaybackRate() {
         const song = getCurrentSong();
-        const rate = Math.max(0.82, Math.min(1.18, currentBpm / song.bpm));
-        songAudio.playbackRate = rate;
+        applyPreservesPitch(songAudio);
+        const rate = Math.max(0.5, Math.min(2.0, currentBpm / song.exactBpm));
+        songAudio.playbackRate = Math.abs(rate - 1) < 0.002 ? 1 : rate;
       }
 
       function populateSongDropdown(tierBpm) {
@@ -2567,7 +2940,8 @@
       }
 
       function syncMusicUI() {
-        const tierBpm = getNearestBpmTier(currentBpm);
+        const song = getCurrentSong();
+        const tierBpm = audioMode === "songs" ? song.bpm : getNearestBpmTier(currentBpm);
         audioModeBtns.forEach((btn) => {
           const active = btn.getAttribute("data-audio-mode") === audioMode;
           btn.classList.toggle("is-active", active);
@@ -2576,7 +2950,7 @@
 
         bpmTierBtns.forEach((btn) => {
           const tier = Number(btn.getAttribute("data-bpm-tier"));
-          const active = audioMode === "songs" ? tier === tierBpm : tier === currentBpm;
+          const active = audioMode === "songs" ? tier === tierBpm : tier === getDisplayBpm();
           btn.classList.toggle("is-active", active);
         });
 
@@ -2586,23 +2960,27 @@
 
         if (audioMode === "songs") {
           populateSongDropdown(tierBpm);
-          const song = getCurrentSong();
+          const rate = currentBpm / song.exactBpm;
+          const displayBpm = getDisplayBpm();
           if (isOfflineMode() || songFallbackActive) {
             musicStatusNote.textContent = "⚡ Offline fallback: Built-In Beat";
-          } else if (currentBpm !== song.bpm) {
-            musicStatusNote.textContent = `Tempo synced to ${currentBpm} BPM`;
+          } else if (displayBpm !== song.bpm) {
+            musicStatusNote.textContent = `Tempo adjusted to ${displayBpm} BPM (${rate.toFixed(2)}×)`;
+          } else if (Math.abs(rate - 1) >= 0.004) {
+            musicStatusNote.textContent = `${getSongsForTier(tierBpm).length} tracks · Normalized to ${displayBpm} BPM (${rate.toFixed(2)}×)`;
           } else {
-            musicStatusNote.textContent = `${getSongsForTier(tierBpm).length} tracks ready`;
+            musicStatusNote.textContent = `${getSongsForTier(tierBpm).length} tracks · ${displayBpm} BPM`;
           }
         } else if (audioMode === "beat") {
-          musicStatusNote.textContent = "🥁 Built-in drum metronome (works 100% offline)";
+          musicStatusNote.textContent = "🥁 Built-in drum metronome (Web Audio locked)";
         } else {
-          musicStatusNote.textContent = "🎧 Silent visual 8-count — play your own music & tap BPM to sync!";
+          musicStatusNote.textContent = "🎧 Visual 8-count only (does not listen to external audio) — tap BPM on Count 1 to set tempo or re-align phase.";
         }
       }
 
       function loadAndPlayCurrentSong(restartFromZero = false) {
         if (!isSongPlaybackEnabled()) return;
+        const seq = ++songLoadSeq;
         const song = getCurrentSong();
         const encodedUrl = new URL(encodeURI(song.src), window.location.href).href;
         if (fadeOutTimerId) {
@@ -2610,7 +2988,14 @@
           fadeOutTimerId = null;
         }
         songAudio.volume = musicVolume;
-        if (songAudio.src !== encodedUrl) {
+        const isTrackChange = songAudio.src !== encodedUrl;
+        if (isTrackChange || restartFromZero) {
+          stopBeatClocks();
+          resetBeatTrackingState();
+          updateTimersUI();
+        }
+        if (isTrackChange) {
+          songAudio.pause();
           songAudio.src = encodedUrl;
           songAudio.currentTime = 0;
         } else if (restartFromZero) {
@@ -2619,46 +3004,93 @@
         updateSongPlaybackRate();
         if (isPlaying) {
           songAudio.play().then(() => {
+            if (seq !== songLoadSeq || !isPlaying || !isSongPlaybackEnabled()) return;
             songFallbackActive = false;
+            updateSongPlaybackRate();
             syncMusicUI();
-            startSongClockRaf();
+            startSongClockRaf(seq, song.id);
           }).catch(() => {
-            // Fallback to interval beat if autoplay/network fails
-            if (!beatTimerId && isPlaying) {
-              beatTimerId = setInterval(() => runBeatTick(false), getBeatMs());
-            }
+            if (seq !== songLoadSeq || !isPlaying) return;
+            // Fallback to sample-accurate Web Audio beat scheduler if autoplay/network fails
+            songFallbackActive = true;
+            syncMusicUI();
+            startSynthBeatClock(false, false);
           });
         }
       }
 
-      function playNextSong(restart = true) {
-        const tierSongs = getSongsForTier(getNearestBpmTier(currentBpm));
-        if (!tierSongs.length) return;
-        const idx = tierSongs.findIndex((s) => s.id === currentSongId);
-        const nextSong = tierSongs[(idx + 1) % tierSongs.length];
-        currentSongId = nextSong.id;
+      function switchToSong(songId, normalizeToTier = true) {
+        const target = SONGS.find((s) => s.id === songId);
+        if (!target) return;
+        currentSongId = target.id;
         localStorage.setItem("h4_dpa_song_id", currentSongId);
         songFallbackActive = false;
-        syncMusicUI();
+        if (normalizeToTier) {
+          currentBpm = target.bpm;
+          localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+        }
+        stopBeatClocks();
+        resetBeatTrackingState();
+        syncBpmUI();
+        updateTimersUI();
         if (isPlaying && isSongPlaybackEnabled()) {
-          loadAndPlayCurrentSong(restart);
+          loadAndPlayCurrentSong(true);
         }
       }
 
+      function playNextSong() {
+        const currentSong = getCurrentSong();
+        const tierSongs = getSongsForTier(currentSong.bpm);
+        if (!tierSongs.length) return;
+        const idx = tierSongs.findIndex((s) => s.id === currentSong.id);
+        const nextSong = tierSongs[(idx + 1) % tierSongs.length];
+        switchToSong(nextSong.id, true);
+      }
+
+      songAudio.addEventListener("loadedmetadata", () => {
+        updateSongPlaybackRate();
+      });
+
+      songAudio.addEventListener("play", () => {
+        updateSongPlaybackRate();
+      });
+
+      songAudio.addEventListener("seeked", () => {
+        if (!isPlaying || !isSongPlaybackEnabled()) return;
+        const song = getCurrentSong();
+        const beatsElapsed = getSongBeatsElapsed(song, getEffectiveSongTimeSec(songAudio));
+        moveBarsCompleted = 0;
+        waitForBarOneAfterManualSwitch = false;
+        if (beatsElapsed < 0) {
+          lastRenderedBeatIndex = -1;
+          clearBeatHighlights();
+          updateTimersUI();
+        } else {
+          lastRenderedBeatIndex = -1;
+          onDeterministicBeat(Math.floor(beatsElapsed), false);
+        }
+      });
+
       songAudio.addEventListener("ended", () => {
         if (isPlaying && isSongPlaybackEnabled() && totalSecondsLeft > 0) {
-          playNextSong(true);
+          playNextSong();
         }
       });
 
       songAudio.addEventListener("error", () => {
         if (audioMode === "songs") {
           songFallbackActive = true;
-          stopSongClockRaf();
+          stopBeatClocks();
           syncMusicUI();
-          if (isPlaying && !beatTimerId) {
-            beatTimerId = setInterval(() => runBeatTick(false), getBeatMs());
+          if (isPlaying) {
+            startSynthBeatClock(false, false);
           }
+        }
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && isPlaying && !isSongPlaybackEnabled() && audioMode !== "own") {
+          rescheduleFutureSynthBeats();
         }
       });
 
@@ -2682,12 +3114,23 @@
       }
 
       function stopLoops(fadeSong = false) {
+        // Capture exact fractional beat position for Beat Only / Own Music before pausing
+        if (isPlaying && !isSongPlaybackEnabled()) {
+          if (audioMode === "own") {
+            const elapsed = (performance.now() - ownOriginMs) * (currentBpm / 60000);
+            if (elapsed >= 0) ownPausedBeatPos = elapsed;
+          } else if (audioCtx) {
+            const elapsed = (audioCtx.currentTime - synthOriginAudioTime) * (currentBpm / 60);
+            if (elapsed >= 0) synthPausedBeatPos = elapsed;
+          }
+        }
         isPlaying = false;
+        songLoadSeq++;
         playerStage.classList.remove("is-playing");
         playPauseBtn.textContent = "▶ Resume (Space)";
         const stageVideo = stageDancerWrap.querySelector("video.move-video");
         if (stageVideo) stageVideo.pause();
-        stopSongClockRaf();
+        stopBeatClocks();
         if (fadeSong) {
           fadeOutSongAudio();
         } else {
@@ -2699,9 +3142,7 @@
           songAudio.volume = musicVolume;
         }
         if (secondTimerId) clearInterval(secondTimerId);
-        if (beatTimerId) clearInterval(beatTimerId);
         secondTimerId = null;
-        beatTimerId = null;
       }
 
       function triggerConfetti() {
@@ -2733,93 +3174,117 @@
         upNextText.textContent = "⭐ DPA COMPLETE! You earned a Classroom Star!";
       }
 
-      function runBeatTick(isInitialAccent = false) {
-        let isSwitchBeat = isInitialAccent;
-
-        // Trigger random move switches directly on Beat 1 (beat 17 for 2×8, beat 25 for 3×8, beat 9 for Quick Demo)
-        if (mode === "random" && beatStep >= getTotalBeatsForMove()) {
-          currentGrooveIdx = nextGrooveIdx;
-          nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-          beatStep = 0;
-          renderCurrentGroove(false);
-          isSwitchBeat = true;
-        }
-
-        const beatInEight = beatStep % 8;
-        beatBoxes.forEach((box, idx) => {
-          box.classList.toggle("is-active", idx === beatInEight);
-        });
-
-        const totalCycles = getTotalCycles();
-        const countCycle = Math.floor(beatStep / 8) + 1;
-        eightCountCycleLabel.textContent = `Count ${((countCycle - 1) % totalCycles) + 1} of ${totalCycles}`;
-
-        const g = GROOVES[currentGrooveIdx];
-        if (beatInEight === 0) {
-          const lineIdx = Math.floor(beatStep / 8) % g.energyLines.length;
-          stageEnergyCallout.textContent = g.energyLines[lineIdx];
-        }
-
-        playBeatStep(beatInEight, isSwitchBeat);
-        updateTimersUI();
-        beatStep++;
-      }
-
       function syncBpmUI() {
+        const displayBpm = getDisplayBpm();
         const beatMs = getBeatMs();
-        bpmDisplay.textContent = `${currentBpm} BPM`;
-        eightCountBpmLabel.textContent = `Musical 8-Count Tracker (${currentBpm} BPM)`;
+        bpmDisplay.textContent = `${displayBpm} BPM`;
+        eightCountBpmLabel.textContent = `Musical 8-Count Tracker (${displayBpm} BPM)`;
         stageDancerWrap.style.setProperty("--beat-ms", `${beatMs}ms`);
-        bpmDownBtn.disabled = currentBpm <= MIN_BPM;
-        bpmUpBtn.disabled = currentBpm >= MAX_BPM;
+        bpmDownBtn.disabled = displayBpm <= MIN_BPM;
+        bpmUpBtn.disabled = displayBpm >= MAX_BPM;
         syncMusicUI();
       }
 
-      function setBpm(newBpm, alignBeatToTap = false) {
-        const prevTier = getNearestBpmTier(currentBpm);
+      function reanchorNonSongClockAtNewBpm(oldBpm, newBpm) {
+        if (!isPlaying || isSongPlaybackEnabled()) return;
+        if (audioMode === "own") {
+          const now = performance.now();
+          const currentBeatPos = Math.max(0, (now - ownOriginMs) * (oldBpm / 60000));
+          ownPausedBeatPos = currentBeatPos;
+          ownOriginMs = now - currentBeatPos * (60000 / newBpm);
+        } else if (audioCtx) {
+          cancelScheduledSynthAudio();
+          const now = audioCtx.currentTime;
+          const currentBeatPos = Math.max(0, (now - synthOriginAudioTime) * (oldBpm / 60));
+          synthPausedBeatPos = currentBeatPos;
+          synthOriginAudioTime = now - currentBeatPos * (60 / newBpm);
+          synthNextScheduleBeat = Math.max(0, lastRenderedBeatIndex + 1, Math.ceil(currentBeatPos - 1e-6));
+          scheduleSynthAhead();
+        }
+      }
+
+      function setBpm(newBpm) {
+        const oldBpm = currentBpm;
         currentBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(newBpm)));
         localStorage.setItem("h4_dpa_bpm", String(currentBpm));
-        const nextTier = getNearestBpmTier(currentBpm);
-        const exactTierHit = BPM_TIERS.includes(currentBpm) && nextTier !== prevTier;
-
-        if (audioMode === "songs" && exactTierHit) {
-          const tierSongs = getSongsForTier(nextTier);
-          if (tierSongs[0]) {
-            currentSongId = tierSongs[0].id;
-            localStorage.setItem("h4_dpa_song_id", currentSongId);
-          }
-          songFallbackActive = false;
-        }
-
         syncBpmUI();
-        if (alignBeatToTap) {
-          beatStep = 0;
-        }
 
-        if (isPlaying) {
-          if (isSongPlaybackEnabled()) {
-            if (exactTierHit) {
-              loadAndPlayCurrentSong(true);
-            } else {
-              updateSongPlaybackRate();
+        if (isSongPlaybackEnabled()) {
+          updateSongPlaybackRate();
+        } else if (isPlaying) {
+          reanchorNonSongClockAtNewBpm(oldBpm, currentBpm);
+        }
+      }
+
+      function selectBpmTier(tierBpm) {
+        if (audioMode === "songs") {
+          const currentSong = getCurrentSong();
+          if (currentSong.bpm !== tierBpm) {
+            const tierSongs = getSongsForTier(tierBpm);
+            if (tierSongs[0]) {
+              switchToSong(tierSongs[0].id, true);
+              return;
             }
           } else {
-            if (beatTimerId) clearInterval(beatTimerId);
-            if (alignBeatToTap) {
-              runBeatTick(false);
-            }
-            beatTimerId = setInterval(() => {
-              runBeatTick(false);
-            }, getBeatMs());
+            // Clicking the active bucket resets playback cleanly to the selected tier BPM
+            currentBpm = tierBpm;
+            localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+            syncBpmUI();
+            updateSongPlaybackRate();
+            return;
           }
-        } else if (alignBeatToTap) {
+        }
+        setBpm(tierBpm);
+      }
+
+      function anchorClockToTap(nowMs, tapCount, tappedBpm) {
+        const beatInEightOnTap = (tapCount - 1) % 8;
+
+        if (audioMode === "songs" && isSongPlaybackEnabled()) {
+          if (Number.isFinite(tappedBpm)) {
+            setBpm(tappedBpm);
+          }
+          return;
+        }
+
+        if (Number.isFinite(tappedBpm)) {
+          currentBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(tappedBpm)));
+          localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+          syncBpmUI();
+        }
+
+        const msPerBeat = 60000 / currentBpm;
+        const secPerBeat = 60 / currentBpm;
+        moveBarsCompleted = 0;
+        waitForBarOneAfterManualSwitch = false;
+
+        if (audioMode === "own") {
+          ownOriginMs = nowMs - beatInEightOnTap * msPerBeat;
+          ownPausedBeatPos = beatInEightOnTap;
+          lastRenderedBeatIndex = -1;
+          onDeterministicBeat(beatInEightOnTap, false);
+        } else if (isPlaying) {
+          const ctx = ensureAudio();
+          if (ctx) {
+            cancelScheduledSynthAudio();
+            synthOriginAudioTime = ctx.currentTime - beatInEightOnTap * secPerBeat;
+            synthPausedBeatPos = beatInEightOnTap;
+            synthNextScheduleBeat = beatInEightOnTap + 1;
+            lastRenderedBeatIndex = -1;
+            scheduleSynthDrumsAt(ctx, beatInEightOnTap, false, ctx.currentTime);
+            onDeterministicBeat(beatInEightOnTap, false);
+            scheduleSynthAhead();
+          }
+        } else {
+          synthPausedBeatPos = 0;
+          ownPausedBeatPos = 0;
           updateTimersUI();
         }
       }
 
       syncBpmUI();
 
-      function startLoops(playInitialAccent = false, restartSong = false) {
+      function startLoops(playInitialAccent = false, restartAudio = false) {
         stopLoops(false);
         isPlaying = true;
         playerStage.classList.add("is-playing");
@@ -2829,19 +3294,15 @@
         ensureAudio();
         syncBpmUI();
 
-        // Fire Beat 1 (or current beat) immediately so audio & visual grid stay locked to downbeat
-        runBeatTick(playInitialAccent);
-
-        // Beat loop (stays active for Beat Only / Own Music / while MP3 buffers)
-        beatTimerId = setInterval(() => {
-          runBeatTick(false);
-        }, getBeatMs());
-
         if (isSongPlaybackEnabled()) {
-          loadAndPlayCurrentSong(restartSong);
+          loadAndPlayCurrentSong(restartAudio);
+        } else if (audioMode === "own") {
+          startOwnMusicClock(restartAudio);
+        } else {
+          startSynthBeatClock(restartAudio, playInitialAccent);
         }
 
-        // 1-second session countdown only (move switching is beat-locked above)
+        // 1-second session countdown only (move switching is strictly beat-locked above)
         secondTimerId = setInterval(() => {
           if (totalSecondsLeft <= 1) {
             totalSecondsLeft = 0;
@@ -2855,271 +3316,295 @@
       }
 
       function openPlayer(selectedMode, soloIndex = 0) {
-              mode = selectedMode;
-              beatStep = 0;
-              songFallbackActive = false;
-              if (mode === "random") {
-                totalSecondsLeft = quickDemoMode ? 30 : 300;
-                shuffleBag = [];
-                currentGrooveIdx = drawNextRandomIdx(-1);
-                nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-              } else {
-                totalSecondsLeft = 120;
-                currentGrooveIdx = soloIndex;
-                nextGrooveIdx = (soloIndex + 1) % GROOVES.length;
-              }
-              renderCurrentGroove(false);
-              playerModal.classList.add("is-open");
-              startLoops(true, true);
-            }
+        mode = selectedMode;
+        songFallbackActive = false;
+        resetBeatTrackingState();
+        synthPausedBeatPos = 0;
+        ownPausedBeatPos = 0;
+        if (audioMode === "songs") {
+          currentBpm = getCurrentSong().bpm;
+        }
+        if (mode === "random") {
+          totalSecondsLeft = quickDemoMode ? 30 : 300;
+          shuffleBag = [];
+          currentGrooveIdx = drawNextRandomIdx(-1);
+          nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+        } else {
+          totalSecondsLeft = 120;
+          currentGrooveIdx = soloIndex;
+          nextGrooveIdx = (soloIndex + 1) % GROOVES.length;
+        }
+        renderCurrentGroove(false);
+        updateTimersUI();
+        playerModal.classList.add("is-open");
+        startLoops(true, true);
+      }
 
       function closePlayer() {
-              stopLoops(false);
-              songAudio.currentTime = 0;
-              playerModal.classList.remove("is-open");
-            }
+        stopLoops(false);
+        songAudio.currentTime = 0;
+        resetBeatTrackingState();
+        synthPausedBeatPos = 0;
+        ownPausedBeatPos = 0;
+        playerModal.classList.remove("is-open");
+      }
 
       document.getElementById("startRandomDpaBtn").addEventListener("click", () => openPlayer("random"));
-          document.getElementById("startRandomDpaBtn2").addEventListener("click", () => openPlayer("random"));
+      document.getElementById("startRandomDpaBtn2").addEventListener("click", () => openPlayer("random"));
 
-          groovesGrid.addEventListener("click", (e) => {
-            const btn = e.target.closest("[data-solo-idx]");
-            if (!btn) return;
-            const idx = Number(btn.getAttribute("data-solo-idx"));
-            openPlayer("solo", idx);
-          });
+      groovesGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-solo-idx]");
+        if (!btn) return;
+        const idx = Number(btn.getAttribute("data-solo-idx"));
+        openPlayer("solo", idx);
+      });
 
-          playPauseBtn.addEventListener("click", () => {
-            if (totalSecondsLeft === 0) {
-              openPlayer(mode, currentGrooveIdx);
-              return;
-            }
-            if (isPlaying) {
-              stopLoops();
-            } else {
-              startLoops();
-            }
-          });
+      playPauseBtn.addEventListener("click", () => {
+        if (totalSecondsLeft === 0) {
+          openPlayer(mode, currentGrooveIdx);
+          return;
+        }
+        if (isPlaying) {
+          stopLoops(false);
+        } else {
+          startLoops(false, false);
+        }
+      });
 
-          document.getElementById("nextMoveBtn").addEventListener("click", () => {
-            if (mode === "random") {
-              currentGrooveIdx = nextGrooveIdx;
-              nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
-            } else {
-              currentGrooveIdx = (currentGrooveIdx + 1) % GROOVES.length;
-            }
-            beatStep = 0;
-            if (isPlaying) {
-              renderCurrentGroove(false);
-              startLoops(true);
-            } else {
-              renderCurrentGroove(true);
-              updateTimersUI();
-            }
-          });
+      document.getElementById("nextMoveBtn").addEventListener("click", () => {
+        if (mode === "random") {
+          currentGrooveIdx = nextGrooveIdx;
+          nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+        } else {
+          currentGrooveIdx = (currentGrooveIdx + 1) % GROOVES.length;
+        }
+        moveBarsCompleted = 0;
+        waitForBarOneAfterManualSwitch = isPlaying && hasActiveBeat && currentBeatInEight !== 0;
+        renderCurrentGroove(true);
+        updateTimersUI();
+        rescheduleFutureSynthBeats();
+      });
 
-          document.getElementById("closeModalBtn").addEventListener("click", closePlayer);
+      document.getElementById("closeModalBtn").addEventListener("click", closePlayer);
 
-          playerModal.addEventListener("click", (e) => {
-            if (e.target === playerModal) closePlayer();
-          });
+      playerModal.addEventListener("click", (e) => {
+        if (e.target === playerModal) closePlayer();
+      });
 
-          function setAudioMode(nextMode) {
-            audioMode = nextMode;
-            localStorage.setItem("h4_dpa_audio_mode", audioMode);
-            songFallbackActive = false;
-            syncMusicUI();
+      function setAudioMode(nextMode) {
+        const prevMode = audioMode;
+        audioMode = nextMode;
+        localStorage.setItem("h4_dpa_audio_mode", audioMode);
+        songFallbackActive = false;
 
-            if (!isPlaying) {
-              if (audioMode !== "songs") songAudio.pause();
-              return;
-            }
+        if (audioMode === "songs" && prevMode !== "songs") {
+          currentBpm = getCurrentSong().bpm;
+        } else if (audioMode !== "songs") {
+          currentBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(currentBpm)));
+        }
 
-            if (isSongPlaybackEnabled()) {
-              loadAndPlayCurrentSong(false);
-            } else {
-              stopSongClockRaf();
-              songAudio.pause();
-              if (!beatTimerId) {
-                beatTimerId = setInterval(() => runBeatTick(false), getBeatMs());
-              }
-            }
+        syncBpmUI();
+
+        if (!isPlaying) {
+          if (audioMode !== "songs") songAudio.pause();
+          return;
+        }
+
+        stopBeatClocks();
+        resetBeatTrackingState();
+        synthPausedBeatPos = 0;
+        ownPausedBeatPos = 0;
+
+        if (isSongPlaybackEnabled()) {
+          loadAndPlayCurrentSong(false);
+        } else {
+          songAudio.pause();
+          if (audioMode === "own") {
+            startOwnMusicClock(true);
+          } else {
+            startSynthBeatClock(true, false);
           }
+        }
+      }
 
-          audioModeBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-              setAudioMode(btn.getAttribute("data-audio-mode"));
-            });
-          });
+      audioModeBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setAudioMode(btn.getAttribute("data-audio-mode"));
+        });
+      });
 
-          bpmTierBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const tierBpm = Number(btn.getAttribute("data-bpm-tier"));
-              setBpm(tierBpm, false);
-            });
-          });
+      bpmTierBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tierBpm = Number(btn.getAttribute("data-bpm-tier"));
+          selectBpmTier(tierBpm);
+        });
+      });
 
-          songSelect.addEventListener("change", () => {
-            currentSongId = songSelect.value;
-            localStorage.setItem("h4_dpa_song_id", currentSongId);
-            songFallbackActive = false;
-            syncMusicUI();
-            if (isPlaying && isSongPlaybackEnabled()) {
-              loadAndPlayCurrentSong(true);
-            }
-          });
+      songSelect.addEventListener("change", () => {
+        switchToSong(songSelect.value, true);
+      });
 
-          nextSongBtn.addEventListener("click", () => {
-            playNextSong(true);
-          });
+      nextSongBtn.addEventListener("click", () => {
+        playNextSong();
+      });
 
-          musicVolSlider.addEventListener("input", () => {
-            musicVolume = Number(musicVolSlider.value);
-            localStorage.setItem("h4_dpa_music_vol", String(musicVolume));
-            songAudio.volume = musicVolume;
-          });
+      musicVolSlider.addEventListener("input", () => {
+        musicVolume = Number(musicVolSlider.value);
+        localStorage.setItem("h4_dpa_music_vol", String(musicVolume));
+        songAudio.volume = musicVolume;
+      });
 
-          const interval2x8Btn = document.getElementById("interval2x8Btn");
-          const interval3x8Btn = document.getElementById("interval3x8Btn");
-          const quickDemoBtn = document.getElementById("quickDemoBtn");
+      const interval2x8Btn = document.getElementById("interval2x8Btn");
+      const interval3x8Btn = document.getElementById("interval3x8Btn");
+      const quickDemoBtn = document.getElementById("quickDemoBtn");
 
-          interval2x8Btn.addEventListener("click", () => {
-            quickDemoMode = false;
-            countsPerMove = 2;
-            interval2x8Btn.classList.add("is-active");
-            interval3x8Btn.classList.remove("is-active");
-            quickDemoBtn.classList.remove("is-active");
-            if (mode === "random") {
-              beatStep = beatStep % getTotalBeatsForMove();
-              renderCurrentGroove(false);
-              updateTimersUI();
-            }
-          });
+      interval2x8Btn.addEventListener("click", () => {
+        quickDemoMode = false;
+        countsPerMove = 2;
+        interval2x8Btn.classList.add("is-active");
+        interval3x8Btn.classList.remove("is-active");
+        quickDemoBtn.classList.remove("is-active");
+        if (mode === "random") {
+          moveBarsCompleted = moveBarsCompleted % getTotalCycles();
+          renderCurrentGroove(false);
+          updateTimersUI();
+          rescheduleFutureSynthBeats();
+        }
+      });
 
-          interval3x8Btn.addEventListener("click", () => {
-            quickDemoMode = false;
-            countsPerMove = 3;
-            interval3x8Btn.classList.add("is-active");
-            interval2x8Btn.classList.remove("is-active");
-            quickDemoBtn.classList.remove("is-active");
-            if (mode === "random") {
-              beatStep = beatStep % getTotalBeatsForMove();
-              renderCurrentGroove(false);
-              updateTimersUI();
-            }
-          });
+      interval3x8Btn.addEventListener("click", () => {
+        quickDemoMode = false;
+        countsPerMove = 3;
+        interval3x8Btn.classList.add("is-active");
+        interval2x8Btn.classList.remove("is-active");
+        quickDemoBtn.classList.remove("is-active");
+        if (mode === "random") {
+          moveBarsCompleted = moveBarsCompleted % getTotalCycles();
+          renderCurrentGroove(false);
+          updateTimersUI();
+          rescheduleFutureSynthBeats();
+        }
+      });
 
-          quickDemoBtn.addEventListener("click", () => {
-            quickDemoMode = !quickDemoMode;
-            quickDemoBtn.classList.toggle("is-active", quickDemoMode);
-            if (mode === "random") {
-              totalSecondsLeft = quickDemoMode ? 30 : 300;
-              beatStep = beatStep % getTotalBeatsForMove();
-              renderCurrentGroove(false);
-              updateTimersUI();
-            }
-          });
+      quickDemoBtn.addEventListener("click", () => {
+        quickDemoMode = !quickDemoMode;
+        quickDemoBtn.classList.toggle("is-active", quickDemoMode);
+        if (mode === "random") {
+          totalSecondsLeft = quickDemoMode ? 30 : 300;
+          moveBarsCompleted = moveBarsCompleted % getTotalCycles();
+          renderCurrentGroove(false);
+          updateTimersUI();
+          rescheduleFutureSynthBeats();
+        }
+      });
 
-          bpmDownBtn.addEventListener("click", () => {
-            setBpm(currentBpm - 5, false);
-          });
+      bpmDownBtn.addEventListener("click", () => {
+        setBpm(getDisplayBpm() - 5);
+      });
 
-          bpmUpBtn.addEventListener("click", () => {
-            setBpm(currentBpm + 5, false);
-          });
+      bpmUpBtn.addEventListener("click", () => {
+        setBpm(getDisplayBpm() + 5);
+      });
 
-          let tapTimestamps = [];
-          tapBpmBtn.addEventListener("click", () => {
-            const now = performance.now();
-            if (tapTimestamps.length > 0 && now - tapTimestamps[tapTimestamps.length - 1] > 2000) {
-              tapTimestamps = [];
-            }
-            tapTimestamps.push(now);
-            if (tapTimestamps.length > 8) {
-              tapTimestamps.shift();
-            }
-            if (tapTimestamps.length >= 3) {
-              let totalDelta = 0;
-              for (let i = 1; i < tapTimestamps.length; i++) {
-                totalDelta += tapTimestamps[i] - tapTimestamps[i - 1];
-              }
-              const avgDelta = totalDelta / (tapTimestamps.length - 1);
-              if (avgDelta > 0) {
-                setBpm(60000 / avgDelta, true);
-              }
-            }
-          });
+      let tapTimestamps = [];
+      let tapSequenceCount = 0;
+      tapBpmBtn.addEventListener("click", () => {
+        const now = performance.now();
+        if (tapTimestamps.length > 0 && now - tapTimestamps[tapTimestamps.length - 1] > 2000) {
+          tapTimestamps = [];
+          tapSequenceCount = 0;
+        }
+        tapTimestamps.push(now);
+        tapSequenceCount++;
+        if (tapTimestamps.length > 8) {
+          tapTimestamps.shift();
+        }
+        let tappedBpm = NaN;
+        if (tapTimestamps.length >= 2) {
+          let totalDelta = 0;
+          for (let i = 1; i < tapTimestamps.length; i++) {
+            totalDelta += tapTimestamps[i] - tapTimestamps[i - 1];
+          }
+          const avgDelta = totalDelta / (tapTimestamps.length - 1);
+          if (avgDelta > 0) {
+            tappedBpm = 60000 / avgDelta;
+          }
+        }
+        anchorClockToTap(now, tapSequenceCount, tappedBpm);
+      });
 
-          document.addEventListener("keydown", (e) => {
-            if (!playerModal.classList.contains("is-open")) return;
-            if (e.key === "Escape") {
-              closePlayer();
-            } else if (e.key === " " && !["BUTTON", "SELECT", "INPUT"].includes(document.activeElement.tagName)) {
-              e.preventDefault();
-              playPauseBtn.click();
-            } else if (e.key.toLowerCase() === "n") {
-              document.getElementById("nextMoveBtn").click();
-            } else if (e.key.toLowerCase() === "m" && audioMode === "songs") {
-              playNextSong(true);
-            }
-          });
+      document.addEventListener("keydown", (e) => {
+        if (!playerModal.classList.contains("is-open")) return;
+        if (e.key === "Escape") {
+          closePlayer();
+        } else if (e.key === " " && !["BUTTON", "SELECT", "INPUT"].includes(document.activeElement.tagName)) {
+          e.preventDefault();
+          playPauseBtn.click();
+        } else if (e.key.toLowerCase() === "n") {
+          document.getElementById("nextMoveBtn").click();
+        } else if (e.key.toLowerCase() === "m" && audioMode === "songs") {
+          playNextSong(true);
+        }
+      });
 
-          const calmMotionBtn = document.getElementById("calmMotionBtn");
-          calmMotionBtn.addEventListener("click", () => {
-            const active = document.body.classList.toggle("calm-motion");
-            calmMotionBtn.setAttribute("aria-pressed", String(active));
-            calmMotionBtn.textContent = active ? "Calm Motion: ON" : "Calm Motion: OFF";
-            syncVideoMotion();
-          });
+      const calmMotionBtn = document.getElementById("calmMotionBtn");
+      calmMotionBtn.addEventListener("click", () => {
+        const active = document.body.classList.toggle("calm-motion");
+        calmMotionBtn.setAttribute("aria-pressed", String(active));
+        calmMotionBtn.textContent = active ? "Calm Motion: ON" : "Calm Motion: OFF";
+        syncVideoMotion();
+      });
 
-          let confirmReset = false;
-          const resetStarsBtn = document.getElementById("resetStarsBtn");
-          resetStarsBtn.addEventListener("click", () => {
-            if (!confirmReset) {
-              confirmReset = true;
-              resetStarsBtn.textContent = "Sure?";
-              setTimeout(() => {
-                confirmReset = false;
-                resetStarsBtn.textContent = "Reset";
-              }, 3000);
-              return;
-            }
-            stars = 0;
-            localStorage.setItem("h4_dpa_stars", "0");
-            starCountEl.textContent = "0";
+      let confirmReset = false;
+      const resetStarsBtn = document.getElementById("resetStarsBtn");
+      resetStarsBtn.addEventListener("click", () => {
+        if (!confirmReset) {
+          confirmReset = true;
+          resetStarsBtn.textContent = "Sure?";
+          setTimeout(() => {
             confirmReset = false;
             resetStarsBtn.textContent = "Reset";
-          });
+          }, 3000);
+          return;
+        }
+        stars = 0;
+        localStorage.setItem("h4_dpa_stars", "0");
+        starCountEl.textContent = "0";
+        confirmReset = false;
+        resetStarsBtn.textContent = "Reset";
+      });
 
-          const complianceBtn = document.getElementById("complianceBtn");
-          const compliancePanel = document.getElementById("compliancePanel");
-          const complianceArrow = document.getElementById("complianceArrow");
-          complianceBtn.addEventListener("click", () => {
-            const expanded = complianceBtn.getAttribute("aria-expanded") === "true";
-            complianceBtn.setAttribute("aria-expanded", String(!expanded));
-            compliancePanel.hidden = expanded;
-            complianceArrow.textContent = expanded ? "▼" : "▲";
-          });
+      const complianceBtn = document.getElementById("complianceBtn");
+      const compliancePanel = document.getElementById("compliancePanel");
+      const complianceArrow = document.getElementById("complianceArrow");
+      complianceBtn.addEventListener("click", () => {
+        const expanded = complianceBtn.getAttribute("aria-expanded") === "true";
+        complianceBtn.setAttribute("aria-expanded", String(!expanded));
+        compliancePanel.hidden = expanded;
+        complianceArrow.textContent = expanded ? "▼" : "▲";
+      });
 
-          document.getElementById("toggleOfflineBtn").addEventListener("click", () => {
-            document.body.classList.toggle("offline-mode");
-            document.body.classList.toggle("calm-motion", document.body.classList.contains("offline-mode"));
-            syncVideoMotion();
-            syncMusicUI();
-            if (isOfflineMode() && isPlaying) {
-              stopSongClockRaf();
-              songAudio.pause();
-              if (!beatTimerId) beatTimerId = setInterval(() => runBeatTick(false), getBeatMs());
-            }
-          });
-          document.getElementById("exitOfflineBtn").addEventListener("click", () => {
-            document.body.classList.remove("offline-mode", "calm-motion");
-            syncVideoMotion();
-            syncMusicUI();
-            if (isPlaying && isSongPlaybackEnabled()) {
-              loadAndPlayCurrentSong(false);
-            }
-          });
+      document.getElementById("toggleOfflineBtn").addEventListener("click", () => {
+        document.body.classList.toggle("offline-mode");
+        document.body.classList.toggle("calm-motion", document.body.classList.contains("offline-mode"));
+        syncVideoMotion();
+        syncMusicUI();
+        if (isOfflineMode() && isPlaying) {
+          stopBeatClocks();
+          songAudio.pause();
+          startSynthBeatClock(false, false);
+        } else if (!isOfflineMode() && isPlaying && isSongPlaybackEnabled()) {
+          loadAndPlayCurrentSong(false);
+        }
+      });
+      document.getElementById("exitOfflineBtn").addEventListener("click", () => {
+        document.body.classList.remove("offline-mode", "calm-motion");
+        syncVideoMotion();
+        syncMusicUI();
+        if (isPlaying && isSongPlaybackEnabled()) {
+          loadAndPlayCurrentSong(false);
+        }
+      });
 
           const workshopForm = document.getElementById("workshopForm");
           const formError = document.getElementById("formError");
@@ -3155,6 +3640,29 @@
           </div>
         `;
           });
+
+          // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
+          window.__h4DpaSync = {
+            getVisualOffsetMs: () => visualSyncOffsetMs,
+            setVisualOffsetMs: setVisualSyncOffsetMs,
+            getSongBeatsElapsed,
+            getCurrentSong,
+            getAudioElement: () => songAudio,
+            getState: () => ({
+              isPlaying,
+              audioMode,
+              currentBpm,
+              currentSongId,
+              currentBeatInEight,
+              hasActiveBeat,
+              lastRenderedBeatIndex,
+              moveBarsCompleted,
+              visualSyncOffsetMs,
+              playbackRate: songAudio.playbackRate,
+              currentTime: songAudio.currentTime,
+            }),
+            SONGS,
+          };
         }) ();
   </script>
 </body>
