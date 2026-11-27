@@ -80,7 +80,7 @@ function sendQueuedLeadEmail_(leadId, rowHint, staff = false) {
     SpreadsheetApp.flush();
     status = "Sending";
     try {
-      MailApp.sendEmail(message);
+      sendSignupMessage_(message);
     } catch {
       statusCell.setValue("Needs review");
       SpreadsheetApp.flush();
@@ -96,6 +96,64 @@ function sendQueuedLeadEmail_(leadId, rowHint, staff = false) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// Use Gmail's sending API. MailApp accepted sends that subsequently bounced
+// externally in production. An API message ID confirms acceptance, not delivery.
+function sendSignupMessage_(message) {
+  const result = Gmail.Users.Messages.send({ raw: buildGmailRawMessage_(message) }, "me");
+  if (!result || typeof result.id !== "string" || !result.id) {
+    throw new Error("Gmail did not confirm the send attempt.");
+  }
+  return result.id;
+}
+
+function buildGmailRawMessage_(message) {
+  if (!isSingleSignupEmail_(message.to) ||
+      (message.replyTo && !isSingleSignupEmail_(message.replyTo))) {
+    throw new Error("Invalid email recipient or reply address.");
+  }
+  const encodeHeader = (value) => {
+    if (typeof value !== "string" || /[\r\n]/.test(value) || value.length > 512) {
+      throw new Error("Invalid email header.");
+    }
+    // Keep each RFC 2047 encoded word below 75 characters without splitting
+    // a UTF-8 character. Folding also keeps long school names off one line.
+    const words = [];
+    let chunk = "";
+    for (const char of value) {
+      if (Utilities.base64Encode(chunk + char, Utilities.Charset.UTF_8).length > 60) {
+        words.push("=?UTF-8?B?" + Utilities.base64Encode(chunk, Utilities.Charset.UTF_8) + "?=");
+        chunk = "";
+      }
+      chunk += char;
+    }
+    words.push("=?UTF-8?B?" + Utilities.base64Encode(chunk, Utilities.Charset.UTF_8) + "?=");
+    return words.join("\r\n ");
+  };
+  const encodeBody = (value) => Utilities.base64Encode(String(value || ""), Utilities.Charset.UTF_8)
+    .match(/.{1,76}/g)?.join("\r\n") || "";
+  const headers = [
+    "From: " + encodeHeader(message.name || "H4 Community") + " <" + H4_REPLY_EMAIL + ">",
+    "To: " + message.to,
+    "Subject: " + encodeHeader(message.subject),
+    "MIME-Version: 1.0"
+  ];
+  if (message.replyTo) headers.push("Reply-To: " + message.replyTo);
+  let mime;
+  if (message.htmlBody) {
+    const boundary = "h4-" + Utilities.getUuid();
+    headers.push('Content-Type: multipart/alternative; boundary="' + boundary + '"');
+    const parts = [["text/plain", message.body], ["text/html", message.htmlBody]].map(([type, body]) => (
+      "--" + boundary + "\r\nContent-Type: " + type + "; charset=UTF-8\r\n" +
+      "Content-Transfer-Encoding: base64\r\n\r\n" + encodeBody(body)
+    ));
+    mime = headers.join("\r\n") + "\r\n\r\n" + parts.join("\r\n") + "\r\n--" + boundary + "--\r\n";
+  } else {
+    headers.push("Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64");
+    mime = headers.join("\r\n") + "\r\n\r\n" + encodeBody(message.body) + "\r\n";
+  }
+  return Utilities.base64EncodeWebSafe(mime, Utilities.Charset.UTF_8);
 }
 
 // Install a time-driven trigger for this function under the deployer's account.

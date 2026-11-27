@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { gmailUtilities, readGmailMessage } from "./gmail-test-helpers.mjs";
 
 const load = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 
@@ -63,18 +64,24 @@ function testSheet({ staff = false } = {}) {
       flush() {},
       openById: () => ({ getSheetByName: () => tab, getSpreadsheetTimeZone: () => "America/Toronto" })
     },
-    Utilities: { formatDate: (date) => date.toISOString().slice(0, 19) },
+    Utilities: { ...gmailUtilities, formatDate: (date) => date.toISOString().slice(0, 19) },
     MailApp: {
       getRemainingDailyQuota: () => quota,
-      sendEmail(message) {
+      sendEmail() { assert.fail("MailApp must not send confirmations or staff alerts"); }
+    },
+    Gmail: { Users: { Messages: {
+      send({ raw }, userId) {
+        assert.equal(userId, "me");
+        const { message } = readGmailMessage(raw);
         assert.equal(locked, true);
         assert.ok(rows.some((row) => ["Email Status", "Staff Notification Status"]
           .some((column) => row[headers.indexOf(column)] === "Sending")));
         if (mailError === true || mailError === message.to) throw new Error("Uncertain outcome");
         messages.push(message);
         quota -= 1;
+        return mailError === "missing-id" ? {} : { id: "gmail-" + messages.length };
       }
-    },
+    } } },
     ContentService: {
       MimeType: { JSON: "json" },
       createTextOutput(value) { return { setMimeType: () => value }; }
@@ -210,6 +217,15 @@ test("ambiguous send needs manual review and the trigger does not resend it", ()
   sheet.setMailError(false);
   sheet.process();
   assert.equal(sheet.messages.length, 0);
+});
+
+test("a Gmail response without a message ID never records Sent or retries automatically", () => {
+  const sheet = testSheet();
+  sheet.setMailError("missing-id");
+  assert.equal(sheet.send().emailStatus, "Needs review");
+  assert.equal(sheet.get("Email Sent At"), "");
+  sheet.process();
+  assert.equal(sheet.messages.length, 1);
 });
 
 test("recipient lists are rejected before a Sheet write or email send", () => {
