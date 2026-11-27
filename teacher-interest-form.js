@@ -302,9 +302,61 @@
         if (item) choose(item);
       },
       clear: () => clearValue(false),
+      setRaw(id, label) {
+        hiddenInput.value = id || "";
+        selectedLabel = id ? (label || "") : "";
+        input.value = label || "";
+        input.setAttribute("aria-invalid", "false");
+        input.classList.remove("is-field-invalid");
+        close();
+        syncClearIcon();
+      },
       close,
       syncClearIcon
     };
+  }
+
+  const emptySchoolState = () => ({ boardId: "", boardText: "", schoolId: "", schoolText: "", manualName: "" });
+  const schoolStateByPath = {
+    [WORKSHOP]: emptySchoolState(),
+    [FREE_VIDEOS]: emptySchoolState()
+  };
+
+  function saveSchoolState(path) {
+    if (path !== WORKSHOP && path !== FREE_VIDEOS) return;
+    schoolStateByPath[path] = {
+      boardId: boardId.value,
+      boardText: boardSearch.value,
+      schoolId: schoolId.value,
+      schoolText: schoolSearch.value,
+      manualName: manualName.value
+    };
+  }
+
+  function restoreSchoolState(path) {
+    const saved = schoolStateByPath[path] || emptySchoolState();
+    boardCombobox.setRaw(saved.boardId, saved.boardText);
+    schoolCombobox.setRaw(saved.schoolId, saved.schoolText);
+    manualName.value = saved.manualName;
+    syncSchoolPickerState();
+  }
+
+  function getCompleteSchoolSelection() {
+    const bId = boardId.value;
+    const sId = schoolId.value;
+    const mName = manualName.value.trim();
+    if (bId === "other") {
+      return mName ? { boardId: "other", schoolId: "", schoolName: mName } : null;
+    }
+    if (/^B\d+$/.test(bId) && H4_SCHOOL_DIRECTORY[bId]) {
+      if (sId === "manual") {
+        return mName ? { boardId: bId, schoolId: "manual", schoolName: mName } : null;
+      }
+      if (/^\d+$/.test(sId) && H4_SCHOOL_DIRECTORY[bId][1]?.[sId]) {
+        return { boardId: bId, schoolId: sId, schoolName: "" };
+      }
+    }
+    return null;
   }
 
   function updateManualSchool() {
@@ -314,7 +366,7 @@
     const enabled = schoolActive && isManual;
     manualField.hidden = !enabled;
     manualName.disabled = !enabled;
-    manualName.required = enabled && (activeInterest === WORKSHOP || Boolean(boardId.value));
+    manualName.required = enabled && activeInterest === WORKSHOP;
     if (!enabled) {
       manualName.value = "";
       manualName.setAttribute("aria-invalid", "false");
@@ -330,7 +382,7 @@
     const schoolEnabled = schoolActive && hasDirectoryBoard && !isOther;
     schoolSearch.disabled = !schoolEnabled;
     schoolSearch.placeholder = schoolEnabled ? "Search schools" : "Select a board first";
-    schoolSearch.required = schoolEnabled && (activeInterest === WORKSHOP || Boolean(boardId.value));
+    schoolSearch.required = schoolEnabled && activeInterest === WORKSHOP;
     schoolCombobox.syncClearIcon();
     updateManualSchool();
   }
@@ -485,12 +537,14 @@
       lastAttempt = undefined;
     }
     const previous = activeInterest;
+    saveSchoolState(previous);
     activeInterest = interest;
     if (previous !== interest) {
       optionalSchoolDetails.open = false;
       optionalWorkshopDetails.open = false;
       boardCombobox.close();
       schoolCombobox.close();
+      restoreSchoolState(interest);
     }
     clearValidationVisuals();
     updateView({ focus: options.focus !== false });
@@ -498,6 +552,7 @@
 
   function returnToChooser() {
     if (sending) return;
+    saveSchoolState(activeInterest);
     activeInterest = "";
     boardCombobox.close();
     schoolCombobox.close();
@@ -509,6 +564,8 @@
     form.reset();
     activeInterest = "";
     lastAttempt = undefined;
+    schoolStateByPath[WORKSHOP] = emptySchoolState();
+    schoolStateByPath[FREE_VIDEOS] = emptySchoolState();
     boardCombobox.clear();
     schoolCombobox.clear();
     optionalSchoolDetails.open = false;
@@ -542,8 +599,6 @@
     const isFree = activeInterest === FREE_VIDEOS;
     const isWorkshop = activeInterest === WORKSHOP;
     const isParent = role.value === "Parent / Caregiver";
-    const includeOptionalSchool = isFree && !isParent && optionalSchoolDetails.open;
-    const includeSchool = isWorkshop || includeOptionalSchool;
 
     if (!isFree && !teacherName.value.trim()) {
       showError("Please enter your full name.", teacherName);
@@ -571,22 +626,6 @@
         showError("Please enter your school name.", manualName);
         return;
       }
-    } else if (includeOptionalSchool) {
-      const hasBoardInput = Boolean(boardSearch.value.trim() || boardId.value);
-      if (hasBoardInput) {
-        if (!boardId.value) {
-          showError("Please select a school board from the list, or clear the field.", boardSearch);
-          return;
-        }
-        if (boardId.value !== "other" && !schoolId.value) {
-          showError("Please select your school or clear the school board.", schoolSearch);
-          return;
-        }
-        if ((boardId.value === "other" || schoolId.value === "manual") && !manualName.value.trim()) {
-          showError("Please enter your school name or clear the school board.", manualName);
-          return;
-        }
-      }
     }
 
     const endpoint = (window.H4_TEACHER_FORM_CONFIG?.endpoint || form.dataset.endpoint || "").trim();
@@ -595,11 +634,10 @@
       return;
     }
 
-    const activeBoardId = includeSchool ? boardId.value : "";
-    const activeSchoolId = includeSchool && activeBoardId && activeBoardId !== "other" ? schoolId.value : "";
-    const activeSchoolName = includeSchool && (activeBoardId === "other" || activeSchoolId === "manual")
-      ? manualName.value.trim()
-      : "";
+    const selectedSchool = (isWorkshop || (isFree && !isParent)) ? getCompleteSchoolSelection() : null;
+    const activeBoardId = selectedSchool ? selectedSchool.boardId : "";
+    const activeSchoolId = selectedSchool ? selectedSchool.schoolId : "";
+    const activeSchoolName = selectedSchool ? selectedSchool.schoolName : "";
     const activeGrades = isWorkshop
       ? [...workshopDetails.querySelectorAll('input[name="grades"]:checked')].map((cb) => cb.value)
       : [];

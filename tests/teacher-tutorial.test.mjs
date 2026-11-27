@@ -375,7 +375,11 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     document.getElementById("requestTutorialPromoCta").click();
     await new Promise((r) => setTimeout(r, 200));
     const topbarBottom = document.querySelector(".topbar").getBoundingClientRect().bottom;
-    const headingRect = document.getElementById("teacher-tutorial-heading").getBoundingClientRect();
+    const formHeading = document.getElementById("bookingFormHeading");
+    const headingRect = formHeading.getBoundingClientRect();
+    const activeId = document.activeElement?.id || "";
+    const workshopBoardDidNotCarryOver = document.getElementById("boardId").value === "" &&
+      document.getElementById("schoolId").value === "";
     document.body.classList.remove("calm-motion");
     return {
       selectedInterest: window.__h4TeacherForm.getSelectedInquiryType(),
@@ -386,8 +390,10 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
       optionalSchoolVisible: !document.getElementById("optionalSchoolDetails").hidden,
       optionalSchoolCollapsed: !document.getElementById("optionalSchoolDetails").open,
       optionalWorkshopHidden: document.getElementById("optionalWorkshopDetails").hidden,
-      headingVisibleBelowTopbar: headingRect.top >= topbarBottom - 2 && headingRect.top < window.innerHeight,
-      headingText: document.getElementById("teacher-tutorial-heading").textContent.trim(),
+      workshopBoardDidNotCarryOver,
+      formHeadingFocused: activeId === "bookingFormHeading",
+      headingVisibleBelowTopbar: headingRect.top >= topbarBottom - 2 && headingRect.bottom <= window.innerHeight,
+      formHeadingText: formHeading.textContent.trim(),
       explainerText: document.getElementById("teacher-tutorial-section").textContent.replace(/\\s+/g, " ").trim(),
       submitText: document.getElementById("workshopSubmitBtn").textContent.trim()
     };
@@ -401,8 +407,10 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(navResult.optionalSchoolVisible, true, "Staff must see collapsed Add your school (optional)");
   assert.equal(navResult.optionalSchoolCollapsed, true, "Add your school (optional) must start collapsed");
   assert.equal(navResult.optionalWorkshopHidden, true);
-  assert.equal(navResult.headingVisibleBelowTopbar, true, "Tutorial heading must remain visible below sticky header");
-  assert.equal(navResult.headingText, "Teach Dance with Confidence.");
+  assert.equal(navResult.workshopBoardDidNotCarryOver, true, "Workshop school must not carry over to Free Videos");
+  assert.equal(navResult.formHeadingFocused, true, "Free tutorial CTA must focus the form heading");
+  assert.equal(navResult.headingVisibleBelowTopbar, true, "Form heading must land visibly below sticky header");
+  assert.equal(navResult.formHeadingText, "Get the Free Dance Videos");
   assert.ok(navResult.explainerText.includes("No dance experience? No problem!"));
   assert.ok(navResult.explainerText.includes("Learn the 10 foundational dance moves."));
   assert.ok(navResult.explainerText.includes("Designed for educators. No dance experience required."));
@@ -738,14 +746,127 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   const mobPromosShot = await cdp.send("Page.captureScreenshot", { format: "png" });
   fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-promos.png"), Buffer.from(mobPromosShot.data, "base64"));
 
-  await evalInPage(cdp, `
+  // Tap actual Free Tutorial promo button on mobile and capture screenshot IMMEDIATELY before any manual scrolling
+  const mobileTutorialLanding = await evalInPage(cdp, `
     document.body.classList.add("calm-motion");
     document.getElementById("requestTutorialPromoCta").click();
     await new Promise((r) => setTimeout(r, 200));
+    const topbarBottom = document.querySelector(".topbar").getBoundingClientRect().bottom;
+    const heading = document.getElementById("bookingFormHeading");
+    const rect = heading.getBoundingClientRect();
+    const activeId = document.activeElement?.id || "";
     document.body.classList.remove("calm-motion");
+    return {
+      interest: window.__h4TeacherForm.getSelectedInquiryType(),
+      headingText: heading.textContent.trim(),
+      focused: activeId === "bookingFormHeading",
+      visibleBelowTopbar: rect.top >= topbarBottom - 2 && rect.bottom <= window.innerHeight,
+      rectTop: Math.round(rect.top),
+      topbarBottom: Math.round(topbarBottom)
+    };
   `);
-  const mobFormShot = await cdp.send("Page.captureScreenshot", { format: "png" });
-  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-tutorial-section.png"), Buffer.from(mobFormShot.data, "base64"));
+  const mobTutorialLandingShot = await cdp.send("Page.captureScreenshot", { format: "png" });
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-tutorial-cta-landing.png"), Buffer.from(mobTutorialLandingShot.data, "base64"));
+  assert.equal(mobileTutorialLanding.interest, "Free Online Dance Tutorial");
+  assert.equal(mobileTutorialLanding.headingText, "Get the Free Dance Videos");
+  assert.equal(mobileTutorialLanding.focused, true, "Mobile free tutorial button must focus the form heading");
+  assert.equal(
+    mobileTutorialLanding.visibleBelowTopbar,
+    true,
+    `Mobile Free Videos heading must be visible below sticky header (top=${mobileTutorialLanding.rectTop}, topbarBottom=${mobileTutorialLanding.topbarBottom})`
+  );
+
+  // Tap actual Workshop button in topbar on mobile and verify heading visibility + keyboard focus
+  const mobileWorkshopLanding = await evalInPage(cdp, `
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.body.classList.add("calm-motion");
+    document.getElementById("bookWorkshopTopCta").click();
+    await new Promise((r) => setTimeout(r, 200));
+    const topbarBottom = document.querySelector(".topbar").getBoundingClientRect().bottom;
+    const heading = document.getElementById("bookingFormHeading");
+    const rect = heading.getBoundingClientRect();
+    const activeId = document.activeElement?.id || "";
+    document.body.classList.remove("calm-motion");
+    return {
+      interest: window.__h4TeacherForm.getSelectedInquiryType(),
+      headingText: heading.textContent.trim(),
+      focused: activeId === "bookingFormHeading",
+      visibleBelowTopbar: rect.top >= topbarBottom - 2 && rect.bottom <= window.innerHeight,
+      rectTop: Math.round(rect.top),
+      topbarBottom: Math.round(topbarBottom)
+    };
+  `);
+  assert.equal(mobileWorkshopLanding.interest, "Full-Day School Workshop");
+  assert.equal(mobileWorkshopLanding.headingText, "Request Workshop Dates");
+  assert.equal(mobileWorkshopLanding.focused, true, "Mobile workshop button must focus the form heading");
+  assert.equal(
+    mobileWorkshopLanding.visibleBelowTopbar,
+    true,
+    `Mobile Workshop heading must be visible below sticky header (top=${mobileWorkshopLanding.rectTop}, topbarBottom=${mobileWorkshopLanding.topbarBottom})`
+  );
+
+  // Mobile optional-school regressions using mocked endpoint:
+  // (a) Workshop school must NOT carry over to Free Videos
+  // (b) Teacher with ONLY a board selected in optional school can still submit (incomplete school omitted)
+  // (c) Teacher with a COMPLETE board+school selected on Free Videos submits it even after collapsing the section
+  srv.setMode("ok");
+  const mobileOptionalRes = await evalInPage(cdp, `
+    const update = (el, type, val) => { el.value = val; el.dispatchEvent(new Event(type, { bubbles: true })); };
+    const form = document.getElementById("workshopForm");
+    form.setAttribute("data-endpoint", "${srv.baseUrl}/__mock_teacher_submit");
+
+    // Put a school in Workshop first, then tap Free Tutorial button
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    document.body.classList.add("calm-motion");
+    document.getElementById("requestTutorialPromoCta").click();
+    document.body.classList.remove("calm-motion");
+
+    // Open optional school on Free Videos -> must NOT have Workshop's board/school carried over
+    const optDetails = document.getElementById("optionalSchoolDetails");
+    optDetails.open = true;
+    const noCarryOver = document.getElementById("boardId").value === "" && document.getElementById("schoolId").value === "";
+
+    // Select ONLY a board (no school) and submit with valid email + role
+    update(document.getElementById("teacherEmail"), "input", "partial@example.org");
+    update(document.getElementById("signupRole"), "change", "Teacher");
+    window.__h4TeacherForm.selectBoardById("B67059");
+    form.requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    const partialSaved = !document.getElementById("formReadyPanel").hidden;
+
+    // Now start fresh on Free Videos, select COMPLETE board+school, collapse section, and submit
+    document.getElementById("formEditBtn").click();
+    document.getElementById("choiceFreeVideosBtn").click();
+    update(document.getElementById("teacherEmail"), "input", "complete@example.org");
+    update(document.getElementById("signupRole"), "change", "Teacher");
+    optDetails.open = true;
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    optDetails.open = false;
+    form.requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    const collapsedCompleteSaved = !document.getElementById("formReadyPanel").hidden;
+
+    form.setAttribute("data-endpoint", "");
+    document.getElementById("formEditBtn").click();
+    return { noCarryOver, partialSaved, collapsedCompleteSaved };
+  `);
+  assert.equal(mobileOptionalRes.noCarryOver, true, "Workshop school must not carry over into Free Videos optional section");
+  assert.equal(mobileOptionalRes.partialSaved, true, "Teacher with only a board selected in optional school must succeed");
+  assert.equal(mobileOptionalRes.collapsedCompleteSaved, true, "Complete Free Videos school selection must submit after collapsing");
+  const mobileCompletePayload = srv.receivedRequests.at(-1).payload;
+  const mobilePartialPayload = srv.receivedRequests.at(-2).payload;
+  assert.equal(mobilePartialPayload.interest, "Free Online Dance Tutorial");
+  assert.equal(mobilePartialPayload.email, "partial@example.org");
+  assert.equal(mobilePartialPayload.boardId, "", "Incomplete optional school (board only) must be omitted");
+  assert.equal(mobilePartialPayload.schoolId, "");
+  assert.equal(mobilePartialPayload.schoolName, "");
+  assert.equal(mobileCompletePayload.interest, "Free Online Dance Tutorial");
+  assert.equal(mobileCompletePayload.email, "complete@example.org");
+  assert.equal(mobileCompletePayload.boardId, "B67059", "Complete school entered on Free Videos must be included even after collapsing");
+  assert.equal(mobileCompletePayload.schoolId, "733024");
+  assert.equal(mobileCompletePayload.schoolName, "");
 
   // Capture mobile screenshots of Chooser, Free Videos, Workshop, and Learn More
   await evalInPage(cdp, `

@@ -4595,30 +4595,31 @@
 
           const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
           const bookWorkshopTopCta = document.getElementById("bookWorkshopTopCta");
-          const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
-          const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
           const bookWorkshopSection = document.getElementById("book-workshop");
           const bookingFormHeading = document.getElementById("bookingFormHeading");
 
-          requestTutorialPromoCta.addEventListener("click", (event) => {
-            event.preventDefault();
-            window.__h4TeacherForm?.selectInterest("Free Online Dance Tutorial", { focus: false });
+          function openSignupFromCta(interest) {
+            window.__h4TeacherForm?.selectInterest(interest, { focus: false });
+            const target = bookingFormHeading || bookWorkshopSection;
+            if (!target) return;
             const topbar = document.querySelector(".topbar");
             const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
-            const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
+            const targetTop = Math.max(0, window.scrollY + target.getBoundingClientRect().top - headerOffset);
             window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
-            teacherTutorialHeading.focus({ preventScroll: true });
-          });
+            target.focus({ preventScroll: true });
+          }
 
-          if (bookWorkshopTopCta && bookWorkshopSection) {
+          if (requestTutorialPromoCta) {
+            requestTutorialPromoCta.addEventListener("click", (event) => {
+              event.preventDefault();
+              openSignupFromCta("Free Online Dance Tutorial");
+            });
+          }
+
+          if (bookWorkshopTopCta) {
             bookWorkshopTopCta.addEventListener("click", (event) => {
               event.preventDefault();
-              window.__h4TeacherForm?.selectInterest("Full-Day School Workshop", { focus: false });
-              const topbar = document.querySelector(".topbar");
-              const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
-              const targetTop = Math.max(0, window.scrollY + bookWorkshopSection.getBoundingClientRect().top - headerOffset);
-              window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
-              bookingFormHeading?.focus({ preventScroll: true });
+              openSignupFromCta("Full-Day School Workshop");
             });
           }
 
