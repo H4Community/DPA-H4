@@ -4,6 +4,9 @@ const LEAD_HEADERS = [
   "Status", "Next Follow-Up Date", "Notes", "Role", "Email Status", "Email Sent At"
 ];
 
+const STAFF_STATUS_HEADER = "Staff Notification Status";
+const STAFF_SENT_AT_HEADER = "Staff Notification Sent At";
+
 function doPost(event) {
   const content = event?.postData?.contents || "";
   let lead;
@@ -20,6 +23,14 @@ function doPost(event) {
   if (saved.saved && saved.emailStatus === "Queued") {
     saved.emailStatus = sendQueuedLeadEmail_(lead.id, rowHint);
   }
+  if (saved.saved && rowHint && !isFreeResourceInterest_(lead.interest)) {
+    // The saved row is the source of truth. A staff alert failure must not affect the response.
+    try {
+      sendQueuedLeadEmail_(lead.id, rowHint, true);
+    } catch {
+      // The trigger retries queued rows. Ambiguous attempts remain available for manual review.
+    }
+  }
   return teacherLeadResponse_(saved);
 }
 
@@ -33,7 +44,9 @@ function openLeadSheet_() {
   if (!LEAD_HEADERS.every((header) => headers.filter((cell) => cell === header).length === 1)) {
     return null;
   }
-  return { id, spreadsheet, tab, headers };
+  const staffReady = [STAFF_STATUS_HEADER, STAFF_SENT_AT_HEADER]
+    .every((header) => headers.filter((cell) => cell === header).length === 1);
+  return { id, spreadsheet, tab, headers, staffReady };
 }
 
 function findLeadRow_(tab, column, lastRow, leadId) {
@@ -83,7 +96,9 @@ function saveTeacherLead_(lead) {
       "Notes": "",
       "Role": lead.role,
       "Email Status": emailStatus,
-      "Email Sent At": ""
+      "Email Sent At": "",
+      [STAFF_STATUS_HEADER]: isFreeResourceInterest_(lead.interest) ? "" : "Queued",
+      [STAFF_SENT_AT_HEADER]: ""
     };
     // RAW stores user input without formula evaluation or numeric conversion.
     Sheets.Spreadsheets.Values.update({
@@ -98,18 +113,38 @@ function saveTeacherLead_(lead) {
 }
 
 function validateTeacherLead_(input) {
-  const interests = ["Full-Day School Workshop", "Free Online Dance Tutorial", "Learn More"];
+  const schoolProgramInterests = [
+    "Hip-Hop & Breaking Workshops",
+    "DPA & Classroom Dance",
+    "Multi-Session Dance Programs",
+    "School-Wide Events & Celebrations",
+    "Full-Day School Workshop"
+  ];
+  const freeTutorialInterests = ["Free Teacher Tutorial", "Free Online Dance Tutorial"];
+  const exploreInterests = ["Other / Let's Explore", "Learn More"];
+  const interests = [...schoolProgramInterests, ...freeTutorialInterests, ...exploreInterests];
   const roles = ["Teacher", "Principal", "Parent / Caregiver"];
   const gradeOptions = ["JK", "SK", ...Array.from({ length: 12 }, (_, i) => String(i + 1))];
-  const timingOptions = ["", "January 2027", "February 2027", "March 2027", "Spring 2027 (April–June)", "Flexible / Anytime"];
+  const timingOptions = [
+    "",
+    "Flexible / Anytime",
+    "This Month",
+    "Next 1–2 Months",
+    "Later This School Year",
+    "Next School Year",
+    "January 2027",
+    "February 2027",
+    "March 2027",
+    "Spring 2027 (April–June)"
+  ];
   const readText = (value, max) => {
     if (typeof value !== "string" || value.length > max) throw new Error("Invalid field");
     return value.trim();
   };
   const fullName = readText(input.fullName, 120);
   const email = readText(input.email, 254);
-  const workshop = input.interest === interests[0];
-  const free = input.interest === interests[1];
+  const workshop = schoolProgramInterests.includes(input.interest);
+  const free = freeTutorialInterests.includes(input.interest);
   if ((!free && !fullName) || !isSingleSignupEmail_(email) ||
       !roles.includes(input.role) || !interests.includes(input.interest) || input.website ||
       typeof input.submissionKey !== "string" ||

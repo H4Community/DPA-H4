@@ -9,12 +9,13 @@ const load = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const youtubeUrl = "https://youtu.be/bgyMPYTSN7Y?feature=shared";
 const freeInterest = "Free Online Dance Tutorial";
 
-function testSheet() {
+function testSheet({ staff = false } = {}) {
   const headers = [
     "Notes", "Contact Email", "Full Name", "Lead ID", "School", "School Board", "Submitted At",
     "Phone Number", "Teacher Instagram", "Interest", "Grades", "Preferred Timing", "Status",
     "Next Follow-Up Date", "Role", "Email Status", "Email Sent At"
   ];
+  if (staff) headers.push("Staff Notification Status", "Staff Notification Sent At");
   const rows = [];
   const messages = [];
   let quota = 100;
@@ -67,8 +68,9 @@ function testSheet() {
       getRemainingDailyQuota: () => quota,
       sendEmail(message) {
         assert.equal(locked, true);
-        assert.equal(rows.find((row) => row[headers.indexOf("Email Status")] === "Sending")?.length, headers.length);
-        if (mailError) throw new Error("Uncertain outcome");
+        assert.ok(rows.some((row) => ["Email Status", "Staff Notification Status"]
+          .some((column) => row[headers.indexOf(column)] === "Sending")));
+        if (mailError === true || mailError === message.to) throw new Error("Uncertain outcome");
         messages.push(message);
         quota -= 1;
       }
@@ -133,7 +135,7 @@ test("write maps reordered headers, uses literal values, and deduplicates retrie
   assert.equal(sheet.get("Role"), "Teacher");
   assert.equal(sheet.get("Email Status"), "Sent");
   assert.equal(sheet.messages.length, 1);
-  assert.equal(sheet.messages[0].subject, "We received your H4 workshop request");
+  assert.equal(sheet.messages[0].subject, "We received your H4 school programming request");
   assert.ok(!sheet.messages[0].htmlBody.includes(youtubeUrl));
 });
 
@@ -288,4 +290,135 @@ test("remains backwards compatible with live form payloads and rejects mismatche
     submissionKey: randomUUID(), email: "other@example.org", interest: freeInterest,
     role: "Teacher", fullName: "", boardId: "B66052", schoolId: "733024", schoolName: ""
   }).code, "INVALID_REQUEST");
+});
+
+test("supports all 6 flexible programming inquiry options in sheet records and email notifications", () => {
+  const sheet = testSheet();
+  const programOptions = [
+    "Hip-Hop & Breaking Workshops",
+    "DPA & Classroom Dance",
+    "Multi-Session Dance Programs",
+    "School-Wide Events & Celebrations"
+  ];
+
+  programOptions.forEach((interest, idx) => {
+    const res = sheet.send({
+      submissionKey: randomUUID(),
+      email: `program${idx}@example.org`,
+      interest,
+      preferredTiming: "Flexible / Anytime"
+    });
+    assert.equal(res.saved, true);
+    assert.equal(res.emailStatus, "Sent");
+    assert.equal(sheet.get("Interest"), interest);
+    assert.equal(sheet.get("Preferred Timing"), "Flexible / Anytime");
+    const msg = sheet.messages.at(-1);
+    assert.equal(msg.subject, "We received your H4 school programming request");
+    assert.ok(msg.body.includes(interest));
+  });
+
+  const tutorialRes = sheet.send({
+    submissionKey: randomUUID(),
+    email: "tutorial-new@example.org",
+    interest: "Free Teacher Tutorial",
+    fullName: "",
+    boardId: "",
+    schoolId: "",
+    schoolName: "",
+    grades: [],
+    preferredTiming: ""
+  });
+  assert.equal(tutorialRes.saved, true);
+  assert.equal(tutorialRes.emailStatus, "Sent");
+  assert.equal(sheet.get("Interest"), "Free Teacher Tutorial");
+  assert.ok(sheet.messages.at(-1).htmlBody.includes(`href="${youtubeUrl}"`));
+
+  const exploreRes = sheet.send({
+    submissionKey: randomUUID(),
+    email: "explore-new@example.org",
+    interest: "Other / Let's Explore",
+    fullName: "Jordan Principal",
+    role: "Principal",
+    boardId: "",
+    schoolId: "",
+    schoolName: "",
+    grades: [],
+    preferredTiming: ""
+  });
+  assert.equal(exploreRes.saved, true);
+  assert.equal(exploreRes.emailStatus, "Sent");
+  assert.equal(sheet.get("Interest"), "Other / Let's Explore");
+  assert.ok(sheet.messages.at(-1).body.includes("Other / Let's Explore"));
+});
+
+test("staff alerts are separate from confirmations, deduplicated by lead key and restricted to paid and general inquiries", () => {
+  const sheet = testSheet({ staff: true });
+  sheet.properties.H4_LEAD_NOTIFICATION_EMAIL = "staff@example.org";
+  assert.equal(sheet.send().emailStatus, "Sent");
+  assert.equal(sheet.get("Staff Notification Status"), "Sent");
+  assert.ok(sheet.get("Staff Notification Sent At") instanceof Date);
+  assert.equal(sheet.messages[1].to, "staff@example.org");
+  assert.match(sheet.messages[1].subject, /St Mother Teresa Catholic Academy/);
+  for (const label of ["Full Name", "School", "School Board", "Contact Email", "Interest",
+    "Preferred Timing", "Grades", "Phone Number", "Lead ID", "Submitted At"]) {
+    assert.ok(sheet.messages[1].body.includes(label + ": "));
+  }
+  sheet.send();
+  sheet.process();
+  assert.equal(sheet.rows.length, 1);
+  assert.equal(sheet.messages.length, 2);
+  sheet.send({ submissionKey: randomUUID(), interest: "Other / Let's Explore", boardId: "", schoolId: "" });
+  assert.equal(sheet.messages.at(-1).subject, "New H4 School Inquiry — Other / Let's Explore");
+  sheet.send({ submissionKey: randomUUID(), interest: "Free Teacher Tutorial" });
+  assert.equal(sheet.get("Staff Notification Status"), "");
+  assert.equal(sheet.messages.filter((mail) => mail.to === "staff@example.org").length, 2);
+});
+
+test("staff alert quota retry and ambiguous failure preserve the saved response and requester state", () => {
+  const sheet = testSheet({ staff: true });
+  sheet.properties.H4_LEAD_NOTIFICATION_EMAIL = "staff@example.org";
+  sheet.setQuota(1);
+  assert.equal(sheet.send().emailStatus, "Sent");
+  assert.equal(sheet.get("Staff Notification Status"), "Queued");
+  sheet.setQuota(4);
+  sheet.setMailError("staff@example.org");
+  sheet.process();
+  assert.equal(sheet.get("Staff Notification Status"), "Needs review");
+  assert.equal(sheet.get("Email Status"), "Sent");
+  sheet.setMailError(false);
+  sheet.process();
+  assert.equal(sheet.messages.length, 1, "Ambiguous send requires review");
+  const row = sheet.rows[0];
+  row[sheet.headers.indexOf("Staff Notification Status")] = "Queued";
+  sheet.process();
+  assert.equal(sheet.get("Staff Notification Status"), "Sent");
+  assert.equal(sheet.messages.length, 2);
+});
+
+test("test override confines both emails to the authorized test inbox", () => {
+  const sheet = testSheet({ staff: true });
+  sheet.properties.H4_LEAD_NOTIFICATION_EMAIL = "staff@example.org";
+  sheet.properties.TEST_EMAIL_OVERRIDE = "test@example.org";
+  assert.equal(sheet.send().saved, true);
+  assert.deepEqual(sheet.messages.map((mail) => mail.to), ["test@example.org", "test@example.org"]);
+});
+
+test("old sheets accept submissions without staff columns, even with a staff recipient configured", () => {
+  const sheet = testSheet();
+  sheet.properties.H4_LEAD_NOTIFICATION_EMAIL = "staff@example.org";
+  assert.equal(sheet.send().saved, true);
+  sheet.process();
+  assert.equal(sheet.messages.length, 1);
+});
+
+test("both tutorial labels suppress recent confirmations across the rename", () => {
+  for (const [first, second] of [[freeInterest, "Free Teacher Tutorial"], ["Free Teacher Tutorial", freeInterest]]) {
+    const sheet = testSheet({ staff: true });
+    sheet.properties.H4_LEAD_NOTIFICATION_EMAIL = "staff@example.org";
+    assert.equal(sheet.send({ interest: first }).emailStatus, "Sent");
+    assert.equal(sheet.send({ interest: second, submissionKey: randomUUID() }).emailStatus, "Suppressed");
+    assert.equal(sheet.rows[0][sheet.headers.indexOf("Interest")], first);
+    assert.equal(sheet.get("Interest"), second);
+    assert.equal(sheet.messages.length, 1);
+  }
 });
