@@ -1178,6 +1178,30 @@
       background-color: #FFF1F2;
     }
 
+    .school-picker .picker-choice { margin-top: 8px; }
+
+    .grade-choices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
+      gap: 4px;
+    }
+
+    .grade-choices label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-height: 44px;
+      cursor: pointer;
+    }
+
+    .grade-choices input { accent-color: var(--ink); }
+
+    .teacher-form-note,
+    .teacher-optional-contact { margin-bottom: 12px; font-size: 0.85rem; }
+
+    .teacher-optional-contact summary { cursor: pointer; padding: 10px 0; }
+
     .form-error {
       color: #9F1239;
       background: #FFF1F2;
@@ -2279,8 +2303,9 @@
 
         <div class="booking-card" id="bookingCard">
           <h3 id="bookingFormHeading">Request a Workshop or Free Tutorial</h3>
-          <form id="workshopForm" method="POST" action="" data-endpoint="" aria-labelledby="bookingFormHeading"
-            novalidate>
+          <form id="workshopForm" method="POST" action=""
+            data-endpoint="https://script.google.com/macros/s/AKfycbxnRnZxyQfsLfAH-zW6fkPopfjfRlxTcpzaK-NStsaiN5ynDWtGFpeLj_HYEI2KHJ8/exec"
+            aria-labelledby="bookingFormHeading" novalidate>
             <fieldset class="form-fieldset" id="inquiryTypeFieldset">
               <legend>How can H4 help? <span aria-hidden="true">*</span></legend>
               <div class="interest-radio-stack">
@@ -2291,34 +2316,98 @@
                 </div>
                 <div class="interest-choice interest-choice-tutorial">
                   <input type="radio" id="interestFreeTutorial" name="inquiryType" value="Free Online Dance Tutorial" />
-                  <label for="interestFreeTutorial">Free Online Dance Tutorial</label>
+                  <label for="interestFreeTutorial">Free Dance Resources (YouTube)</label>
+                </div>
+                <div class="interest-choice">
+                  <input type="radio" id="interestGeneral" name="inquiryType" value="Learn More" />
+                  <label for="interestGeneral">Learn More</label>
                 </div>
               </div>
             </fieldset>
 
             <div class="form-field">
-              <label for="teacherName">Teacher or Principal Name <span aria-hidden="true">*</span></label>
-              <input type="text" id="teacherName" name="teacherName" placeholder="e.g., Ms. Jordan Lee"
-                autocomplete="name" enterkeyhint="next" required />
-            </div>
-            <div class="form-field">
-              <label for="schoolName">School Name &amp; Board <span aria-hidden="true">*</span></label>
-              <input type="text" id="schoolName" name="schoolName" placeholder="e.g., St. Mother Teresa / TCDSB"
-                autocomplete="organization" enterkeyhint="next" required />
-            </div>
-            <div class="form-field">
-              <label for="targetMonth" id="targetMonthLabel">Preferred Month</label>
-              <select id="targetMonth" name="targetMonth">
-                <option value="January 2027">January 2027</option>
-                <option value="February 2027">February 2027</option>
-                <option value="March 2027">March 2027</option>
-                <option value="Spring 2027 (April–June)">Spring 2027 (April–June)</option>
-                <option value="Flexible / Anytime">Flexible / Anytime</option>
+              <label for="signupRole">I’m a <span aria-hidden="true">*</span></label>
+              <select id="signupRole" name="role" required>
+                <option value="">Select your role</option>
+                <option>Teacher</option>
+                <option>Principal</option>
+                <option>Parent / Caregiver</option>
               </select>
             </div>
-            <div class="form-error" id="formError" role="alert" hidden>
-              Please enter both your name and school name so we can follow up on your request.
+            <div class="form-field">
+              <label for="teacherName">Full Name <span aria-hidden="true">*</span></label>
+              <input type="text" id="teacherName" name="teacherName" placeholder="e.g., Ms. Jordan Lee"
+                autocomplete="name" maxlength="120" enterkeyhint="next" required />
             </div>
+            <div class="form-field">
+              <label for="teacherEmail" id="teacherEmailLabel">Email Address <span aria-hidden="true">*</span></label>
+              <input type="email" id="teacherEmail" name="email" autocomplete="email"
+                placeholder="you@example.com" maxlength="254" required />
+            </div>
+            <div id="signupSchoolDetails">
+              <div class="form-field school-picker">
+                <label for="boardSearch">Find Your School Board</label>
+                <input type="search" id="boardSearch" placeholder="e.g., TCDSB" autocomplete="off" />
+                <label class="picker-choice" for="boardId">School Board <span aria-hidden="true">*</span></label>
+                <select id="boardId" name="boardId" required></select>
+              </div>
+              <div class="form-field school-picker" id="schoolPicker">
+                <label for="schoolSearch">Find Your School</label>
+                <input type="search" id="schoolSearch" placeholder="Select a board first" autocomplete="off" disabled />
+                <label class="picker-choice" for="schoolId">School <span aria-hidden="true">*</span></label>
+                <select id="schoolId" name="schoolId" disabled required></select>
+              </div>
+              <div class="form-field" id="manualSchoolField" hidden>
+                <label for="schoolName">School Name <span aria-hidden="true">*</span></label>
+                <input type="text" id="schoolName" name="schoolName" maxlength="160" disabled />
+              </div>
+            </div>
+            <div id="workshopDetails">
+              <fieldset class="form-fieldset">
+                <legend>Grades (optional)</legend>
+                <div class="grade-choices">
+                  <label><input type="checkbox" name="grades" value="JK" /> JK</label>
+                  <label><input type="checkbox" name="grades" value="SK" /> SK</label>
+                  <label><input type="checkbox" name="grades" value="1" /> 1</label>
+                  <label><input type="checkbox" name="grades" value="2" /> 2</label>
+                  <label><input type="checkbox" name="grades" value="3" /> 3</label>
+                  <label><input type="checkbox" name="grades" value="4" /> 4</label>
+                  <label><input type="checkbox" name="grades" value="5" /> 5</label>
+                  <label><input type="checkbox" name="grades" value="6" /> 6</label>
+                  <label><input type="checkbox" name="grades" value="7" /> 7</label>
+                  <label><input type="checkbox" name="grades" value="8" /> 8</label>
+                  <label><input type="checkbox" name="grades" value="9" /> 9</label>
+                  <label><input type="checkbox" name="grades" value="10" /> 10</label>
+                  <label><input type="checkbox" name="grades" value="11" /> 11</label>
+                  <label><input type="checkbox" name="grades" value="12" /> 12</label>
+                </div>
+              </fieldset>
+              <div class="form-field">
+                <label for="targetMonth">Preferred Timing (optional)</label>
+                <select id="targetMonth" name="targetMonth">
+                  <option value="">Select a date range</option>
+                  <option>January 2027</option>
+                  <option>February 2027</option>
+                  <option>March 2027</option>
+                  <option>Spring 2027 (April–June)</option>
+                  <option>Flexible / Anytime</option>
+                </select>
+              </div>
+            </div>
+            <details class="teacher-optional-contact">
+              <summary>Add a phone number or Instagram (optional)</summary>
+              <div class="form-field">
+                <label for="teacherPhone">Phone Number (including extension)</label>
+                <input type="tel" id="teacherPhone" name="phone" autocomplete="tel" maxlength="40" />
+              </div>
+              <div class="form-field">
+                <label for="teacherInstagram">Teacher Instagram Handle</label>
+                <input type="text" id="teacherInstagram" name="instagram" placeholder="@handle" maxlength="40" />
+              </div>
+            </details>
+            <div hidden><label>Website <input name="website" type="text" tabindex="-1" autocomplete="off" /></label></div>
+            <p class="teacher-form-note">H4 Community will email you about this request.</p>
+            <div class="form-error" id="formError" role="alert" tabindex="-1" hidden></div>
             <button type="submit" class="comic-btn form-submit-btn" id="workshopSubmitBtn">
               Teachers &amp; Principals: Request School Dates →
             </button>
@@ -2328,12 +2417,8 @@
             <h3 id="formReadyTitle" style="margin-bottom: 6px;"></h3>
             <p id="formReadyBody"></p>
             <div class="form-success-actions">
-              <a href="mailto:info@h4community.org" id="formMailtoLink" class="comic-btn"
-                style="width: 100%; background: var(--lime); padding: 11px; min-height: 48px;">
-                ✉️ Open Email to info@h4community.org
-              </a>
               <button type="button" class="comic-btn form-edit-btn" id="formEditBtn">
-                ← Edit Request
+                Start a New Request
               </button>
             </div>
           </div>
@@ -2504,6 +2589,8 @@
     </div>
   </div>
 
+  <script src="data/ontario-schools.js" defer></script>
+  <script src="teacher-interest-form.js" defer></script>
   <script>
     (function () {
       const GROOVES = [
@@ -4239,284 +4326,48 @@
         }
       });
 
-      const FREE_TUTORIAL_INTEREST = "Free Online Dance Tutorial";
-      const WORKSHOP_INTEREST = "Full-Day School Workshop";
-      const workshopForm = document.getElementById("workshopForm");
-      const formError = document.getElementById("formError");
-      const teacherNameInput = document.getElementById("teacherName");
-      const schoolNameInput = document.getElementById("schoolName");
-      const targetMonthSelect = document.getElementById("targetMonth");
-      const targetMonthLabel = document.getElementById("targetMonthLabel");
-      const workshopSubmitBtn = document.getElementById("workshopSubmitBtn");
-      const formReadyPanel = document.getElementById("formReadyPanel");
-      const formReadyTitle = document.getElementById("formReadyTitle");
-      const formReadyBody = document.getElementById("formReadyBody");
-      const formMailtoLink = document.getElementById("formMailtoLink");
-      const formEditBtn = document.getElementById("formEditBtn");
-      const inquiryRadios = Array.from(workshopForm.querySelectorAll('input[name="inquiryType"]'));
-      const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
-      const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
-      const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
-      let isTeacherFormSubmitting = false;
+          const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
+          const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
+          const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
 
-      function getSelectedInquiryType() {
-        const checked = inquiryRadios.find((r) => r.checked);
-        return checked ? checked.value : WORKSHOP_INTEREST;
-      }
-
-      function getTeacherFormEndpoint() {
-        if (window.H4_TEACHER_FORM_CONFIG && typeof window.H4_TEACHER_FORM_CONFIG.endpoint === "string" && window.H4_TEACHER_FORM_CONFIG.endpoint.trim()) {
-          return window.H4_TEACHER_FORM_CONFIG.endpoint.trim();
-        }
-        return (workshopForm.getAttribute("data-endpoint") || "").trim();
-      }
-
-      function syncInquiryFormUI() {
-        const isTutorial = getSelectedInquiryType() === FREE_TUTORIAL_INTEREST;
-        if (targetMonthLabel) {
-          targetMonthLabel.textContent = isTutorial ? "Preferred Timing / Month" : "Preferred Month";
-        }
-        if (workshopSubmitBtn && !isTeacherFormSubmitting) {
-          workshopSubmitBtn.textContent = isTutorial
-            ? "Request Your Free Online Tutorial →"
-            : "Teachers & Principals: Request School Dates →";
-        }
-      }
-
-      function clearTeacherFormError() {
-        formError.hidden = true;
-        teacherNameInput.removeAttribute("aria-invalid");
-        teacherNameInput.classList.remove("is-field-invalid");
-        schoolNameInput.removeAttribute("aria-invalid");
-        schoolNameInput.classList.remove("is-field-invalid");
-      }
-
-      function showTeacherFormError(message, focusEl) {
-        formError.textContent = message;
-        formError.hidden = false;
-        if (focusEl && typeof focusEl.focus === "function") {
-          focusEl.focus();
-        }
-      }
-
-      function selectTeacherInterest(interestValue) {
-        const match = inquiryRadios.find((r) => r.value === interestValue);
-        if (match) {
-          match.checked = true;
-        }
-        if (formReadyPanel && !formReadyPanel.hidden) {
-          formReadyPanel.hidden = true;
-          workshopForm.hidden = false;
-        }
-        syncInquiryFormUI();
-      }
-
-      function buildTeacherInquiryPayload() {
-        return {
-          interest: getSelectedInquiryType(),
-          teacherName: teacherNameInput.value.trim(),
-          schoolName: schoolNameInput.value.trim(),
-          targetMonth: targetMonthSelect.value,
-          source: "dance.h4community.org"
-        };
-      }
-
-      function buildTeacherMailtoHref(payload) {
-        const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
-        const subject = isTutorial
-          ? `H4 Free Online Dance Tutorial Request — ${payload.schoolName}`
-          : `H4 Full-Day Dance Workshop Inquiry — ${payload.schoolName} (${payload.targetMonth})`;
-        const intro = isTutorial
-          ? "I'd love to request a Free Online Dance Tutorial to help lead the H4 dance warm-up in my classroom."
-          : "We'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.";
-        const body =
-          `Hi H4 Community Team,\n\n${intro}\n\n` +
-          `Interest: ${payload.interest}\n` +
-          `Contact Name: ${payload.teacherName}\n` +
-          `School / Board: ${payload.schoolName}\n` +
-          `${isTutorial ? "Preferred Timing" : "Preferred Month"}: ${payload.targetMonth}\n\n` +
-          `Sent from ${payload.source}`;
-        return `mailto:info@h4community.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      }
-
-      function showTeacherConfirmation(payload, confirmedByBackend) {
-        const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
-        workshopForm.hidden = true;
-        formReadyPanel.hidden = false;
-        if (confirmedByBackend) {
-          formReadyTitle.textContent = isTutorial
-            ? "✅ Tutorial Request Received!"
-            : `✅ Request Saved for ${payload.schoolName}!`;
-          formReadyBody.textContent = isTutorial
-            ? "Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
-            : `Thanks, ${payload.teacherName}! H4 received your ${payload.interest} request for ${payload.schoolName} and will follow up soon.`;
-          formMailtoLink.hidden = true;
-        } else {
-          formReadyTitle.textContent = isTutorial
-            ? "✅ Free Tutorial Request Ready!"
-            : `✅ Request Ready for ${payload.schoolName}!`;
-          formReadyBody.textContent = isTutorial
-            ? "Click below to send your pre-filled Free Online Dance Tutorial request to info@h4community.org. Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
-            : "Click below to send your pre-filled date request straight to info@h4community.org.";
-          formMailtoLink.href = buildTeacherMailtoHref(payload);
-          formMailtoLink.hidden = false;
-        }
-        formReadyPanel.focus();
-      }
-
-      inquiryRadios.forEach((radio) => {
-        radio.addEventListener("change", () => {
-          syncInquiryFormUI();
-          clearTeacherFormError();
-        });
-      });
-
-      [teacherNameInput, schoolNameInput].forEach((input) => {
-        input.addEventListener("input", () => {
-          if (input.value.trim()) {
-            input.removeAttribute("aria-invalid");
-            input.classList.remove("is-field-invalid");
-          }
-          if (teacherNameInput.value.trim() && schoolNameInput.value.trim()) {
-            formError.hidden = true;
-          }
-        });
-      });
-
-      if (formEditBtn) {
-        formEditBtn.addEventListener("click", () => {
-          formReadyPanel.hidden = true;
-          workshopForm.hidden = false;
-          syncInquiryFormUI();
-          teacherNameInput.focus();
-        });
-      }
-
-      if (requestTutorialPromoCta && teacherTutorialSection) {
-        requestTutorialPromoCta.addEventListener("click", (e) => {
-          e.preventDefault();
-          selectTeacherInterest(FREE_TUTORIAL_INTEREST);
-          const topbar = document.querySelector(".topbar");
-          const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
-          const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
-          window.scrollTo({
-            top: targetTop,
-            behavior: isMotionReduced() ? "instant" : "smooth"
-          });
-          if (teacherTutorialHeading && typeof teacherTutorialHeading.focus === "function") {
+          requestTutorialPromoCta.addEventListener("click", (event) => {
+            event.preventDefault();
+            window.__h4TeacherForm?.selectInterest("Free Online Dance Tutorial");
+            const topbar = document.querySelector(".topbar");
+            const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
+            const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
+            window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
             teacherTutorialHeading.focus({ preventScroll: true });
-          }
-        });
-      }
-
-      syncInquiryFormUI();
-
-      workshopForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (isTeacherFormSubmitting) return;
-        clearTeacherFormError();
-
-        const payload = buildTeacherInquiryPayload();
-        let firstInvalid = null;
-        if (!payload.teacherName) {
-          teacherNameInput.setAttribute("aria-invalid", "true");
-          teacherNameInput.classList.add("is-field-invalid");
-          firstInvalid = firstInvalid || teacherNameInput;
-        }
-        if (!payload.schoolName) {
-          schoolNameInput.setAttribute("aria-invalid", "true");
-          schoolNameInput.classList.add("is-field-invalid");
-          firstInvalid = firstInvalid || schoolNameInput;
-        }
-        if (firstInvalid) {
-          showTeacherFormError(
-            "Please enter both your name and school name so we can follow up on your request.",
-            firstInvalid
-          );
-          return;
-        }
-
-        const endpoint = getTeacherFormEndpoint();
-        if (!endpoint) {
-          showTeacherConfirmation(payload, false);
-          return;
-        }
-
-        isTeacherFormSubmitting = true;
-        workshopSubmitBtn.disabled = true;
-        workshopSubmitBtn.setAttribute("aria-busy", "true");
-        workshopSubmitBtn.textContent = "Sending Request...";
-
-        try {
-          const response = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
           });
-          let data = null;
-          try {
-            data = await response.json();
-          } catch (_) {
-            data = null;
-          }
-          if (!response.ok || !data || data.ok !== true || data.saved !== true) {
-            const msg = (data && data.error)
-              ? data.error
-              : "We could not confirm your request right now. Your details are still below—please try again.";
-            showTeacherFormError(msg, workshopSubmitBtn);
-            return;
-          }
-          showTeacherConfirmation(payload, true);
-        } catch (_) {
-          showTeacherFormError(
-            "Connection error while sending your request. Your details are still below—please try again.",
-            workshopSubmitBtn
-          );
-        } finally {
-          isTeacherFormSubmitting = false;
-          workshopSubmitBtn.disabled = false;
-          workshopSubmitBtn.setAttribute("aria-busy", "false");
-          syncInquiryFormUI();
-        }
-      });
 
-      window.__h4TeacherForm = {
-        FREE_TUTORIAL_INTEREST,
-        WORKSHOP_INTEREST,
-        getSelectedInquiryType,
-        selectTeacherInterest,
-        buildTeacherInquiryPayload,
-        buildTeacherMailtoHref
-      };
-
-      // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
-      window.__h4DpaSync = {
-        getVisualOffsetMs: () => visualSyncOffsetMs,
-        setVisualOffsetMs: setVisualSyncOffsetMs,
-        getSongBeatsElapsed,
-        getSongPhraseBeatsElapsed,
-        getSongTimeForBeat,
-        getSongCountOneBeat,
-        getSongFirstCountOneSec,
-        getCurrentSong,
-        getAudioElement: () => songAudio,
-        getState: () => ({
-          isPlaying,
-          audioMode,
-          currentBpm,
-          currentSongId,
-          currentBeatInEight,
-          hasActiveBeat,
-          isWaitingForIntro,
-          lastRenderedBeatIndex,
-          moveBarsCompleted,
-          visualSyncOffsetMs,
-          playbackRate: songAudio.playbackRate,
-          currentTime: songAudio.currentTime,
-        }),
-        SONGS,
-      };
-    })();
+          // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
+          window.__h4DpaSync = {
+            getVisualOffsetMs: () => visualSyncOffsetMs,
+            setVisualOffsetMs: setVisualSyncOffsetMs,
+            getSongBeatsElapsed,
+            getSongPhraseBeatsElapsed,
+            getSongTimeForBeat,
+            getSongCountOneBeat,
+            getSongFirstCountOneSec,
+            getCurrentSong,
+            getAudioElement: () => songAudio,
+            getState: () => ({
+              isPlaying,
+              audioMode,
+              currentBpm,
+              currentSongId,
+              currentBeatInEight,
+              hasActiveBeat,
+              isWaitingForIntro,
+              lastRenderedBeatIndex,
+              moveBarsCompleted,
+              visualSyncOffsetMs,
+              playbackRate: songAudio.playbackRate,
+              currentTime: songAudio.currentTime,
+            }),
+            SONGS,
+          };
+        }) ();
   </script>
 </body>
 
