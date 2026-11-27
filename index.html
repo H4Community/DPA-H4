@@ -1085,19 +1085,115 @@
     }
 
     .booking-card h3 {
-      font-size: 1.25rem;
-      margin-bottom: 12px;
+      font-size: 1.35rem;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .signup-chooser {
+      display: grid;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .signup-chooser[hidden],
+    .signup-form-panel[hidden] {
+      display: none;
+    }
+
+    .signup-chooser h3 {
+      margin-bottom: 4px;
+    }
+
+    .signup-choice-btn {
+      width: 100%;
+      min-height: 50px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      justify-content: center;
+    }
+
+    .signup-choice-btn-videos {
+      background: var(--lime);
+    }
+
+    .signup-choice-btn-workshop {
+      background: var(--yellow);
+    }
+
+    .signup-choice-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+      background: transparent;
+      border: 0;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 2px;
+      cursor: pointer;
+    }
+
+    .signup-choice-link:hover {
+      opacity: 0.8;
+    }
+
+    .signup-choice-link:focus-visible,
+    .signup-back-btn:focus-visible,
+    .signup-disclosure summary:focus-visible,
+    .combobox-clear:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .signup-panel-header {
+      margin-bottom: 14px;
+    }
+
+    .signup-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 44px;
+      padding: 4px 8px 4px 0;
+      margin-bottom: 2px;
+      background: transparent;
+      border: 0;
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+
+    .signup-back-btn:hover {
+      color: var(--ink);
+      text-decoration: underline;
+    }
+
+    .signup-panel-header h3 {
+      margin-bottom: 0;
     }
 
     .form-field {
-      margin-bottom: 12px;
+      margin-block-end: 14px;
+    }
+
+    .form-field[hidden] {
+      display: none;
     }
 
     .form-field label,
     .form-fieldset legend {
       display: block;
       font-weight: 700;
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       margin-bottom: 4px;
       color: var(--ink);
     }
@@ -1107,7 +1203,7 @@
       border-radius: 14px;
       padding: 8px 10px 10px;
       background: var(--bg-paper);
-      margin-bottom: 12px;
+      margin-block-end: 12px;
     }
 
     .form-fieldset legend {
@@ -1115,56 +1211,11 @@
       margin-bottom: 4px;
     }
 
-    .interest-radio-stack {
-      display: grid;
-      gap: 7px;
-    }
-
-    .interest-choice {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 44px;
-      padding: 4px 10px;
-      border: 2px solid rgba(20, 20, 20, 0.24);
-      border-radius: 10px;
-      background: #FFFFFF;
-      cursor: pointer;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
-    }
-
-    .interest-choice:has(input:checked) {
-      border-color: var(--ink);
-      background: #ECFCCB;
-    }
-
-    .interest-choice-tutorial:has(input:checked) {
-      background: #FEF08A;
-    }
-
-    .interest-choice input[type="radio"] {
-      width: 19px;
-      height: 19px;
-      flex-shrink: 0;
-      accent-color: var(--ink);
-      cursor: pointer;
-    }
-
-    .interest-choice label {
-      margin: 0;
-      padding: 6px 0;
-      font-size: 0.9rem;
-      font-weight: 700;
-      line-height: 1.25;
-      cursor: pointer;
-      flex: 1;
-    }
-
     .form-field input,
     .form-field select {
       width: 100%;
       padding: 10px 12px;
-      min-height: 44px;
+      min-height: 48px;
       border: 2.5px solid var(--ink);
       border-radius: 12px;
       font: inherit;
@@ -1173,12 +1224,116 @@
       background: var(--bg-paper);
     }
 
+    .form-field input:disabled,
+    .form-field select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #F4F4F5;
+    }
+
     .form-field :is(input, select):is(:user-invalid, .is-field-invalid) {
       border-color: #BE123C;
       background-color: #FFF1F2;
     }
 
-    .school-picker .picker-choice { margin-top: 8px; }
+    .combobox-wrap {
+      position: relative;
+    }
+
+    .form-field input.combobox-input {
+      padding-inline-end: 44px;
+    }
+
+    .combobox-icon {
+      position: absolute;
+      inset-inline-end: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--ink);
+      pointer-events: none;
+    }
+
+    .combobox-clear {
+      position: absolute;
+      inset-inline-end: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1.15rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .combobox-clear[hidden],
+    .combobox-icon[hidden] {
+      display: none;
+    }
+
+    .combobox-listbox {
+      position: relative;
+      z-index: 5;
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 4px;
+      max-height: 220px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: #FFFFFF;
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .combobox-listbox[hidden] {
+      display: none;
+    }
+
+    .combobox-option {
+      padding: 10px 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      line-height: 1.25;
+    }
+
+    .combobox-option:hover,
+    .combobox-option.is-active {
+      background: #ECFCCB;
+    }
+
+    .combobox-option[aria-selected="true"] {
+      background: var(--lime);
+      font-weight: 800;
+    }
+
+    .combobox-option-fallback {
+      border-top: 1.5px dashed rgba(20, 20, 20, 0.22);
+      margin-top: 4px;
+      padding-top: 10px;
+      font-weight: 700;
+    }
+
+    .combobox-empty {
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
 
     .grade-choices {
       display: grid;
@@ -1197,10 +1352,75 @@
 
     .grade-choices input { accent-color: var(--ink); }
 
-    .teacher-form-note,
-    .teacher-optional-contact { margin-bottom: 12px; font-size: 0.85rem; }
+    .signup-disclosure {
+      margin-block-end: 14px;
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      background: #FFFFFF;
+    }
 
-    .teacher-optional-contact summary { cursor: pointer; padding: 10px 0; }
+    .signup-disclosure[hidden] {
+      display: none;
+    }
+
+    .signup-disclosure > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 48px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .signup-disclosure > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .signup-disclosure > summary::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+      border-right: 2.5px solid currentColor;
+      border-bottom: 2.5px solid currentColor;
+      transform: rotate(-45deg);
+      margin-inline-end: 2px;
+    }
+
+    .signup-disclosure[open] > summary::after {
+      transform: rotate(45deg);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .signup-disclosure > summary::after {
+        transition: transform 0.18s ease;
+      }
+    }
+
+    .signup-disclosure-body {
+      padding: 12px 12px 4px;
+      border-top: 2px solid rgba(20, 20, 20, 0.14);
+    }
+
+    .booking-card .teacher-form-note {
+      margin-bottom: 12px;
+      font-size: 0.84rem;
+      color: var(--ink-soft);
+    }
+
+    @media (pointer: coarse) {
+      .form-field input,
+      .form-field select,
+      .signup-choice-btn,
+      .form-submit-btn {
+        min-height: 52px;
+      }
+    }
 
     .form-error {
       color: #9F1239;
@@ -1220,9 +1440,9 @@
 
     .form-submit-btn {
       width: 100%;
-      min-height: 48px;
+      min-height: 50px;
       background: var(--lime);
-      padding: 12px;
+      padding: 12px 16px;
       font-size: 1rem;
     }
 
@@ -2028,7 +2248,8 @@
           Calm Motion: OFF
         </button>
 
-        <a href="#book-workshop" class="comic-btn"
+        <a href="#book-workshop" class="comic-btn" id="bookWorkshopTopCta"
+          data-select-interest="Full-Day School Workshop"
           style="background: var(--yellow); padding: 7px 16px; font-size: 0.9rem; border-width: 3.5px; box-shadow: 4px 4px 0px #141414;">
           Book a Live Workshop
         </a>
@@ -2302,114 +2523,160 @@
         </div>
 
         <div class="booking-card" id="bookingCard">
-          <h3 id="bookingFormHeading">Request a Workshop or Free Tutorial</h3>
-          <form id="workshopForm" method="POST" action=""
-            data-endpoint="https://script.google.com/macros/s/AKfycbxnRnZxyQfsLfAH-zW6fkPopfjfRlxTcpzaK-NStsaiN5ynDWtGFpeLj_HYEI2KHJ8/exec"
-            aria-labelledby="bookingFormHeading" novalidate>
-            <fieldset class="form-fieldset" id="inquiryTypeFieldset">
-              <legend>How can H4 help? <span aria-hidden="true">*</span></legend>
-              <div class="interest-radio-stack">
-                <div class="interest-choice">
-                  <input type="radio" id="interestWorkshop" name="inquiryType" value="Full-Day School Workshop" checked
-                    required />
-                  <label for="interestWorkshop">Full-Day School Workshop</label>
-                </div>
-                <div class="interest-choice interest-choice-tutorial">
-                  <input type="radio" id="interestFreeTutorial" name="inquiryType" value="Free Online Dance Tutorial" />
-                  <label for="interestFreeTutorial">Free Dance Resources (YouTube)</label>
-                </div>
-                <div class="interest-choice">
-                  <input type="radio" id="interestGeneral" name="inquiryType" value="Learn More" />
-                  <label for="interestGeneral">Learn More</label>
-                </div>
-              </div>
-            </fieldset>
+          <div class="signup-chooser" id="signupChooser">
+            <h3 id="signupChooserHeading" tabindex="-1">How can H4 help?</h3>
+            <button type="button" class="comic-btn signup-choice-btn signup-choice-btn-videos"
+              id="choiceFreeVideosBtn" data-interest-choice="Free Online Dance Tutorial" aria-pressed="false">
+              Email Me the Free Videos
+            </button>
+            <button type="button" class="comic-btn signup-choice-btn signup-choice-btn-workshop"
+              id="choiceWorkshopBtn" data-interest-choice="Full-Day School Workshop" aria-pressed="false">
+              Request Workshop Dates
+            </button>
+            <button type="button" class="signup-choice-link" id="choiceLearnMoreBtn"
+              data-interest-choice="Learn More" aria-pressed="false">
+              Learn more
+            </button>
+          </div>
 
-            <div class="form-field">
+          <form id="workshopForm" class="signup-form-panel" method="POST" action=""
+            data-endpoint="https://script.google.com/macros/s/AKfycbxnRnZxyQfsLfAH-zW6fkPopfjfRlxTcpzaK-NStsaiN5ynDWtGFpeLj_HYEI2KHJ8/exec"
+            aria-labelledby="bookingFormHeading" hidden novalidate>
+            <input type="hidden" id="inquiryTypeInput" name="inquiryType" value="" />
+            <div class="signup-panel-header">
+              <button type="button" class="signup-back-btn" id="changeChoiceBtn">
+                <span aria-hidden="true">←</span> Change choice
+              </button>
+              <h3 id="bookingFormHeading" tabindex="-1">How can H4 help?</h3>
+            </div>
+
+            <div class="form-field" id="fullNameField">
+              <label for="teacherName">Full name <span aria-hidden="true">*</span></label>
+              <input type="text" id="teacherName" name="teacherName" placeholder="e.g., Ms. Jordan Lee"
+                autocomplete="name" maxlength="120" enterkeyhint="next" aria-invalid="false" required />
+            </div>
+
+            <div class="form-field" id="emailField">
+              <label for="teacherEmail" id="teacherEmailLabel">Email address <span aria-hidden="true">*</span></label>
+              <input type="email" id="teacherEmail" name="email" autocomplete="email" autocorrect="off"
+                autocapitalize="none" spellcheck="false" placeholder="you@example.com" maxlength="254"
+                enterkeyhint="next" aria-invalid="false" required />
+            </div>
+
+            <div class="form-field" id="roleField">
               <label for="signupRole">I’m a <span aria-hidden="true">*</span></label>
-              <select id="signupRole" name="role" required>
+              <select id="signupRole" name="role" aria-invalid="false" required>
                 <option value="">Select your role</option>
                 <option>Teacher</option>
                 <option>Principal</option>
                 <option>Parent / Caregiver</option>
               </select>
             </div>
-            <div class="form-field">
-              <label for="teacherName">Full Name <span aria-hidden="true">*</span></label>
-              <input type="text" id="teacherName" name="teacherName" placeholder="e.g., Ms. Jordan Lee"
-                autocomplete="name" maxlength="120" enterkeyhint="next" required />
-            </div>
-            <div class="form-field">
-              <label for="teacherEmail" id="teacherEmailLabel">Email Address <span aria-hidden="true">*</span></label>
-              <input type="email" id="teacherEmail" name="email" autocomplete="email"
-                placeholder="you@example.com" maxlength="254" required />
-            </div>
-            <div id="signupSchoolDetails">
-              <div class="form-field school-picker">
-                <label for="boardSearch">Find Your School Board</label>
-                <input type="search" id="boardSearch" placeholder="e.g., TCDSB" autocomplete="off" />
-                <label class="picker-choice" for="boardId">School Board <span aria-hidden="true">*</span></label>
-                <select id="boardId" name="boardId" required></select>
-              </div>
-              <div class="form-field school-picker" id="schoolPicker">
-                <label for="schoolSearch">Find Your School</label>
-                <input type="search" id="schoolSearch" placeholder="Select a board first" autocomplete="off" disabled />
-                <label class="picker-choice" for="schoolId">School <span aria-hidden="true">*</span></label>
-                <select id="schoolId" name="schoolId" disabled required></select>
-              </div>
-              <div class="form-field" id="manualSchoolField" hidden>
-                <label for="schoolName">School Name <span aria-hidden="true">*</span></label>
-                <input type="text" id="schoolName" name="schoolName" maxlength="160" disabled />
-              </div>
-            </div>
-            <div id="workshopDetails">
-              <fieldset class="form-fieldset">
-                <legend>Grades (optional)</legend>
-                <div class="grade-choices">
-                  <label><input type="checkbox" name="grades" value="JK" /> JK</label>
-                  <label><input type="checkbox" name="grades" value="SK" /> SK</label>
-                  <label><input type="checkbox" name="grades" value="1" /> 1</label>
-                  <label><input type="checkbox" name="grades" value="2" /> 2</label>
-                  <label><input type="checkbox" name="grades" value="3" /> 3</label>
-                  <label><input type="checkbox" name="grades" value="4" /> 4</label>
-                  <label><input type="checkbox" name="grades" value="5" /> 5</label>
-                  <label><input type="checkbox" name="grades" value="6" /> 6</label>
-                  <label><input type="checkbox" name="grades" value="7" /> 7</label>
-                  <label><input type="checkbox" name="grades" value="8" /> 8</label>
-                  <label><input type="checkbox" name="grades" value="9" /> 9</label>
-                  <label><input type="checkbox" name="grades" value="10" /> 10</label>
-                  <label><input type="checkbox" name="grades" value="11" /> 11</label>
-                  <label><input type="checkbox" name="grades" value="12" /> 12</label>
+
+            <div id="workshopSchoolSlot"></div>
+
+            <details class="signup-disclosure" id="optionalSchoolDetails" hidden>
+              <summary>Add your school (optional)</summary>
+              <div class="signup-disclosure-body" id="optionalSchoolBody"></div>
+            </details>
+
+            <div id="signupSchoolDetails" hidden>
+              <div class="form-field school-picker" id="boardPicker">
+                <label for="boardSearch">School board <span class="school-req-mark" aria-hidden="true">*</span></label>
+                <div class="combobox-wrap">
+                  <input type="text" id="boardSearch" class="combobox-input" role="combobox" aria-autocomplete="list"
+                    aria-expanded="false" aria-controls="boardListbox" autocomplete="off" autocorrect="off"
+                    autocapitalize="none" spellcheck="false" placeholder="Search school boards"
+                    enterkeyhint="next" aria-invalid="false" />
+                  <svg class="combobox-icon" id="boardSearchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <button type="button" class="combobox-clear" id="boardClearBtn" aria-label="Clear school board"
+                    hidden>×</button>
+                  <input type="hidden" id="boardId" name="boardId" value="" />
+                  <ul id="boardListbox" class="combobox-listbox" role="listbox" aria-label="School boards" hidden></ul>
                 </div>
-              </fieldset>
-              <div class="form-field">
-                <label for="targetMonth">Preferred Timing (optional)</label>
-                <select id="targetMonth" name="targetMonth">
-                  <option value="">Select a date range</option>
-                  <option>January 2027</option>
-                  <option>February 2027</option>
-                  <option>March 2027</option>
-                  <option>Spring 2027 (April–June)</option>
-                  <option>Flexible / Anytime</option>
-                </select>
+              </div>
+
+              <div class="form-field school-picker" id="schoolPicker">
+                <label for="schoolSearch">School <span class="school-req-mark" aria-hidden="true">*</span></label>
+                <div class="combobox-wrap">
+                  <input type="text" id="schoolSearch" class="combobox-input" role="combobox" aria-autocomplete="list"
+                    aria-expanded="false" aria-controls="schoolListbox" autocomplete="off" autocorrect="off"
+                    autocapitalize="none" spellcheck="false" placeholder="Select a board first"
+                    enterkeyhint="next" aria-invalid="false" disabled />
+                  <svg class="combobox-icon" id="schoolSearchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <button type="button" class="combobox-clear" id="schoolClearBtn" aria-label="Clear school"
+                    hidden>×</button>
+                  <input type="hidden" id="schoolId" name="schoolId" value="" />
+                  <ul id="schoolListbox" class="combobox-listbox" role="listbox" aria-label="Schools" hidden></ul>
+                </div>
+              </div>
+
+              <div class="form-field" id="manualSchoolField" hidden>
+                <label for="schoolName">School name <span class="school-req-mark" aria-hidden="true">*</span></label>
+                <input type="text" id="schoolName" name="schoolName" placeholder="Enter your school name"
+                  maxlength="160" autocomplete="organization" enterkeyhint="next" aria-invalid="false" disabled />
               </div>
             </div>
-            <details class="teacher-optional-contact">
-              <summary>Add a phone number or Instagram (optional)</summary>
-              <div class="form-field">
-                <label for="teacherPhone">Phone Number (including extension)</label>
-                <input type="tel" id="teacherPhone" name="phone" autocomplete="tel" maxlength="40" />
-              </div>
-              <div class="form-field">
-                <label for="teacherInstagram">Teacher Instagram Handle</label>
-                <input type="text" id="teacherInstagram" name="instagram" placeholder="@handle" maxlength="40" />
+
+            <details class="signup-disclosure" id="optionalWorkshopDetails" hidden>
+              <summary>Add optional details</summary>
+              <div class="signup-disclosure-body" id="workshopDetails">
+                <fieldset class="form-fieldset">
+                  <legend>Grades (optional)</legend>
+                  <div class="grade-choices">
+                    <label><input type="checkbox" name="grades" value="JK" /> JK</label>
+                    <label><input type="checkbox" name="grades" value="SK" /> SK</label>
+                    <label><input type="checkbox" name="grades" value="1" /> 1</label>
+                    <label><input type="checkbox" name="grades" value="2" /> 2</label>
+                    <label><input type="checkbox" name="grades" value="3" /> 3</label>
+                    <label><input type="checkbox" name="grades" value="4" /> 4</label>
+                    <label><input type="checkbox" name="grades" value="5" /> 5</label>
+                    <label><input type="checkbox" name="grades" value="6" /> 6</label>
+                    <label><input type="checkbox" name="grades" value="7" /> 7</label>
+                    <label><input type="checkbox" name="grades" value="8" /> 8</label>
+                    <label><input type="checkbox" name="grades" value="9" /> 9</label>
+                    <label><input type="checkbox" name="grades" value="10" /> 10</label>
+                    <label><input type="checkbox" name="grades" value="11" /> 11</label>
+                    <label><input type="checkbox" name="grades" value="12" /> 12</label>
+                  </div>
+                </fieldset>
+                <div class="form-field">
+                  <label for="targetMonth">Preferred timing (optional)</label>
+                  <select id="targetMonth" name="targetMonth" aria-invalid="false">
+                    <option value="">Select a date range</option>
+                    <option>January 2027</option>
+                    <option>February 2027</option>
+                    <option>March 2027</option>
+                    <option>Spring 2027 (April–June)</option>
+                    <option>Flexible / Anytime</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="teacherPhone">Phone number (optional)</label>
+                  <input type="tel" id="teacherPhone" name="phone" autocomplete="tel" inputmode="tel" maxlength="40"
+                    placeholder="e.g., 416-555-0199" aria-invalid="false" />
+                </div>
+                <div class="form-field" id="instagramFieldWrap">
+                  <label for="teacherInstagram">Instagram (optional)</label>
+                  <input type="text" id="teacherInstagram" name="instagram" placeholder="@handle" autocorrect="off"
+                    autocapitalize="none" spellcheck="false" maxlength="40" aria-invalid="false" />
+                </div>
               </div>
             </details>
-            <div hidden><label>Website <input name="website" type="text" tabindex="-1" autocomplete="off" /></label></div>
+
+            <div hidden aria-hidden="true"><label>Website <input name="website" type="text" tabindex="-1" autocomplete="off" /></label></div>
             <p class="teacher-form-note">H4 Community will email you about this request.</p>
             <div class="form-error" id="formError" role="alert" tabindex="-1" hidden></div>
             <button type="submit" class="comic-btn form-submit-btn" id="workshopSubmitBtn">
-              Teachers &amp; Principals: Request School Dates →
+              Email Me the Free Videos
             </button>
           </form>
 
@@ -4327,18 +4594,33 @@
       });
 
           const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
+          const bookWorkshopTopCta = document.getElementById("bookWorkshopTopCta");
           const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
           const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
+          const bookWorkshopSection = document.getElementById("book-workshop");
+          const bookingFormHeading = document.getElementById("bookingFormHeading");
 
           requestTutorialPromoCta.addEventListener("click", (event) => {
             event.preventDefault();
-            window.__h4TeacherForm?.selectInterest("Free Online Dance Tutorial");
+            window.__h4TeacherForm?.selectInterest("Free Online Dance Tutorial", { focus: false });
             const topbar = document.querySelector(".topbar");
             const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
             const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
             window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
             teacherTutorialHeading.focus({ preventScroll: true });
           });
+
+          if (bookWorkshopTopCta && bookWorkshopSection) {
+            bookWorkshopTopCta.addEventListener("click", (event) => {
+              event.preventDefault();
+              window.__h4TeacherForm?.selectInterest("Full-Day School Workshop", { focus: false });
+              const topbar = document.querySelector(".topbar");
+              const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
+              const targetTop = Math.max(0, window.scrollY + bookWorkshopSection.getBoundingClientRect().top - headerOffset);
+              window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
+              bookingFormHeading?.focus({ preventScroll: true });
+            });
+          }
 
           // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
           window.__h4DpaSync = {

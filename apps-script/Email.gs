@@ -53,7 +53,7 @@ function sendQueuedLeadEmail_(leadId, rowHint) {
       return "Needs review";
     }
 
-    const message = buildSignupEmail_(to, interest, resource);
+    const message = buildSignupEmail_(to, interest, resource, read("Full Name"));
     // Record the in-flight attempt first. An ambiguous outcome requires review,
     // since sending and recording an email cannot share a transaction.
     statusCell.setValue("Sending");
@@ -101,22 +101,30 @@ function isYouTubeResourceUrl_(url) {
   return /^https:\/\/(?:(?:www\.|m\.)?youtube\.com\/(?:watch\?v=[\w-]{11}(?:&[\w=&%-]+)?|playlist\?list=[\w-]+(?:&[\w=&%-]+)?|shorts\/[\w-]{11}(?:\?[\w=&%-]+)?)|youtu\.be\/[\w-]{11}(?:\?[\w=&%-]+)?)$/.test(url);
 }
 
-function buildSignupEmail_(to, interest, resource) {
+function escapeHtml_(value) {
+  return String(value).replace(/[&<>"']/g, (ch) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[ch]
+  ));
+}
+
+function buildSignupEmail_(to, interest, resource, fullName) {
   const free = interest === FREE_RESOURCES_INTEREST;
   const workshop = interest === "Full-Day School Workshop";
+  const cleanName = typeof fullName === "string" ? fullName.trim() : "";
+  const greeting = cleanName ? "Hi " + cleanName + "," : "Hi there,";
   const subject = free ? "Your free H4 dance resources"
     : workshop ? "We received your H4 workshop request" : "Thanks for reaching out to H4 Community";
   const intro = free ? "Here’s the free H4 dance resource you requested. Press play to try it at school or at home."
     : workshop ? "Thanks for asking about an H4 school workshop. Our team will follow up about your request, availability, and next steps."
       : "Thanks for your interest in H4 Community. Our team will follow up by email.";
-  const body = intro + (free ? "\n\nWatch on YouTube: " + resource : "") +
+  const body = greeting + "\n\n" + intro + (free ? "\n\nWatch on YouTube: " + resource : "") +
     "\n\nH4 Community\nHow Hip Hop Helps";
   const button = free ? '<p style="margin:24px 0"><a style="display:inline-block;background:#a3e635;color:#141414;padding:12px 18px;border-radius:8px;font-weight:bold;text-decoration:none" href="' +
     resource.replace(/&/g, "&amp;") + '">Watch on YouTube</a></p>' : "";
   const htmlBody = '<div style="max-width:560px;margin:auto;font-family:Arial,sans-serif;color:#141414;line-height:1.55">' +
     '<div style="background:#141414;color:#a3e635;padding:18px 24px;font-weight:bold">H4 COMMUNITY</div>' +
     '<div style="background:#fffdf7;padding:24px"><h1 style="font-size:23px;margin:0 0 12px">' +
-    subject + '</h1><p>' + intro + '</p>' + button +
+    subject + '</h1><p>' + escapeHtml_(greeting) + '</p><p>' + intro + '</p>' + button +
     '<p style="margin:24px 0 0;font-size:14px">How Hip Hop Helps</p></div></div>';
   return { to, subject, body, htmlBody, name: "H4 Community", replyTo: H4_REPLY_EMAIL };
 }

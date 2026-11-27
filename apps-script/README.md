@@ -49,6 +49,22 @@ does not bypass that quota. Neither the endpoint nor the site can read or
 return lead details. Archiving a web app deployment disables its endpoint.
 Remove its time-driven trigger separately if retiring the deployment.
 
+## Deploying an Apps Script update before a frontend release
+
+When a PR relaxes server validation (for example allowing blank `fullName` or
+omitted school details on `Free Online Dance Tutorial` and `Learn More`
+requests while keeping full validation for `Full-Day School Workshop` and
+legacy live-form payloads), deploy the Apps Script update **before** merging
+the frontend changes:
+
+1. Push the updated `apps-script/Code.gs` and `apps-script/Email.gs` to the
+   production Apps Script project under `info@h4community.org` (using `clasp`
+   or the Apps Script editor).
+2. Update the existing Web App deployment (`redeploy` / **Deploy → Manage
+   deployments → Edit → New version**) so the live `/exec` URL stays unchanged.
+3. Verify the currently live frontend still submits cleanly, then merge the
+   frontend PR.
+
 ## Refresh the directory
 
 Download the pipe-separated English Publicly Funded Schools export from the

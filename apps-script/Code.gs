@@ -108,16 +108,18 @@ function validateTeacherLead_(input) {
   };
   const fullName = readText(input.fullName, 120);
   const email = readText(input.email, 254);
-  if (!fullName || !isSingleSignupEmail_(email) ||
+  const workshop = input.interest === interests[0];
+  const free = input.interest === interests[1];
+  if ((!free && !fullName) || !isSingleSignupEmail_(email) ||
       !roles.includes(input.role) || !interests.includes(input.interest) || input.website ||
       typeof input.submissionKey !== "string" ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(input.submissionKey)) {
     throw new Error("Invalid submission");
   }
 
-  const workshop = input.interest === interests[0];
   const parent = input.role === roles[2];
-  const skipSchool = parent && !workshop && input.boardId === "" && input.schoolId === "" && input.schoolName === "";
+  const noSchool = input.boardId === "" && input.schoolId === "" && input.schoolName === "";
+  const skipSchool = !workshop && noSchool;
   const other = input.boardId === "other";
   const board = /^B\d+$/.test(input.boardId) && H4_SCHOOL_DIRECTORY[input.boardId];
   const manual = other ? input.schoolId === "" : input.schoolId === "manual";

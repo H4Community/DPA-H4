@@ -216,3 +216,76 @@ test("recipient lists are rejected before a Sheet write or email send", () => {
   assert.equal(sheet.rows.length, 0);
   assert.equal(sheet.messages.length, 0);
 });
+
+test("teacher and principal free-video requests succeed with only email and role and use natural greeting", () => {
+  const sheet = testSheet();
+  const teacherRes = sheet.send({
+    role: "Teacher", interest: freeInterest, fullName: "",
+    boardId: "", schoolId: "", schoolName: "", phone: "", instagram: "", grades: [], preferredTiming: ""
+  });
+  assert.equal(teacherRes.saved, true);
+  assert.equal(teacherRes.emailStatus, "Sent");
+  assert.equal(sheet.get("Full Name"), "");
+  assert.equal(sheet.get("School Board"), "");
+  assert.equal(sheet.get("School"), "");
+  assert.equal(sheet.get("Role"), "Teacher");
+  assert.ok(sheet.messages[0].body.startsWith("Hi there,\n\n"));
+  assert.ok(sheet.messages[0].htmlBody.includes("<p>Hi there,</p>"));
+  assert.ok(sheet.messages[0].htmlBody.includes(`href="${youtubeUrl}"`));
+
+  const principalRes = sheet.send({
+    submissionKey: randomUUID(), email: "principal@example.org", role: "Principal",
+    interest: freeInterest, fullName: "", boardId: "", schoolId: "", schoolName: "",
+    phone: "", instagram: "", grades: [], preferredTiming: ""
+  });
+  assert.equal(principalRes.saved, true);
+  assert.equal(principalRes.emailStatus, "Sent");
+  assert.equal(sheet.get("Full Name"), "");
+  assert.equal(sheet.get("Role"), "Principal");
+  assert.ok(sheet.messages[1].body.startsWith("Hi there,\n\n"));
+});
+
+test("learn more succeeds without school for staff, requires name, and greets safely", () => {
+  const sheet = testSheet();
+  assert.equal(sheet.send({
+    interest: "Learn More", fullName: "", boardId: "", schoolId: "", schoolName: ""
+  }).code, "INVALID_REQUEST");
+  assert.equal(sheet.send({
+    interest: "Full-Day School Workshop", fullName: ""
+  }).code, "INVALID_REQUEST");
+  assert.equal(sheet.send({
+    interest: "Full-Day School Workshop", boardId: "", schoolId: "", schoolName: ""
+  }).code, "INVALID_REQUEST");
+
+  const res = sheet.send({
+    interest: "Learn More", role: "Teacher", fullName: "Ms. A & <B>",
+    boardId: "", schoolId: "", schoolName: "", phone: "", instagram: "", grades: [], preferredTiming: ""
+  });
+  assert.equal(res.saved, true);
+  assert.equal(res.emailStatus, "Sent");
+  assert.equal(sheet.get("School Board"), "");
+  assert.equal(sheet.get("School"), "");
+  assert.ok(sheet.messages[0].body.startsWith("Hi Ms. A & <B>,\n\n"));
+  assert.ok(sheet.messages[0].htmlBody.includes("<p>Hi Ms. A &amp; &lt;B&gt;,</p>"));
+  assert.ok(!sheet.messages[0].htmlBody.includes(youtubeUrl));
+});
+
+test("remains backwards compatible with live form payloads and rejects mismatched board/school on free videos", () => {
+  const sheet = testSheet();
+  // Currently live PR #4 form sends fullName + board + school + phone + instagram on Free Tutorial
+  const legacyFree = sheet.send({
+    interest: freeInterest, role: "Teacher", fullName: "Ms. Jordan Lee",
+    boardId: "B67059", schoolId: "733024", schoolName: "", phone: "416-555-0199", instagram: "@h4"
+  });
+  assert.equal(legacyFree.saved, true);
+  assert.equal(legacyFree.emailStatus, "Sent");
+  assert.equal(sheet.get("Full Name"), "Ms. Jordan Lee");
+  assert.equal(sheet.get("School"), "St Mother Teresa Catholic Academy");
+  assert.ok(sheet.messages[0].body.startsWith("Hi Ms. Jordan Lee,\n\n"));
+
+  // Mismatched school outside selected board must still be rejected on Free Videos
+  assert.equal(sheet.send({
+    submissionKey: randomUUID(), email: "other@example.org", interest: freeInterest,
+    role: "Teacher", fullName: "", boardId: "B66052", schoolId: "733024", schoolName: ""
+  }).code, "INVALID_REQUEST");
+});
