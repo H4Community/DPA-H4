@@ -18,8 +18,90 @@
   const workshop = "Full-Day School Workshop";
   const tutorial = "Free Online Dance Tutorial";
   const boardAliases = {
+    B28010: ["ADSB", "Algoma District School Board"],
+    B67202: ["ALCDSB", "Algonquin and Lakeshore Catholic District School Board"],
+    B66010: ["AMDSB", "Avon Maitland District School Board"],
+    B80012: ["BSA", "Bloorview School Authority"],
+    B66001: ["BWDSB", "Bluewater District School Board"],
+    B67164: ["BHNCDSB", "Brant Haldimand Norfolk Catholic District School Board"],
+    B67008: ["BGCDSB", "Bruce-Grey Catholic District School Board"],
+    B67172: ["CDSBEO", "Catholic District School Board of Eastern Ontario"],
+    B80055: ["CHEO", "CHEO School Authority"],
+    B66303: ["CSV", "Conseil scolaire Viamonde", "Viamonde"],
+    B67318: ["CSC MonAvenir", "Conseil scolaire catholique MonAvenir", "CSCM", "MonAvenir"],
+    B28118: ["CSPGNO", "Conseil scolaire public du Grand Nord de l'Ontario"],
+    B28100: ["CSPNE", "Conseil scolaire public du Nord-Est de l'Ontario"],
+    B29114: ["CSCFN", "Conseil scolaire catholique Franco-Nord", "CSDCFN", "Franco-Nord"],
+    B67326: ["CSDCEO", "Conseil scolaire de district catholique de l'Est ontarien"],
+    B29130: ["CSDCAB", "Conseil scolaire de district catholique des Aurores boréales"],
+    B29106: ["CSCDGR", "Conseil scolaire catholique de district des Grandes Rivières", "CSDCGR"],
+    B67334: ["CECCE", "Conseil des écoles catholiques du Centre-Est", "CSDCCEO"],
+    B29122: ["CSC Nouvelon", "Conseil scolaire catholique Nouvelon", "CSDCNO", "Nouvelon"],
+    B67300: ["CSC Providence", "CSCP"],
+    B80509: ["CCJL"],
+    B66311: ["CEPEO", "Conseil des écoles publiques de l'Est de l'Ontario", "CÉPEO"],
+    B66150: ["DSBN", "District School Board of Niagara"],
+    B28002: ["DSB1", "District School Board Ontario North East", "DSBONE"],
+    B67083: ["DPCDSB", "Dufferin-Peel Catholic District School Board"],
+    B67105: ["DCDSB", "Durham Catholic District School Board"],
+    B66060: ["DDSB", "Durham District School Board"],
+    B66168: ["GEDSB", "Grand Erie District School Board"],
+    B80020: ["GSA", "Grandview School Authority"],
+    B66028: ["GECDSB", "Greater Essex County District School Board"],
+    B67113: ["HCDSB", "Halton Catholic District School Board"],
+    B66133: ["HDSB", "Halton District School Board"],
+    B67121: ["HWCDSB", "Hamilton-Wentworth Catholic District School Board"],
+    B66141: ["HWDSB", "Hamilton-Wentworth District School Board"],
+    B66222: ["HPEDSB", "Hastings and Prince Edward District School Board"],
+    B67016: ["HPCDSB", "Huron-Perth Catholic District School Board"],
+    B29025: ["HSCDSB", "Huron-Superior Catholic District School Board"],
+    B15148: ["JBLSSB", "James Bay Lowlands Secondary School Board"],
+    B80047: ["JMCCSA", "John McGivney Children's Centre School Authority"],
+    B66079: ["KPRDSB", "Kawartha Pine Ridge District School Board", "KPR"],
+    B28045: ["KPDSB", "Keewatin-Patricia District School Board"],
+    B29050: ["KCDSB", "Kenora Catholic District School Board"],
+    B80039: ["KASA", "KidsAbility School Authority"],
+    B28061: ["LDSB", "Lakehead District School Board"],
+    B66036: ["LKDSB", "Lambton Kent District School Board"],
+    B66206: ["LDSB", "Limestone District School Board"],
+    B67032: ["LDCSB"],
+    B15199: ["MFIDSAB", "Moose Factory Island District School Area Board"],
+    B15202: ["MDSAB", "Moosonee District School Area Board"],
+    B28037: ["NNDSB", "Near North District School Board"],
+    B67156: ["NCDSB", "Niagara Catholic District School Board"],
+    B80004: ["NPCCSA", "Niagara Peninsula Children's Centre School Authority"],
+    B29017: ["NPSCDSB", "Nipissing-Parry Sound Catholic District School Board"],
+    B29009: ["NCDSB", "Northeastern Catholic District School Board"],
+    B29041: ["TNCDSB", "Northwest Catholic District School Board", "NWCDSB"],
+    B67180: ["OCSB", "Ottawa Catholic School Board"],
+    B66184: ["OCDSB", "Ottawa-Carleton District School Board"],
+    B66125: ["PDSB", "Peel District School Board"],
+    B79910: ["PPSSB", "Penetanguishene Protestant Separate School Board"],
+    B67067: ["PVNCCDSB", "Peterborough Victoria Northumberland and Clarington Catholic District School Board"],
+    B76686: ["PDSB-Prov", "Provincial and Demonstration Schools Branch"],
+    B28029: ["RDSB", "Rainbow District School Board"],
+    B28053: ["RRDSB", "Rainy River District School Board"],
+    B67199: ["RCCDSB", "Renfrew County Catholic District School Board"],
+    B66214: ["RCDSB", "Renfrew County District School Board"],
+    B66109: ["SCDSB", "Simcoe County District School Board"],
+    B67091: ["SMCDSB", "Simcoe Muskoka Catholic District School Board"],
+    B67040: ["SCCDSB", "St. Clair Catholic District School Board"],
+    B29033: ["SCDSB", "Sudbury Catholic District School Board"],
+    B29076: ["SNCDSB", "Superior North Catholic District School Board"],
+    B28070: ["SGDSB", "Superior-Greenstone District School Board"],
+    B66044: ["TVDSB", "Thames Valley District School Board"],
+    B29068: ["TBCDSB", "Thunder Bay Catholic District School Board"],
     B67059: ["TCDSB", "Toronto Catholic District School Board"],
-    B66052: ["TDSB", "Toronto District School Board"]
+    B66052: ["TDSB", "Toronto District School Board"],
+    B66087: ["TLDSB", "Trillium Lakelands District School Board"],
+    B66192: ["UCDSB", "Upper Canada District School Board"],
+    B66117: ["UGDSB", "Upper Grand District School Board"],
+    B67148: ["WCDSB", "Waterloo Catholic District School Board"],
+    B66176: ["WRDSB", "Waterloo Region District School Board"],
+    B67130: ["WCDSB", "Wellington Catholic District School Board"],
+    B67024: ["WECDSB", "Windsor-Essex Catholic District School Board"],
+    B67075: ["YCDSB", "York Catholic District School Board"],
+    B66095: ["YRDSB", "York Region District School Board"]
   };
 
   let sending = false;
@@ -41,7 +123,9 @@
     const options = Object.entries(H4_SCHOOL_DIRECTORY).flatMap(([id, [name]]) => {
       const aliases = boardAliases[id] || [];
       if (id !== selected && !matches(boardSearch.value, [name, ...aliases])) return [];
-      return [[id, aliases.length ? aliases.join(" · ") : name]];
+      const label = aliases.length >= 2 ? aliases.slice(0, 2).join(" · ")
+        : aliases.length === 1 ? `${aliases[0]} · ${name}` : name;
+      return [[id, label]];
     });
     populate(board, options.length ? "Select a school board" : "No matching boards", [
       ...options, ["other", "Independent school / Other"]
@@ -196,11 +280,15 @@
     submit.disabled = true;
     form.setAttribute("aria-busy", "true");
     submit.textContent = "Sending request…";
+    const controller = new AbortController();
+    const configuredTimeout = Number(window.H4_TEACHER_FORM_CONFIG?.timeoutMs);
+    const timeoutId = setTimeout(() => controller.abort(), configuredTimeout > 0 ? configuredTimeout : 20000);
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ ...payload, submissionKey: lastAttempt.key })
+        body: JSON.stringify({ ...payload, submissionKey: lastAttempt.key }),
+        signal: controller.signal
       });
       const data = await response.json();
       if (!response.ok || data.ok !== true || data.saved !== true || !data.leadId) {
@@ -214,9 +302,12 @@
         ? "Thanks! Check your inbox for an email from H4 Community."
         : "Thanks! Your request is saved. H4 Community will follow up by email.";
       confirmation.focus();
-    } catch {
-      showError("We couldn’t confirm your request. Your details are still here. Please try again.");
+    } catch (err) {
+      showError(err?.name === "AbortError"
+        ? "The request timed out before we could confirm it saved. Your details are still here. Please try again."
+        : "We couldn’t confirm your request. Your details are still here. Please try again.");
     } finally {
+      clearTimeout(timeoutId);
       sending = false;
       submit.disabled = false;
       form.removeAttribute("aria-busy");

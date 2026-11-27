@@ -42,7 +42,7 @@ function findChromeBinary() {
 
 function startLocalServer() {
   const receivedRequests = [];
-  let endpointMode = "fail-network"; // fail-network | fail-500 | ok
+  let endpointMode = "fail-network"; // fail-network | fail-500 | timeout | ok
 
   const server = http.createServer((req, res) => {
     const urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
@@ -54,6 +54,12 @@ function startLocalServer() {
         receivedRequests.push({ mode: endpointMode, payload: parsed });
         if (endpointMode === "fail-network") {
           req.socket.destroy();
+          return;
+        }
+        if (endpointMode === "timeout") {
+          setTimeout(() => {
+            if (!res.writableEnded) res.destroy();
+          }, 1000);
           return;
         }
         if (endpointMode === "fail-500") {
@@ -258,7 +264,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
       overflowX: document.documentElement.scrollWidth > window.innerWidth,
       badges: Array.from(tutorialCard.querySelectorAll(".groove-num, .groove-tag")).map((e) => e.textContent.trim()),
       artLabel: tutorialCard.querySelector(".promo-brand-tutorial")?.textContent.trim(),
-      desc: tutorialCard.querySelector(".groove-desc")?.textContent.trim(),
+      desc: tutorialCard.querySelector(".groove-desc")?.textContent.replace(/\\s+/g, " ").trim(),
       ctaText: tutorialCta.textContent.replace(/\\s+/g, " ").trim(),
       ctaHeight: Math.round(tutorialCta.getBoundingClientRect().height),
       hasSoloIdxOnPromo: Boolean(tutorialCard.querySelector("[data-solo-idx]") || dancestashCard.querySelector("[data-solo-idx]")),
@@ -382,6 +388,11 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     update(boardSearch, "input", "TDSB");
     update(board, "change", "B66052");
     const reset = !school.value && !schoolSearch.value && ![...school.options].some((option) => option.value === "733024");
+    const aliasMatches = {};
+    for (const alias of ["PDSB", "YCDSB", "YRDSB", "DDSB"]) {
+      update(boardSearch, "input", alias);
+      aliasMatches[alias] = [...board.options].map((option) => option.value);
+    }
     update(school, "change", "manual");
     const manualRequired = document.getElementById("schoolName").required;
     update(board, "change", "other");
@@ -394,13 +405,17 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     const requiredName = !message.hidden && teacher.getAttribute("aria-invalid") === "true";
     update(teacher, "input", "Ms. Maya Chen");
     form.requestSubmit();
-    return { boards, matching, reset, manualRequired, other, requiredName, parentNoSchool,
+    return { boards, matching, reset, aliasMatches, manualRequired, other, requiredName, parentNoSchool,
       unavailable: message.textContent.includes("temporarily unavailable"),
       successHidden: document.getElementById("formReadyPanel").hidden };
   `);
   assert.deepEqual(pickerCheck.boards, ["", "B67059", "other"]);
   assert.deepEqual(pickerCheck.matching, ["", "733024", "manual"]);
   assert.equal(pickerCheck.reset, true);
+  assert.ok(pickerCheck.aliasMatches.PDSB.includes("B66125"), "PDSB alias must match Peel DSB");
+  assert.ok(pickerCheck.aliasMatches.YCDSB.includes("B67075"), "YCDSB alias must match York CDSB");
+  assert.ok(pickerCheck.aliasMatches.YRDSB.includes("B66095"), "YRDSB alias must match York Region DSB");
+  assert.ok(pickerCheck.aliasMatches.DDSB.includes("B66060"), "DDSB alias must match Durham DSB");
   assert.equal(pickerCheck.manualRequired, true);
   assert.equal(pickerCheck.other, true);
   assert.equal(pickerCheck.requiredName, true);
@@ -441,6 +456,25 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(fail500.successHidden, true, "HTTP 500 must not display success");
   assert.ok(fail500.errorText.includes("Please try again"));
 
+  // 4b-2. Timeout (AbortController) must NOT show success, must preserve values, and must reuse same submissionKey
+  srv.setMode("timeout");
+  const failTimeout = await evalInPage(cdp, `
+    window.H4_TEACHER_FORM_CONFIG = { timeoutMs: 120 };
+    document.getElementById("workshopForm").requestSubmit();
+    await new Promise((r) => setTimeout(r, 250));
+    delete window.H4_TEACHER_FORM_CONFIG;
+    return {
+      successHidden: document.getElementById("formReadyPanel").hidden,
+      errorVisible: !document.getElementById("formError").hidden,
+      errorText: document.getElementById("formError").textContent,
+      nameKept: document.getElementById("teacherName").value
+    };
+  `);
+  assert.equal(failTimeout.successHidden, true, "Timeout must not display success");
+  assert.equal(failTimeout.errorVisible, true, "Timeout must show retryable error");
+  assert.ok(failTimeout.errorText.includes("timed out"), "Timeout error must mention timeout");
+  assert.equal(failTimeout.nameKept, "Ms. Maya Chen");
+
   // 4c. Retry with confirmed 200 { ok: true, saved: true }
   srv.setMode("ok");
   const okSave = await evalInPage(cdp, `
@@ -459,9 +493,11 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   );
   const okReqs = srv.receivedRequests.filter((r) => r.mode === "ok");
   const fail500Reqs = srv.receivedRequests.filter((r) => r.mode === "fail-500");
+  const failTimeoutReqs = srv.receivedRequests.filter((r) => r.mode === "timeout");
   const failNetReqs = srv.receivedRequests.filter((r) => r.mode === "fail-network");
   assert.ok(failNetReqs.length >= 1, "Expected at least 1 network-failure attempt");
   assert.equal(fail500Reqs.length, 1, "Expected exactly 1 HTTP 500 attempt");
+  assert.equal(failTimeoutReqs.length, 1, "Expected exactly 1 timeout attempt");
   assert.equal(okReqs.length, 1, "Expected exactly 1 confirmed OK attempt");
   assert.equal(okReqs[0].payload.interest, "Free Online Dance Tutorial");
   assert.equal(okReqs[0].payload.fullName, "Ms. Maya Chen");
