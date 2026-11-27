@@ -338,7 +338,6 @@
     boardCombobox.setRaw(saved.boardId, saved.boardText);
     schoolCombobox.setRaw(saved.schoolId, saved.schoolText);
     manualName.value = saved.manualName;
-    syncSchoolPickerState();
   }
 
   function getCompleteSchoolSelection() {
@@ -368,7 +367,7 @@
     manualName.disabled = !enabled;
     manualName.required = enabled && activeInterest === WORKSHOP;
     if (!enabled) {
-      manualName.value = "";
+      if (schoolActive) manualName.value = "";
       manualName.setAttribute("aria-invalid", "false");
       manualName.classList.remove("is-field-invalid");
     }

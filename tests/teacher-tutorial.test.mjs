@@ -486,6 +486,24 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     const manualRequired = !document.getElementById("manualSchoolField").hidden && document.getElementById("schoolName").required;
     window.__h4TeacherForm.selectBoardById("other");
     const otherHidesSchoolPicker = document.getElementById("schoolPicker").hidden && document.getElementById("schoolName").required;
+    update(document.getElementById("schoolName"), "input", "St. Custom Academy");
+    // Switch Workshop -> Learn More -> Workshop: manual school name must be preserved
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceLearnMoreBtn").click();
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    const manualPreservedAcrossLearnMore = document.getElementById("boardId").value === "other" &&
+      !document.getElementById("manualSchoolField").hidden &&
+      document.getElementById("schoolName").value === "St. Custom Academy";
+    // Switch Workshop -> Free Videos: manual school must NOT carry over to Free Videos
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceFreeVideosBtn").click();
+    const manualIsolatedFromFreeVideos = document.getElementById("boardId").value === "" &&
+      document.getElementById("schoolName").value === "";
+    // Switch back to Workshop: manual school still intact
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    const manualStillIntactOnWorkshop = document.getElementById("schoolName").value === "St. Custom Academy";
 
     // Re-select TCDSB + St Mother Teresa and verify validation & unconfigured endpoint message
     window.__h4TeacherForm.selectBoardById("B67059");
@@ -498,7 +516,8 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     return {
       parentNoSchool, preservedOnSwitch, aliasMatches, boardNoResults, tcdsbOptions, tcdsbSelected,
       matchingSchools, schoolSelected, boardChangeClearedSchool, schoolNoResults,
-      manualRequired, otherHidesSchoolPicker, requiredName,
+      manualRequired, otherHidesSchoolPicker, manualPreservedAcrossLearnMore,
+      manualIsolatedFromFreeVideos, manualStillIntactOnWorkshop, requiredName,
       unavailable: message.textContent.includes("temporarily unavailable"),
       successHidden: document.getElementById("formReadyPanel").hidden
     };
@@ -518,6 +537,9 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(pickerCheck.schoolNoResults, true);
   assert.equal(pickerCheck.manualRequired, true);
   assert.equal(pickerCheck.otherHidesSchoolPicker, true);
+  assert.equal(pickerCheck.manualPreservedAcrossLearnMore, true, "Manual school name must survive Workshop -> Learn More -> Workshop");
+  assert.equal(pickerCheck.manualIsolatedFromFreeVideos, true, "Workshop manual school must not carry over to Free Videos");
+  assert.equal(pickerCheck.manualStillIntactOnWorkshop, true, "Workshop manual school must remain intact after visiting Free Videos");
   assert.equal(pickerCheck.requiredName, true);
   assert.equal(pickerCheck.unavailable, true);
   assert.equal(pickerCheck.successHidden, true);
