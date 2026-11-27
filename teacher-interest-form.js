@@ -1,22 +1,46 @@
 (() => {
   const form = document.getElementById("workshopForm");
   const field = (id) => document.getElementById(id);
-  const board = field("boardId");
+  const chooser = field("signupChooser");
+  const chooserHeading = field("signupChooserHeading");
+  const formHeading = field("bookingFormHeading");
+  const inquiryInput = field("inquiryTypeInput");
+  const fullNameField = field("fullNameField");
+  const teacherName = field("teacherName");
+  const teacherEmail = field("teacherEmail");
+  const role = field("signupRole");
+  const workshopSchoolSlot = field("workshopSchoolSlot");
+  const optionalSchoolDetails = field("optionalSchoolDetails");
+  const optionalSchoolBody = field("optionalSchoolBody");
+  const schoolDetails = field("signupSchoolDetails");
   const boardSearch = field("boardSearch");
-  const school = field("schoolId");
-  const schoolSearch = field("schoolSearch");
+  const boardId = field("boardId");
+  const boardListbox = field("boardListbox");
+  const boardClearBtn = field("boardClearBtn");
+  const boardSearchIcon = field("boardSearchIcon");
   const schoolPicker = field("schoolPicker");
+  const schoolSearch = field("schoolSearch");
+  const schoolId = field("schoolId");
+  const schoolListbox = field("schoolListbox");
+  const schoolClearBtn = field("schoolClearBtn");
+  const schoolSearchIcon = field("schoolSearchIcon");
   const manualField = field("manualSchoolField");
   const manualName = field("schoolName");
+  const optionalWorkshopDetails = field("optionalWorkshopDetails");
   const workshopDetails = field("workshopDetails");
-  const role = field("signupRole");
-  const schoolDetails = field("signupSchoolDetails");
-  const instagramField = field("teacherInstagram").closest(".form-field");
+  const instagramField = field("instagramFieldWrap");
+  const teacherInstagram = field("teacherInstagram");
+  const teacherPhone = field("teacherPhone");
+  const targetMonth = field("targetMonth");
   const submit = field("workshopSubmitBtn");
   const error = field("formError");
   const confirmation = field("formReadyPanel");
-  const workshop = "Full-Day School Workshop";
-  const tutorial = "Free Online Dance Tutorial";
+  const choiceButtons = [...chooser.querySelectorAll("[data-interest-choice]")];
+
+  const WORKSHOP = "Full-Day School Workshop";
+  const FREE_VIDEOS = "Free Online Dance Tutorial";
+  const LEARN_MORE = "Learn More";
+
   const boardAliases = {
     B28010: ["ADSB", "Algoma District School Board"],
     B67202: ["ALCDSB", "Algonquin and Lakeshore Catholic District School Board"],
@@ -104,150 +128,501 @@
     B66095: ["YRDSB", "York Region District School Board"]
   };
 
+  let activeInterest = "";
   let sending = false;
   let lastAttempt;
-  const inquiryType = () => form.inquiryType.value;
+
   const normalize = (value) => value.toLowerCase().normalize("NFD")
-    .replace(/\p{M}/gu, "").replace(/\bsaint\b/g, "st").replace(/[^a-z0-9]/g, "");
+    .replace(/\p{M}/gu, "").replace(/\bste\.?\b/g, "sainte").replace(/\bsaint\b/g, "st")
+    .replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
-  const matches = (query, labels) => labels.some((label) => normalize(label).includes(normalize(query)));
+  const matches = (query, labels) => {
+    const clean = normalize(query);
+    if (!clean) return true;
+    const tokens = clean.split(/\s+/);
+    const combined = normalize(labels.join(" "));
+    return tokens.every((token) => combined.includes(token));
+  };
 
-  function populate(select, placeholder, options) {
-    const selected = select.value;
-    select.replaceChildren(new Option(placeholder, ""), ...options.map(([id, label]) => new Option(label, id)));
-    if (options.some(([id]) => id === selected)) select.value = selected;
-  }
+  const isExactMatch = (query, labels) => {
+    const clean = normalize(query);
+    return Boolean(clean) && labels.some((label) => normalize(label) === clean);
+  };
 
-  function listBoards() {
-    const selected = board.value;
-    const options = Object.entries(H4_SCHOOL_DIRECTORY).flatMap(([id, [name]]) => {
-      const aliases = boardAliases[id] || [];
-      if (id !== selected && !matches(boardSearch.value, [name, ...aliases])) return [];
-      const label = aliases.length >= 2 ? aliases.slice(0, 2).join(" · ")
-        : aliases.length === 1 ? `${aliases[0]} · ${name}` : name;
-      return [[id, label]];
-    });
-    populate(board, options.length ? "Select a school board" : "No matching boards", [
-      ...options, ["other", "Independent school / Other"]
-    ]);
-  }
+  const allBoards = Object.entries(H4_SCHOOL_DIRECTORY).map(([id, [name]]) => {
+    const aliases = boardAliases[id] || [];
+    const label = aliases.length >= 2 ? aliases.slice(0, 2).join(" · ")
+      : aliases.length === 1 ? `${aliases[0]} · ${name}` : name;
+    return { id, label, searchLabels: [name, ...aliases] };
+  });
 
-  function listSchools() {
-    const selected = school.value;
-    const schools = H4_SCHOOL_DIRECTORY[board.value]?.[1] || {};
-    const options = Object.entries(schools).flatMap(([id, [name, city]]) => {
-      if (id !== selected && !matches(schoolSearch.value, [name, city])) return [];
-      return [[id, city ? name + " · " + city : name]];
-    });
-    populate(school, options.length ? "Select your school" : "No matching schools",
-      [...options, ["manual", "My school isn’t listed"]]);
-  }
+  function createCombobox({
+    input, hiddenInput, listbox, clearBtn, searchIcon, optionPrefix,
+    getItems, fallbackItem, emptyMessage, onSelect, onClear
+  }) {
+    let currentItems = [];
+    let activeIndex = -1;
+    let selectedLabel = "";
 
-  function updateManual() {
-    const enabled = !schoolDetails.hidden && (board.value === "other" || school.value === "manual");
-    manualField.hidden = !enabled;
-    manualName.disabled = !enabled;
-    manualName.required = enabled;
-    if (!enabled) manualName.value = "";
-  }
+    function syncClearIcon() {
+      const hasText = Boolean(input.value.trim()) && !input.disabled;
+      clearBtn.hidden = !hasText;
+      searchIcon.hidden = hasText;
+    }
 
-  function changeBoard() {
-    school.value = "";
-    schoolSearch.value = "";
-    manualName.value = "";
-    schoolPicker.hidden = board.value === "other";
-    school.disabled = schoolDetails.hidden || !board.value || schoolPicker.hidden;
-    schoolSearch.disabled = school.disabled;
-    schoolSearch.placeholder = board.value ? "Type part of your school name" : "Select a board first";
-    listSchools();
-    updateManual();
-  }
-
-  function updateInterest() {
-    const isParent = role.value === "Parent / Caregiver";
-    const isWorkshop = inquiryType() === workshop;
-    schoolDetails.hidden = isParent && !isWorkshop;
-    board.disabled = schoolDetails.hidden;
-    boardSearch.disabled = schoolDetails.hidden;
-    school.disabled = schoolDetails.hidden || !board.value || schoolPicker.hidden;
-    schoolSearch.disabled = school.disabled;
-    updateManual();
-    instagramField.hidden = isParent;
-    field("teacherInstagram").disabled = isParent;
-    if (isParent) field("teacherInstagram").value = "";
-    workshopDetails.hidden = !isWorkshop;
-    for (const control of workshopDetails.querySelectorAll("input, select")) {
-      control.disabled = workshopDetails.hidden;
-      if (workshopDetails.hidden) {
-        if (control.type === "checkbox") control.checked = false;
-        else control.value = "";
+    function setActive(index) {
+      const options = [...listbox.querySelectorAll('[role="option"]')];
+      activeIndex = options.length ? Math.max(-1, Math.min(index, options.length - 1)) : -1;
+      options.forEach((opt, i) => opt.classList.toggle("is-active", i === activeIndex));
+      if (activeIndex >= 0) {
+        input.setAttribute("aria-activedescendant", options[activeIndex].id);
+        options[activeIndex].scrollIntoView({ block: "nearest" });
+      } else {
+        input.removeAttribute("aria-activedescendant");
       }
     }
-    submit.textContent = inquiryType() === tutorial
-      ? "Email Me the Free Resources →"
-      : inquiryType() === workshop ? "Request Workshop Dates →" : "Send Request →";
+
+    function close() {
+      listbox.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+      activeIndex = -1;
+    }
+
+    function render(query) {
+      const matched = getItems(query);
+      currentItems = [...matched, fallbackItem];
+      listbox.replaceChildren();
+      if (!matched.length && query.trim()) {
+        const empty = document.createElement("li");
+        empty.className = "combobox-empty";
+        empty.setAttribute("role", "presentation");
+        empty.textContent = emptyMessage;
+        listbox.appendChild(empty);
+      }
+      currentItems.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.id = `${optionPrefix}-${index}`;
+        li.className = "combobox-option" + (item === fallbackItem ? " combobox-option-fallback" : "");
+        li.setAttribute("role", "option");
+        li.dataset.value = item.id;
+        li.setAttribute("aria-selected", item.id === hiddenInput.value ? "true" : "false");
+        li.textContent = item.label;
+        li.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          choose(item);
+        });
+        li.addEventListener("click", () => choose(item));
+        listbox.appendChild(li);
+      });
+      listbox.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      setActive(matched.length > 0 && query.trim() ? 0 : -1);
+    }
+
+    function choose(item) {
+      hiddenInput.value = item.id;
+      selectedLabel = item.label;
+      input.value = item.label;
+      input.setAttribute("aria-invalid", "false");
+      input.classList.remove("is-field-invalid");
+      close();
+      syncClearIcon();
+      onSelect(item.id, item.label);
+    }
+
+    function clearValue(shouldFocus = false) {
+      hiddenInput.value = "";
+      selectedLabel = "";
+      input.value = "";
+      input.setAttribute("aria-invalid", "false");
+      input.classList.remove("is-field-invalid");
+      close();
+      syncClearIcon();
+      onClear();
+      if (shouldFocus && !input.disabled) input.focus();
+    }
+
+    input.addEventListener("focus", () => {
+      if (input.disabled) return;
+      render(hiddenInput.value && input.value === selectedLabel ? "" : input.value);
+    });
+
+    input.addEventListener("click", () => {
+      if (input.disabled) return;
+      if (listbox.hidden) render(hiddenInput.value && input.value === selectedLabel ? "" : input.value);
+    });
+
+    input.addEventListener("input", () => {
+      if (hiddenInput.value && input.value !== selectedLabel) {
+        hiddenInput.value = "";
+        selectedLabel = "";
+        onClear();
+      }
+      syncClearIcon();
+      render(input.value);
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.isComposing || input.disabled) return;
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (listbox.hidden) render(hiddenInput.value && input.value === selectedLabel ? "" : input.value);
+        setActive(activeIndex + 1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (!listbox.hidden) setActive(activeIndex <= 0 ? 0 : activeIndex - 1);
+      } else if (event.key === "Enter" && !listbox.hidden) {
+        event.preventDefault();
+        const pickIndex = activeIndex >= 0 ? activeIndex : (currentItems.length === 2 && !listbox.querySelector(".combobox-empty") ? 0 : -1);
+        if (pickIndex >= 0 && currentItems[pickIndex]) choose(currentItems[pickIndex]);
+      } else if (event.key === "Escape" && !listbox.hidden) {
+        event.preventDefault();
+        close();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      setTimeout(() => {
+        if (!listbox.contains(document.activeElement)) close();
+      }, 120);
+    });
+
+    clearBtn.addEventListener("click", () => clearValue(true));
+
+    return {
+      chooseById(id) {
+        if (!id) {
+          clearValue(false);
+          return;
+        }
+        const item = id === fallbackItem.id
+          ? fallbackItem
+          : getItems("").find((entry) => entry.id === id);
+        if (item) choose(item);
+      },
+      clear: () => clearValue(false),
+      setRaw(id, label) {
+        hiddenInput.value = id || "";
+        selectedLabel = id ? (label || "") : "";
+        input.value = label || "";
+        input.setAttribute("aria-invalid", "false");
+        input.classList.remove("is-field-invalid");
+        close();
+        syncClearIcon();
+      },
+      close,
+      syncClearIcon
+    };
+  }
+
+  const emptySchoolState = () => ({ boardId: "", boardText: "", schoolId: "", schoolText: "", manualName: "" });
+  const schoolStateByPath = {
+    [WORKSHOP]: emptySchoolState(),
+    [FREE_VIDEOS]: emptySchoolState()
+  };
+
+  function saveSchoolState(path) {
+    if (path !== WORKSHOP && path !== FREE_VIDEOS) return;
+    schoolStateByPath[path] = {
+      boardId: boardId.value,
+      boardText: boardSearch.value,
+      schoolId: schoolId.value,
+      schoolText: schoolSearch.value,
+      manualName: manualName.value
+    };
+  }
+
+  function restoreSchoolState(path) {
+    const saved = schoolStateByPath[path] || emptySchoolState();
+    boardCombobox.setRaw(saved.boardId, saved.boardText);
+    schoolCombobox.setRaw(saved.schoolId, saved.schoolText);
+    manualName.value = saved.manualName;
+  }
+
+  function getCompleteSchoolSelection() {
+    const bId = boardId.value;
+    const sId = schoolId.value;
+    const mName = manualName.value.trim();
+    if (bId === "other") {
+      return mName ? { boardId: "other", schoolId: "", schoolName: mName } : null;
+    }
+    if (/^B\d+$/.test(bId) && H4_SCHOOL_DIRECTORY[bId]) {
+      if (sId === "manual") {
+        return mName ? { boardId: bId, schoolId: "manual", schoolName: mName } : null;
+      }
+      if (/^\d+$/.test(sId) && H4_SCHOOL_DIRECTORY[bId][1]?.[sId]) {
+        return { boardId: bId, schoolId: sId, schoolName: "" };
+      }
+    }
+    return null;
+  }
+
+  function updateManualSchool() {
+    const schoolActive = !schoolDetails.hidden && !boardSearch.disabled;
+    const isOther = boardId.value === "other";
+    const isManual = isOther || schoolId.value === "manual";
+    const enabled = schoolActive && isManual;
+    manualField.hidden = !enabled;
+    manualName.disabled = !enabled;
+    manualName.required = enabled && activeInterest === WORKSHOP;
+    if (!enabled) {
+      if (schoolActive) manualName.value = "";
+      manualName.setAttribute("aria-invalid", "false");
+      manualName.classList.remove("is-field-invalid");
+    }
+  }
+
+  function syncSchoolPickerState() {
+    const schoolActive = !schoolDetails.hidden && !boardSearch.disabled;
+    const isOther = boardId.value === "other";
+    const hasDirectoryBoard = /^B\d+$/.test(boardId.value) && Boolean(H4_SCHOOL_DIRECTORY[boardId.value]);
+    schoolPicker.hidden = isOther;
+    const schoolEnabled = schoolActive && hasDirectoryBoard && !isOther;
+    schoolSearch.disabled = !schoolEnabled;
+    schoolSearch.placeholder = schoolEnabled ? "Search schools" : "Select a board first";
+    schoolSearch.required = schoolEnabled && activeInterest === WORKSHOP;
+    schoolCombobox.syncClearIcon();
+    updateManualSchool();
+  }
+
+  const schoolCombobox = createCombobox({
+    input: schoolSearch,
+    hiddenInput: schoolId,
+    listbox: schoolListbox,
+    clearBtn: schoolClearBtn,
+    searchIcon: schoolSearchIcon,
+    optionPrefix: "school-opt",
+    getItems(query) {
+      const schools = H4_SCHOOL_DIRECTORY[boardId.value]?.[1] || {};
+      return Object.entries(schools).flatMap(([id, [name, city]]) => {
+        if (!matches(query, [name, city])) return [];
+        return [{ id, label: city ? `${name} · ${city}` : name }];
+      });
+    },
+    fallbackItem: { id: "manual", label: "My school isn’t listed" },
+    emptyMessage: "No matching schools found.",
+    onSelect() {
+      updateManualSchool();
+    },
+    onClear() {
+      updateManualSchool();
+    }
+  });
+
+  const boardCombobox = createCombobox({
+    input: boardSearch,
+    hiddenInput: boardId,
+    listbox: boardListbox,
+    clearBtn: boardClearBtn,
+    searchIcon: boardSearchIcon,
+    optionPrefix: "board-opt",
+    getItems(query) {
+      const matched = allBoards.filter((entry) => matches(query, entry.searchLabels));
+      if (!query.trim()) return matched;
+      return matched.sort((a, b) => Number(isExactMatch(query, b.searchLabels)) - Number(isExactMatch(query, a.searchLabels)));
+    },
+    fallbackItem: { id: "other", label: "Independent school / Other" },
+    emptyMessage: "No matching school boards found.",
+    onSelect() {
+      schoolCombobox.clear();
+      syncSchoolPickerState();
+    },
+    onClear() {
+      schoolCombobox.clear();
+      syncSchoolPickerState();
+    }
+  });
+
+  function clearValidationVisuals() {
+    error.hidden = true;
+    for (const el of form.querySelectorAll("input, select")) {
+      el.setAttribute("aria-invalid", "false");
+      el.classList.remove("is-field-invalid");
+    }
+  }
+
+  function updateView({ focus = false } = {}) {
+    const isSelected = Boolean(activeInterest);
+    const isFree = activeInterest === FREE_VIDEOS;
+    const isWorkshop = activeInterest === WORKSHOP;
+    const isLearnMore = activeInterest === LEARN_MORE;
+    const isParent = role.value === "Parent / Caregiver";
+
+    inquiryInput.value = activeInterest;
+    choiceButtons.forEach((btn) => {
+      btn.setAttribute("aria-pressed", btn.dataset.interestChoice === activeInterest ? "true" : "false");
+    });
+
+    if (!isSelected) {
+      chooser.hidden = false;
+      form.hidden = true;
+      confirmation.hidden = true;
+      if (focus) chooserHeading.focus();
+      return;
+    }
+
+    chooser.hidden = true;
+    confirmation.hidden = true;
+    form.hidden = false;
+
+    formHeading.textContent = isFree
+      ? "Get the Free Dance Videos"
+      : isWorkshop ? "Request Workshop Dates" : "Learn More";
+
+    // Full name: hidden & disabled on Free Videos (value preserved in DOM for switching)
+    fullNameField.hidden = isFree;
+    teacherName.disabled = isFree;
+    teacherName.required = !isFree;
+
+    // School Board & School placement
+    const showOptionalSchool = isFree && !isParent;
+    const showWorkshopSchool = isWorkshop;
+    optionalSchoolDetails.hidden = !showOptionalSchool;
+    if (!showOptionalSchool) optionalSchoolDetails.open = false;
+
+    if (showWorkshopSchool) {
+      workshopSchoolSlot.appendChild(schoolDetails);
+      schoolDetails.hidden = false;
+    } else if (showOptionalSchool) {
+      optionalSchoolBody.appendChild(schoolDetails);
+      schoolDetails.hidden = false;
+    } else {
+      schoolDetails.hidden = true;
+    }
+
+    const schoolInteractive = showWorkshopSchool || showOptionalSchool;
+    boardSearch.disabled = !schoolInteractive;
+    boardSearch.required = showWorkshopSchool;
+    for (const mark of schoolDetails.querySelectorAll(".school-req-mark")) {
+      mark.hidden = !showWorkshopSchool;
+    }
+    boardCombobox.syncClearIcon();
+    syncSchoolPickerState();
+
+    // Workshop optional details (Grades, Preferred Timing, Phone, Instagram)
+    optionalWorkshopDetails.hidden = !isWorkshop;
+    if (!isWorkshop) optionalWorkshopDetails.open = false;
+    for (const control of workshopDetails.querySelectorAll("input, select")) {
+      control.disabled = !isWorkshop;
+    }
+    instagramField.hidden = !isWorkshop || isParent;
+    teacherInstagram.disabled = !isWorkshop || isParent;
+
+    if (!sending) {
+      submit.textContent = isFree
+        ? "Email Me the Free Videos"
+        : isWorkshop ? "Request Workshop Dates" : "Send My Request";
+    }
+
+    if (focus) formHeading.focus();
   }
 
   function showError(message, input = error) {
     error.textContent = message;
     error.hidden = false;
+    if (input && input !== error) {
+      input.setAttribute("aria-invalid", "true");
+      input.classList.add("is-field-invalid");
+    }
     input.focus();
   }
 
-  function selectInterest(interest) {
+  function selectInterest(interest, options = {}) {
     if (sending) return;
-    if (form.hidden) resetForm();
-    form.inquiryType.value = interest;
-    error.hidden = true;
-    updateInterest();
+    if (![WORKSHOP, FREE_VIDEOS, LEARN_MORE].includes(interest)) return;
+    if (confirmation.hidden === false) {
+      confirmation.hidden = true;
+      lastAttempt = undefined;
+    }
+    const previous = activeInterest;
+    saveSchoolState(previous);
+    activeInterest = interest;
+    if (previous !== interest) {
+      optionalSchoolDetails.open = false;
+      optionalWorkshopDetails.open = false;
+      boardCombobox.close();
+      schoolCombobox.close();
+      restoreSchoolState(interest);
+    }
+    clearValidationVisuals();
+    updateView({ focus: options.focus !== false });
+  }
+
+  function returnToChooser() {
+    if (sending) return;
+    saveSchoolState(activeInterest);
+    activeInterest = "";
+    boardCombobox.close();
+    schoolCombobox.close();
+    clearValidationVisuals();
+    updateView({ focus: true });
   }
 
   function resetForm() {
     form.reset();
+    activeInterest = "";
     lastAttempt = undefined;
-    error.hidden = true;
-    confirmation.hidden = true;
-    form.hidden = false;
-    listBoards();
-    changeBoard();
-    updateInterest();
+    schoolStateByPath[WORKSHOP] = emptySchoolState();
+    schoolStateByPath[FREE_VIDEOS] = emptySchoolState();
+    boardCombobox.clear();
+    schoolCombobox.clear();
+    optionalSchoolDetails.open = false;
+    optionalWorkshopDetails.open = false;
+    clearValidationVisuals();
+    updateView({ focus: true });
   }
 
-  boardSearch.addEventListener("input", listBoards);
-  schoolSearch.addEventListener("input", listSchools);
-  board.addEventListener("change", changeBoard);
-  school.addEventListener("change", updateManual);
-  role.addEventListener("change", updateInterest);
+  choiceButtons.forEach((btn) => {
+    btn.addEventListener("click", () => selectInterest(btn.dataset.interestChoice, { focus: true }));
+  });
+  field("changeChoiceBtn").addEventListener("click", returnToChooser);
+  role.addEventListener("change", () => updateView());
   form.addEventListener("input", (event) => {
     if (!sending) error.hidden = true;
-    event.target.removeAttribute("aria-invalid");
+    event.target.setAttribute("aria-invalid", "false");
+    event.target.classList.remove("is-field-invalid");
   });
-  form.querySelectorAll("[name=inquiryType]").forEach((radio) =>
-    radio.addEventListener("change", updateInterest));
-  field("formEditBtn").addEventListener("click", () => {
-    resetForm();
-    field("teacherName").focus();
+  form.addEventListener("change", (event) => {
+    if (!sending) error.hidden = true;
+    event.target.setAttribute("aria-invalid", "false");
+    event.target.classList.remove("is-field-invalid");
   });
-  listBoards();
-  changeBoard();
-  updateInterest();
+  field("formEditBtn").addEventListener("click", resetForm);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (sending) return;
-    error.hidden = true;
-    const required = [
-      [role, "Select your role."],
-      [field("teacherName"), "Enter your name."],
-      [field("teacherEmail"), "Enter a valid email address."],
-      [board, "Select your school board."],
-      [school, "Select your school or choose ‘My school isn’t listed’."],
-      [manualName, "Enter your school name."]
-    ];
-    for (const [control, message] of required) {
-      if (!control.disabled && (!control.value.trim() || !control.validity.valid)) {
-        control.setAttribute("aria-invalid", "true");
-        showError(message, control);
+    if (sending || !activeInterest) return;
+    clearValidationVisuals();
+
+    const isFree = activeInterest === FREE_VIDEOS;
+    const isWorkshop = activeInterest === WORKSHOP;
+    const isParent = role.value === "Parent / Caregiver";
+
+    if (!isFree && !teacherName.value.trim()) {
+      showError("Please enter your full name.", teacherName);
+      return;
+    }
+    if (!teacherEmail.value.trim() || !teacherEmail.validity.valid) {
+      showError("Please enter a valid email address in the format you@example.com.", teacherEmail);
+      return;
+    }
+    if (!role.value) {
+      showError("Please select your role.", role);
+      return;
+    }
+
+    if (isWorkshop) {
+      if (!boardId.value) {
+        showError("Please select your school board from the list.", boardSearch);
+        return;
+      }
+      if (boardId.value !== "other" && !schoolId.value) {
+        showError("Please select your school or choose ‘My school isn’t listed’.", schoolSearch);
+        return;
+      }
+      if ((boardId.value === "other" || schoolId.value === "manual") && !manualName.value.trim()) {
+        showError("Please enter your school name.", manualName);
         return;
       }
     }
@@ -258,21 +633,29 @@
       return;
     }
 
-    const fields = new FormData(form);
+    const selectedSchool = (isWorkshop || (isFree && !isParent)) ? getCompleteSchoolSelection() : null;
+    const activeBoardId = selectedSchool ? selectedSchool.boardId : "";
+    const activeSchoolId = selectedSchool ? selectedSchool.schoolId : "";
+    const activeSchoolName = selectedSchool ? selectedSchool.schoolName : "";
+    const activeGrades = isWorkshop
+      ? [...workshopDetails.querySelectorAll('input[name="grades"]:checked')].map((cb) => cb.value)
+      : [];
+
     const payload = {
-      interest: inquiryType(),
+      interest: activeInterest,
       role: role.value,
-      fullName: fields.get("teacherName").trim(),
-      email: fields.get("email").trim(),
-      boardId: board.disabled ? "" : board.value,
-      schoolId: school.disabled ? "" : school.value,
-      schoolName: (fields.get("schoolName") || "").trim(),
-      phone: fields.get("phone").trim(),
-      instagram: (fields.get("instagram") || "").trim(),
-      grades: fields.getAll("grades"),
-      preferredTiming: fields.get("targetMonth") || "",
-      website: fields.get("website") || ""
+      fullName: isFree ? "" : teacherName.value.trim(),
+      email: teacherEmail.value.trim(),
+      boardId: activeBoardId,
+      schoolId: activeSchoolId,
+      schoolName: activeSchoolName,
+      phone: isWorkshop ? teacherPhone.value.trim() : "",
+      instagram: isWorkshop && !isParent ? teacherInstagram.value.trim() : "",
+      grades: activeGrades,
+      preferredTiming: isWorkshop ? (targetMonth.value || "") : "",
+      website: form.elements.website?.value || ""
     };
+
     const snapshot = JSON.stringify(payload);
     if (lastAttempt?.snapshot !== snapshot) lastAttempt = { snapshot, key: crypto.randomUUID() };
 
@@ -296,11 +679,14 @@
         return;
       }
       form.hidden = true;
+      chooser.hidden = true;
       confirmation.hidden = false;
       field("formReadyTitle").textContent = "Request received";
       field("formReadyBody").textContent = data.emailStatus === "Sent"
         ? "Thanks! Check your inbox for an email from H4 Community."
-        : "Thanks! Your request is saved. H4 Community will follow up by email.";
+        : data.emailStatus === "Queued"
+          ? "Thanks! Your request is saved and your email is queued. We’ll send it shortly."
+          : "Thanks! Your request is saved. H4 Community will follow up by email.";
       confirmation.focus();
     } catch (err) {
       showError(err?.name === "AbortError"
@@ -311,9 +697,18 @@
       sending = false;
       submit.disabled = false;
       form.removeAttribute("aria-busy");
-      updateInterest();
+      if (form.hidden === false) updateView();
     }
   });
 
-  window.__h4TeacherForm = { selectInterest, getSelectedInquiryType: inquiryType };
+  // Start directly on the 3-choice chooser with no choice selected
+  updateView({ focus: false });
+
+  window.__h4TeacherForm = {
+    selectInterest,
+    returnToChooser,
+    getSelectedInquiryType: () => activeInterest,
+    selectBoardById: (id) => boardCombobox.chooseById(id),
+    selectSchoolById: (id) => schoolCombobox.chooseById(id)
+  };
 })();

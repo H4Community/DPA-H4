@@ -42,7 +42,7 @@ function findChromeBinary() {
 
 function startLocalServer() {
   const receivedRequests = [];
-  let endpointMode = "fail-network"; // fail-network | fail-500 | timeout | ok
+  let endpointMode = "fail-network"; // fail-network | fail-500 | timeout | ok | ok-queued
 
   const server = http.createServer((req, res) => {
     const urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
@@ -68,7 +68,8 @@ function startLocalServer() {
           return;
         }
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ ok: true, saved: true, leadId: "TEST-TUTORIAL-001", emailStatus: "Sent" }));
+        const emailStatus = endpointMode === "ok-queued" ? "Queued" : "Sent";
+        res.end(JSON.stringify({ ok: true, saved: true, leadId: "TEST-TUTORIAL-001", emailStatus }));
       });
       return;
     }
@@ -313,125 +314,247 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   const deskGridShot = await cdp.send("Page.captureScreenshot", { format: "png" });
   fs.writeFileSync(path.join(SCREENSHOT_DIR, "desktop-grid-promos.png"), Buffer.from(deskGridShot.data, "base64"));
 
-  // 2. Test preserving previously entered form values + Tutorial CTA navigation & preselection
+  // 2. Direct visit starts with no choice selected; topbar & tutorial CTAs open matching paths directly
+  const directState = await evalInPage(cdp, `
+    const form = document.getElementById("workshopForm");
+    const configuredEndpoint = (form.getAttribute("data-endpoint") || "").trim();
+    return {
+      configuredEndpoint,
+      selectedInterest: window.__h4TeacherForm.getSelectedInquiryType(),
+      chooserVisible: !document.getElementById("signupChooser").hidden,
+      formHidden: form.hidden,
+      choiceTexts: [...document.querySelectorAll("#signupChooser [data-interest-choice]")].map((b) => b.textContent.trim())
+    };
+  `);
+  assert.match(directState.configuredEndpoint, /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/);
+  assert.equal(directState.selectedInterest, "", "Direct visit must start with no choice selected");
+  assert.equal(directState.chooserVisible, true, "Three choices must show up front on direct visit");
+  assert.equal(directState.formHidden, true, "Form fields must stay hidden until a choice is selected");
+  assert.deepEqual(directState.choiceTexts, [
+    "Email Me the Free Videos",
+    "Request Workshop Dates",
+    "Learn more"
+  ]);
+
+  // Topbar workshop CTA opens Request Workshop Dates directly
+  const topCtaResult = await evalInPage(cdp, `
+    document.body.classList.add("calm-motion");
+    document.getElementById("bookWorkshopTopCta").click();
+    await new Promise((r) => setTimeout(r, 150));
+    document.body.classList.remove("calm-motion");
+    return {
+      selectedInterest: window.__h4TeacherForm.getSelectedInquiryType(),
+      heading: document.getElementById("bookingFormHeading").textContent.trim(),
+      submitText: document.getElementById("workshopSubmitBtn").textContent.trim(),
+      schoolDisabledInitially: document.getElementById("schoolSearch").disabled,
+      optionalClosed: !document.getElementById("optionalWorkshopDetails").open
+    };
+  `);
+  assert.equal(topCtaResult.selectedInterest, "Full-Day School Workshop");
+  assert.equal(topCtaResult.heading, "Request Workshop Dates");
+  assert.equal(topCtaResult.submitText, "Request Workshop Dates");
+  assert.equal(topCtaResult.schoolDisabledInitially, true, "School picker must be disabled until board is selected");
+  assert.equal(topCtaResult.optionalClosed, true, "Optional workshop details must start collapsed");
+
+  // Fill workshop fields (name, email, role, TCDSB board, school, optional details), then click Free Tutorial CTA
   const navResult = await evalInPage(cdp, `
-    document.getElementById("teacherName").value = "Ms. Maya Chen";
-    document.getElementById("teacherEmail").value = "maya@example.org";
-    const role = document.getElementById("signupRole");
-    role.value = "Teacher";
-    role.dispatchEvent(new Event("change", { bubbles: true }));
-    const board = document.getElementById("boardId");
-    board.value = "B67059";
-    board.dispatchEvent(new Event("change", { bubbles: true }));
-    document.getElementById("schoolId").value = "733024";
+    const update = (el, type, val) => {
+      el.value = val;
+      el.dispatchEvent(new Event(type, { bubbles: true }));
+    };
+    update(document.getElementById("teacherName"), "input", "Ms. Maya Chen");
+    update(document.getElementById("teacherEmail"), "input", "maya@example.org");
+    update(document.getElementById("signupRole"), "change", "Teacher");
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
     document.querySelector('[name=grades][value="6"]').checked = true;
     document.getElementById("targetMonth").value = "March 2027";
-    // Turn on Calm Motion first so scroll is deterministic, then click CTA
+    document.getElementById("teacherPhone").value = "416-555-0199";
+    document.getElementById("teacherInstagram").value = "@h4dance";
     document.body.classList.add("calm-motion");
     document.getElementById("requestTutorialPromoCta").click();
     await new Promise((r) => setTimeout(r, 200));
     const topbarBottom = document.querySelector(".topbar").getBoundingClientRect().bottom;
-    const headingRect = document.getElementById("teacher-tutorial-heading").getBoundingClientRect();
+    const formHeading = document.getElementById("bookingFormHeading");
+    const headingRect = formHeading.getBoundingClientRect();
+    const activeId = document.activeElement?.id || "";
+    const workshopBoardDidNotCarryOver = document.getElementById("boardId").value === "" &&
+      document.getElementById("schoolId").value === "";
     document.body.classList.remove("calm-motion");
     return {
       selectedInterest: window.__h4TeacherForm.getSelectedInquiryType(),
-      teacherName: document.getElementById("teacherName").value,
-      schoolId: document.getElementById("schoolId").value,
-      gradesCleared: !document.querySelector('[name=grades][value="6"]').checked,
-      workshopDetailsHidden: document.getElementById("workshopDetails").hidden,
-      targetMonth: document.getElementById("targetMonth").value,
-      headingVisibleBelowTopbar: headingRect.top >= topbarBottom - 2 && headingRect.top < window.innerHeight,
-      headingText: document.getElementById("teacher-tutorial-heading").textContent.trim(),
+      teacherNameValuePreserved: document.getElementById("teacherName").value,
+      fullNameHidden: document.getElementById("fullNameField").hidden,
+      emailPreserved: document.getElementById("teacherEmail").value,
+      rolePreserved: document.getElementById("signupRole").value,
+      optionalSchoolVisible: !document.getElementById("optionalSchoolDetails").hidden,
+      optionalSchoolCollapsed: !document.getElementById("optionalSchoolDetails").open,
+      optionalWorkshopHidden: document.getElementById("optionalWorkshopDetails").hidden,
+      workshopBoardDidNotCarryOver,
+      formHeadingFocused: activeId === "bookingFormHeading",
+      headingVisibleBelowTopbar: headingRect.top >= topbarBottom - 2 && headingRect.bottom <= window.innerHeight,
+      formHeadingText: formHeading.textContent.trim(),
       explainerText: document.getElementById("teacher-tutorial-section").textContent.replace(/\\s+/g, " ").trim(),
       submitText: document.getElementById("workshopSubmitBtn").textContent.trim()
     };
   `);
 
   assert.equal(navResult.selectedInterest, "Free Online Dance Tutorial");
-  assert.equal(navResult.teacherName, "Ms. Maya Chen", "Previously entered teacher name must be preserved");
-  assert.equal(navResult.schoolId, "733024", "Previously selected school must be preserved");
-  assert.equal(navResult.targetMonth, "", "Workshop timing must clear when requesting a tutorial");
-  assert.equal(navResult.gradesCleared, true);
-  assert.equal(navResult.workshopDetailsHidden, true);
-  assert.equal(navResult.headingVisibleBelowTopbar, true, "Tutorial heading must remain visible below sticky header");
-  assert.equal(navResult.headingText, "Teach Dance with Confidence.");
+  assert.equal(navResult.teacherNameValuePreserved, "Ms. Maya Chen", "Entered name must be preserved in memory when switching");
+  assert.equal(navResult.fullNameHidden, true, "Full name field must be hidden on Free Videos");
+  assert.equal(navResult.emailPreserved, "maya@example.org");
+  assert.equal(navResult.rolePreserved, "Teacher");
+  assert.equal(navResult.optionalSchoolVisible, true, "Staff must see collapsed Add your school (optional)");
+  assert.equal(navResult.optionalSchoolCollapsed, true, "Add your school (optional) must start collapsed");
+  assert.equal(navResult.optionalWorkshopHidden, true);
+  assert.equal(navResult.workshopBoardDidNotCarryOver, true, "Workshop school must not carry over to Free Videos");
+  assert.equal(navResult.formHeadingFocused, true, "Free tutorial CTA must focus the form heading");
+  assert.equal(navResult.headingVisibleBelowTopbar, true, "Form heading must land visibly below sticky header");
+  assert.equal(navResult.formHeadingText, "Get the Free Dance Videos");
   assert.ok(navResult.explainerText.includes("No dance experience? No problem!"));
   assert.ok(navResult.explainerText.includes("Learn the 10 foundational dance moves."));
   assert.ok(navResult.explainerText.includes("Designed for educators. No dance experience required."));
-  assert.equal(navResult.submitText, "Email Me the Free Resources →");
+  assert.equal(navResult.submitText, "Email Me the Free Videos");
 
   // Capture Desktop Tutorial Explanation + Preselected Form screenshot
   const deskFormShot = await cdp.send("Page.captureScreenshot", { format: "png" });
   fs.writeFileSync(path.join(SCREENSHOT_DIR, "desktop-tutorial-section.png"), Buffer.from(deskFormShot.data, "base64"));
 
-  // 3. Validate the dependent picker and the unconfigured endpoint state.
+  // 3. Verify single searchable pickers (TCDSB, acronym aliases, keyboard selection, no-results, board change clears school, manual entry, unconfigured endpoint)
   const pickerCheck = await evalInPage(cdp, `
     const update = (element, type, value) => {
       element.value = value;
       element.dispatchEvent(new Event(type, { bubbles: true }));
     };
-    const boardSearch = document.getElementById("boardSearch");
-    const board = document.getElementById("boardId");
-    const schoolSearch = document.getElementById("schoolSearch");
-    const school = document.getElementById("schoolId");
-    const teacher = document.getElementById("teacherName");
-    const role = document.getElementById("signupRole");
-    update(role, "change", "Parent / Caregiver");
-    const parentNoSchool = document.getElementById("signupSchoolDetails").hidden && board.disabled;
-    update(role, "change", "Teacher");
     const form = document.getElementById("workshopForm");
-    const configuredEndpoint = (form.getAttribute("data-endpoint") || "").trim();
     form.setAttribute("data-endpoint", "");
+    const boardSearch = document.getElementById("boardSearch");
+    const boardId = document.getElementById("boardId");
+    const boardListbox = document.getElementById("boardListbox");
+    const schoolSearch = document.getElementById("schoolSearch");
+    const schoolId = document.getElementById("schoolId");
+    const schoolListbox = document.getElementById("schoolListbox");
+    const role = document.getElementById("signupRole");
     const message = document.getElementById("formError");
-    update(boardSearch, "input", "Toronto Catholic District School Board");
-    const boards = [...board.options].map((option) => option.value);
-    update(schoolSearch, "input", "Saint Mother Teresa");
-    const matching = [...school.options].map((option) => option.value);
-    update(boardSearch, "input", "TDSB");
-    update(board, "change", "B66052");
-    const reset = !school.value && !schoolSearch.value && ![...school.options].some((option) => option.value === "733024");
+
+    // Parent on Free Videos sees ONLY email & role (Add your school hidden)
+    update(role, "change", "Parent / Caregiver");
+    const parentNoSchool = document.getElementById("optionalSchoolDetails").hidden &&
+      document.getElementById("signupSchoolDetails").hidden;
+
+    // Switch via Change choice -> Request Workshop Dates (name/email/role preserved!)
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    const preservedOnSwitch = document.getElementById("teacherName").value === "Ms. Maya Chen" &&
+      document.getElementById("teacherEmail").value === "maya@example.org" &&
+      role.value === "Parent / Caregiver";
+    update(role, "change", "Teacher");
+
+    // Search aliases PDSB, YCDSB, YRDSB, DDSB
     const aliasMatches = {};
     for (const alias of ["PDSB", "YCDSB", "YRDSB", "DDSB"]) {
       update(boardSearch, "input", alias);
-      aliasMatches[alias] = [...board.options].map((option) => option.value);
+      aliasMatches[alias] = [...boardListbox.querySelectorAll('[role="option"]')].map((o) => o.dataset.value);
     }
-    update(school, "change", "manual");
-    const manualRequired = document.getElementById("schoolName").required;
-    update(board, "change", "other");
-    const other = school.disabled && document.getElementById("schoolName").required;
+
+    // No-results message for gibberish board query
+    update(boardSearch, "input", "zzzznotaboard");
+    const boardNoResults = boardListbox.textContent.includes("No matching school boards found.");
+
+    // Search TCDSB and pick via keyboard Enter
     update(boardSearch, "input", "TCDSB");
-    update(board, "change", "B67059");
-    update(school, "change", "733024");
-    teacher.value = "";
+    const tcdsbOptions = [...boardListbox.querySelectorAll('[role="option"]')].map((o) => o.dataset.value);
+    boardSearch.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    const tcdsbSelected = boardId.value === "B67059" && !schoolSearch.disabled;
+
+    // Search Saint Mother Teresa inside TCDSB only, then pick via click
+    update(schoolSearch, "input", "Saint Mother Teresa");
+    const matchingSchools = [...schoolListbox.querySelectorAll('[role="option"]')].map((o) => o.dataset.value);
+    schoolListbox.querySelector('[data-value="733024"]').click();
+    const schoolSelected = schoolId.value === "733024";
+
+    // Change board to TDSB -> must clear selected school & only list TDSB schools
+    update(boardSearch, "input", "TDSB");
+    boardSearch.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    const boardChangeClearedSchool = !schoolId.value && !schoolSearch.value;
+    update(schoolSearch, "input", "Mother Teresa");
+    const schoolNoResults = schoolListbox.textContent.includes("No matching schools found.") &&
+      ![...schoolListbox.querySelectorAll('[role="option"]')].some((o) => o.dataset.value === "733024");
+
+    // Manual school entry via My school isn't listed and Independent school / Other
+    schoolListbox.querySelector('[data-value="manual"]').click();
+    const manualRequired = !document.getElementById("manualSchoolField").hidden && document.getElementById("schoolName").required;
+    window.__h4TeacherForm.selectBoardById("other");
+    const otherHidesSchoolPicker = document.getElementById("schoolPicker").hidden && document.getElementById("schoolName").required;
+    update(document.getElementById("schoolName"), "input", "St. Custom Academy");
+    // Switch Workshop -> Learn More -> Workshop: manual school name must be preserved
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceLearnMoreBtn").click();
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    const manualPreservedAcrossLearnMore = document.getElementById("boardId").value === "other" &&
+      !document.getElementById("manualSchoolField").hidden &&
+      document.getElementById("schoolName").value === "St. Custom Academy";
+    // Switch Workshop -> Free Videos: manual school must NOT carry over to Free Videos
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceFreeVideosBtn").click();
+    const manualIsolatedFromFreeVideos = document.getElementById("boardId").value === "" &&
+      document.getElementById("schoolName").value === "";
+    // Switch back to Workshop: manual school still intact
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    const manualStillIntactOnWorkshop = document.getElementById("schoolName").value === "St. Custom Academy";
+
+    // Re-select TCDSB + St Mother Teresa and verify validation & unconfigured endpoint message
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    document.getElementById("teacherName").value = "";
     form.requestSubmit();
-    const requiredName = !message.hidden && teacher.getAttribute("aria-invalid") === "true";
-    update(teacher, "input", "Ms. Maya Chen");
+    const requiredName = !message.hidden && document.getElementById("teacherName").getAttribute("aria-invalid") === "true";
+    update(document.getElementById("teacherName"), "input", "Ms. Maya Chen");
     form.requestSubmit();
-    return { configuredEndpoint, boards, matching, reset, aliasMatches, manualRequired, other, requiredName, parentNoSchool,
+    return {
+      parentNoSchool, preservedOnSwitch, aliasMatches, boardNoResults, tcdsbOptions, tcdsbSelected,
+      matchingSchools, schoolSelected, boardChangeClearedSchool, schoolNoResults,
+      manualRequired, otherHidesSchoolPicker, manualPreservedAcrossLearnMore,
+      manualIsolatedFromFreeVideos, manualStillIntactOnWorkshop, requiredName,
       unavailable: message.textContent.includes("temporarily unavailable"),
-      successHidden: document.getElementById("formReadyPanel").hidden };
+      successHidden: document.getElementById("formReadyPanel").hidden
+    };
   `);
-  assert.match(pickerCheck.configuredEndpoint, /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/);
-  assert.deepEqual(pickerCheck.boards, ["", "B67059", "other"]);
-  assert.deepEqual(pickerCheck.matching, ["", "733024", "manual"]);
-  assert.equal(pickerCheck.reset, true);
+  assert.equal(pickerCheck.parentNoSchool, true);
+  assert.equal(pickerCheck.preservedOnSwitch, true);
   assert.ok(pickerCheck.aliasMatches.PDSB.includes("B66125"), "PDSB alias must match Peel DSB");
   assert.ok(pickerCheck.aliasMatches.YCDSB.includes("B67075"), "YCDSB alias must match York CDSB");
   assert.ok(pickerCheck.aliasMatches.YRDSB.includes("B66095"), "YRDSB alias must match York Region DSB");
   assert.ok(pickerCheck.aliasMatches.DDSB.includes("B66060"), "DDSB alias must match Durham DSB");
+  assert.equal(pickerCheck.boardNoResults, true);
+  assert.deepEqual(pickerCheck.tcdsbOptions, ["B67059", "other"]);
+  assert.equal(pickerCheck.tcdsbSelected, true);
+  assert.deepEqual(pickerCheck.matchingSchools, ["733024", "manual"]);
+  assert.equal(pickerCheck.schoolSelected, true);
+  assert.equal(pickerCheck.boardChangeClearedSchool, true, "Changing board must clear selected school");
+  assert.equal(pickerCheck.schoolNoResults, true);
   assert.equal(pickerCheck.manualRequired, true);
-  assert.equal(pickerCheck.other, true);
+  assert.equal(pickerCheck.otherHidesSchoolPicker, true);
+  assert.equal(pickerCheck.manualPreservedAcrossLearnMore, true, "Manual school name must survive Workshop -> Learn More -> Workshop");
+  assert.equal(pickerCheck.manualIsolatedFromFreeVideos, true, "Workshop manual school must not carry over to Free Videos");
+  assert.equal(pickerCheck.manualStillIntactOnWorkshop, true, "Workshop manual school must remain intact after visiting Free Videos");
   assert.equal(pickerCheck.requiredName, true);
-  assert.equal(pickerCheck.parentNoSchool, true);
   assert.equal(pickerCheck.unavailable, true);
   assert.equal(pickerCheck.successHidden, true);
 
-  // 4. Test isolated async backend failure -> retry -> confirmed save flow
+  // 4. Test all 3 live-mocked submission paths, hidden-field isolation, queued vs sent copy, and retry deduplication
   await evalInPage(cdp, `
-    document.getElementById("requestTutorialPromoCta").click();
     document.getElementById("workshopForm").setAttribute("data-endpoint", "${srv.baseUrl}/__mock_teacher_submit");
   `);
-  // 4a. Network failure must NOT show success and must preserve values
+
+  // 4a. Switching from Workshop (with school/grades/phone/name filled) to Free Videos (collapsed optional school)
+  // must NOT submit hidden fields, and retry flow (fail-network -> fail-500 -> timeout -> ok) must reuse same submissionKey
+  await evalInPage(cdp, `
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceFreeVideosBtn").click();
+  `);
   srv.setMode("fail-network");
   const failNet = await evalInPage(cdp, `
     document.getElementById("workshopForm").requestSubmit();
@@ -439,14 +562,13 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     return {
       successHidden: document.getElementById("formReadyPanel").hidden,
       errorVisible: !document.getElementById("formError").hidden,
-      nameKept: document.getElementById("teacherName").value
+      emailKept: document.getElementById("teacherEmail").value
     };
   `);
-  assert.equal(failNet.successHidden, true, "Network failure must not display success");
-  assert.equal(failNet.errorVisible, true, "Network failure must show retryable error");
-  assert.equal(failNet.nameKept, "Ms. Maya Chen");
+  assert.equal(failNet.successHidden, true);
+  assert.equal(failNet.errorVisible, true);
+  assert.equal(failNet.emailKept, "maya@example.org");
 
-  // 4b. HTTP 500 failure must NOT show success
   srv.setMode("fail-500");
   const fail500 = await evalInPage(cdp, `
     document.getElementById("workshopForm").requestSubmit();
@@ -456,10 +578,9 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
       errorText: document.getElementById("formError").textContent
     };
   `);
-  assert.equal(fail500.successHidden, true, "HTTP 500 must not display success");
+  assert.equal(fail500.successHidden, true);
   assert.ok(fail500.errorText.includes("Please try again"));
 
-  // 4b-2. Timeout (AbortController) must NOT show success, must preserve values, and must reuse same submissionKey
   srv.setMode("timeout");
   const failTimeout = await evalInPage(cdp, `
     window.H4_TEACHER_FORM_CONFIG = { timeoutMs: 120 };
@@ -470,46 +591,125 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
       successHidden: document.getElementById("formReadyPanel").hidden,
       errorVisible: !document.getElementById("formError").hidden,
       errorText: document.getElementById("formError").textContent,
-      nameKept: document.getElementById("teacherName").value
+      emailKept: document.getElementById("teacherEmail").value
     };
   `);
-  assert.equal(failTimeout.successHidden, true, "Timeout must not display success");
-  assert.equal(failTimeout.errorVisible, true, "Timeout must show retryable error");
-  assert.ok(failTimeout.errorText.includes("timed out"), "Timeout error must mention timeout");
-  assert.equal(failTimeout.nameKept, "Ms. Maya Chen");
+  assert.equal(failTimeout.successHidden, true);
+  assert.equal(failTimeout.errorVisible, true);
+  assert.ok(failTimeout.errorText.includes("timed out"));
+  assert.equal(failTimeout.emailKept, "maya@example.org");
 
-  // 4c. Retry with confirmed 200 { ok: true, saved: true }
   srv.setMode("ok");
-  const okSave = await evalInPage(cdp, `
+  const teacherFreeSave = await evalInPage(cdp, `
     document.getElementById("workshopForm").requestSubmit();
     await new Promise((r) => setTimeout(r, 200));
     return {
       successVisible: !document.getElementById("formReadyPanel").hidden,
-      title: document.getElementById("formReadyTitle").textContent,
       body: document.getElementById("formReadyBody").textContent
     };
   `);
-  assert.equal(okSave.successVisible, true, "Confirmed backend save must display success");
-  assert.equal(
-    okSave.body,
-    "Thanks! Check your inbox for an email from H4 Community."
-  );
-  const okReqs = srv.receivedRequests.filter((r) => r.mode === "ok");
-  const fail500Reqs = srv.receivedRequests.filter((r) => r.mode === "fail-500");
-  const failTimeoutReqs = srv.receivedRequests.filter((r) => r.mode === "timeout");
-  const failNetReqs = srv.receivedRequests.filter((r) => r.mode === "fail-network");
-  assert.ok(failNetReqs.length >= 1, "Expected at least 1 network-failure attempt");
-  assert.equal(fail500Reqs.length, 1, "Expected exactly 1 HTTP 500 attempt");
-  assert.equal(failTimeoutReqs.length, 1, "Expected exactly 1 timeout attempt");
-  assert.equal(okReqs.length, 1, "Expected exactly 1 confirmed OK attempt");
-  assert.equal(okReqs[0].payload.interest, "Free Online Dance Tutorial");
-  assert.equal(okReqs[0].payload.fullName, "Ms. Maya Chen");
-  assert.equal(okReqs[0].payload.email, "maya@example.org");
-  assert.equal(okReqs[0].payload.boardId, "B67059");
-  assert.equal(okReqs[0].payload.schoolId, "733024");
-  assert.equal(new Set(srv.receivedRequests.map(({ payload }) => payload.submissionKey)).size, 1);
+  assert.equal(teacherFreeSave.successVisible, true);
+  assert.equal(teacherFreeSave.body, "Thanks! Check your inbox for an email from H4 Community.");
 
-  // Reset form back to default production state for tablet & mobile screenshots
+  const retryAttempts = srv.receivedRequests.slice();
+  assert.ok(retryAttempts.length >= 4, "Expected network, 500, timeout, and ok attempts");
+  assert.equal(new Set(retryAttempts.map((r) => r.payload.submissionKey)).size, 1, "Retries must reuse the exact same submissionKey");
+  const teacherFreePayload = retryAttempts.at(-1).payload;
+  assert.equal(teacherFreePayload.interest, "Free Online Dance Tutorial");
+  assert.equal(teacherFreePayload.role, "Teacher");
+  assert.equal(teacherFreePayload.email, "maya@example.org");
+  assert.equal(teacherFreePayload.fullName, "", "Hidden fullName from Workshop must NOT leak into Free Videos");
+  assert.equal(teacherFreePayload.boardId, "", "Collapsed school from Workshop must NOT leak into Free Videos");
+  assert.equal(teacherFreePayload.schoolId, "");
+  assert.deepEqual(teacherFreePayload.grades, [], "Hidden grades from Workshop must NOT leak into Free Videos");
+  assert.equal(teacherFreePayload.phone, "");
+  assert.equal(teacherFreePayload.instagram, "");
+
+  // 4b. Parent Free Videos with only email + role and Queued email response (must NOT say "Check your inbox")
+  srv.setMode("ok-queued");
+  const parentQueued = await evalInPage(cdp, `
+    const update = (el, type, val) => { el.value = val; el.dispatchEvent(new Event(type, { bubbles: true })); };
+    document.getElementById("formEditBtn").click();
+    document.getElementById("choiceFreeVideosBtn").click();
+    update(document.getElementById("teacherEmail"), "input", "parent@example.org");
+    update(document.getElementById("signupRole"), "change", "Parent / Caregiver");
+    const onlyTwoFieldsVisible = document.getElementById("fullNameField").hidden &&
+      document.getElementById("optionalSchoolDetails").hidden &&
+      document.getElementById("signupSchoolDetails").hidden;
+    document.getElementById("workshopForm").requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    return {
+      onlyTwoFieldsVisible,
+      body: document.getElementById("formReadyBody").textContent
+    };
+  `);
+  assert.equal(parentQueued.onlyTwoFieldsVisible, true);
+  assert.ok(!parentQueued.body.includes("Check your inbox"), "Queued email must not claim Check your inbox");
+  assert.ok(parentQueued.body.includes("saved") && parentQueued.body.includes("queued"));
+  const parentPayload = srv.receivedRequests.at(-1).payload;
+  assert.equal(parentPayload.interest, "Free Online Dance Tutorial");
+  assert.equal(parentPayload.role, "Parent / Caregiver");
+  assert.equal(parentPayload.fullName, "");
+  assert.equal(parentPayload.boardId, "");
+
+  // 4c. Workshop with TCDSB + St Mother Teresa + optional details, then switch to Learn More -> zero hidden fields submitted
+  srv.setMode("ok");
+  const learnMoreRes = await evalInPage(cdp, `
+    const update = (el, type, val) => { el.value = val; el.dispatchEvent(new Event(type, { bubbles: true })); };
+    document.getElementById("formEditBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    update(document.getElementById("teacherName"), "input", "Mr. Alex Patel");
+    update(document.getElementById("teacherEmail"), "input", "alex@example.org");
+    update(document.getElementById("signupRole"), "change", "Principal");
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    document.getElementById("optionalWorkshopDetails").open = true;
+    document.querySelector('[name=grades][value="7"]').checked = true;
+    document.getElementById("teacherPhone").value = "416-555-0111";
+    // Switch to Learn More without losing name, email, role
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceLearnMoreBtn").click();
+    const submitLabel = document.getElementById("workshopSubmitBtn").textContent.trim();
+    const preserved = document.getElementById("teacherName").value === "Mr. Alex Patel" &&
+      document.getElementById("teacherEmail").value === "alex@example.org" &&
+      document.getElementById("signupRole").value === "Principal";
+    document.getElementById("workshopForm").requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    return { submitLabel, preserved, body: document.getElementById("formReadyBody").textContent };
+  `);
+  assert.equal(learnMoreRes.submitLabel, "Send My Request");
+  assert.equal(learnMoreRes.preserved, true);
+  assert.equal(learnMoreRes.body, "Thanks! Check your inbox for an email from H4 Community.");
+  const learnMorePayload = srv.receivedRequests.at(-1).payload;
+  assert.equal(learnMorePayload.interest, "Learn More");
+  assert.equal(learnMorePayload.fullName, "Mr. Alex Patel");
+  assert.equal(learnMorePayload.role, "Principal");
+  assert.equal(learnMorePayload.boardId, "");
+  assert.equal(learnMorePayload.schoolId, "");
+  assert.deepEqual(learnMorePayload.grades, []);
+  assert.equal(learnMorePayload.phone, "");
+
+  // 4d. Full Workshop submit using TCDSB
+  const workshopSubmitRes = await evalInPage(cdp, `
+    const update = (el, type, val) => { el.value = val; el.dispatchEvent(new Event(type, { bubbles: true })); };
+    document.getElementById("formEditBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    update(document.getElementById("teacherName"), "input", "Ms. Jordan Lee");
+    update(document.getElementById("teacherEmail"), "input", "jordan@example.org");
+    update(document.getElementById("signupRole"), "change", "Teacher");
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    document.getElementById("workshopForm").requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    return { successVisible: !document.getElementById("formReadyPanel").hidden };
+  `);
+  assert.equal(workshopSubmitRes.successVisible, true);
+  const workshopPayload = srv.receivedRequests.at(-1).payload;
+  assert.equal(workshopPayload.interest, "Full-Day School Workshop");
+  assert.equal(workshopPayload.boardId, "B67059");
+  assert.equal(workshopPayload.schoolId, "733024");
+
+  // Reset form back to default chooser state for tablet & mobile screenshots
   await evalInPage(cdp, `
     document.getElementById("workshopForm").setAttribute("data-endpoint", "");
     document.getElementById("formEditBtn").click();
@@ -568,26 +768,175 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   const mobPromosShot = await cdp.send("Page.captureScreenshot", { format: "png" });
   fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-promos.png"), Buffer.from(mobPromosShot.data, "base64"));
 
-  await evalInPage(cdp, `
+  // Tap actual Free Tutorial promo button on mobile and capture screenshot IMMEDIATELY before any manual scrolling
+  const mobileTutorialLanding = await evalInPage(cdp, `
     document.body.classList.add("calm-motion");
     document.getElementById("requestTutorialPromoCta").click();
     await new Promise((r) => setTimeout(r, 200));
+    const topbarBottom = document.querySelector(".topbar").getBoundingClientRect().bottom;
+    const heading = document.getElementById("bookingFormHeading");
+    const rect = heading.getBoundingClientRect();
+    const activeId = document.activeElement?.id || "";
     document.body.classList.remove("calm-motion");
+    return {
+      interest: window.__h4TeacherForm.getSelectedInquiryType(),
+      headingText: heading.textContent.trim(),
+      focused: activeId === "bookingFormHeading",
+      visibleBelowTopbar: rect.top >= topbarBottom - 2 && rect.bottom <= window.innerHeight,
+      rectTop: Math.round(rect.top),
+      topbarBottom: Math.round(topbarBottom)
+    };
   `);
-  const mobFormShot = await cdp.send("Page.captureScreenshot", { format: "png" });
-  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-tutorial-section.png"), Buffer.from(mobFormShot.data, "base64"));
+  const mobTutorialLandingShot = await cdp.send("Page.captureScreenshot", { format: "png" });
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-tutorial-cta-landing.png"), Buffer.from(mobTutorialLandingShot.data, "base64"));
+  assert.equal(mobileTutorialLanding.interest, "Free Online Dance Tutorial");
+  assert.equal(mobileTutorialLanding.headingText, "Get the Free Dance Videos");
+  assert.equal(mobileTutorialLanding.focused, true, "Mobile free tutorial button must focus the form heading");
+  assert.equal(
+    mobileTutorialLanding.visibleBelowTopbar,
+    true,
+    `Mobile Free Videos heading must be visible below sticky header (top=${mobileTutorialLanding.rectTop}, topbarBottom=${mobileTutorialLanding.topbarBottom})`
+  );
+
+  // Tap actual Workshop button in topbar on mobile and verify heading visibility + keyboard focus
+  const mobileWorkshopLanding = await evalInPage(cdp, `
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.body.classList.add("calm-motion");
+    document.getElementById("bookWorkshopTopCta").click();
+    await new Promise((r) => setTimeout(r, 200));
+    const topbarBottom = document.querySelector(".topbar").getBoundingClientRect().bottom;
+    const heading = document.getElementById("bookingFormHeading");
+    const rect = heading.getBoundingClientRect();
+    const activeId = document.activeElement?.id || "";
+    document.body.classList.remove("calm-motion");
+    return {
+      interest: window.__h4TeacherForm.getSelectedInquiryType(),
+      headingText: heading.textContent.trim(),
+      focused: activeId === "bookingFormHeading",
+      visibleBelowTopbar: rect.top >= topbarBottom - 2 && rect.bottom <= window.innerHeight,
+      rectTop: Math.round(rect.top),
+      topbarBottom: Math.round(topbarBottom)
+    };
+  `);
+  assert.equal(mobileWorkshopLanding.interest, "Full-Day School Workshop");
+  assert.equal(mobileWorkshopLanding.headingText, "Request Workshop Dates");
+  assert.equal(mobileWorkshopLanding.focused, true, "Mobile workshop button must focus the form heading");
+  assert.equal(
+    mobileWorkshopLanding.visibleBelowTopbar,
+    true,
+    `Mobile Workshop heading must be visible below sticky header (top=${mobileWorkshopLanding.rectTop}, topbarBottom=${mobileWorkshopLanding.topbarBottom})`
+  );
+
+  // Mobile optional-school regressions using mocked endpoint:
+  // (a) Workshop school must NOT carry over to Free Videos
+  // (b) Teacher with ONLY a board selected in optional school can still submit (incomplete school omitted)
+  // (c) Teacher with a COMPLETE board+school selected on Free Videos submits it even after collapsing the section
+  srv.setMode("ok");
+  const mobileOptionalRes = await evalInPage(cdp, `
+    const update = (el, type, val) => { el.value = val; el.dispatchEvent(new Event(type, { bubbles: true })); };
+    const form = document.getElementById("workshopForm");
+    form.setAttribute("data-endpoint", "${srv.baseUrl}/__mock_teacher_submit");
+
+    // Put a school in Workshop first, then tap Free Tutorial button
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    document.body.classList.add("calm-motion");
+    document.getElementById("requestTutorialPromoCta").click();
+    document.body.classList.remove("calm-motion");
+
+    // Open optional school on Free Videos -> must NOT have Workshop's board/school carried over
+    const optDetails = document.getElementById("optionalSchoolDetails");
+    optDetails.open = true;
+    const noCarryOver = document.getElementById("boardId").value === "" && document.getElementById("schoolId").value === "";
+
+    // Select ONLY a board (no school) and submit with valid email + role
+    update(document.getElementById("teacherEmail"), "input", "partial@example.org");
+    update(document.getElementById("signupRole"), "change", "Teacher");
+    window.__h4TeacherForm.selectBoardById("B67059");
+    form.requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    const partialSaved = !document.getElementById("formReadyPanel").hidden;
+
+    // Now start fresh on Free Videos, select COMPLETE board+school, collapse section, and submit
+    document.getElementById("formEditBtn").click();
+    document.getElementById("choiceFreeVideosBtn").click();
+    update(document.getElementById("teacherEmail"), "input", "complete@example.org");
+    update(document.getElementById("signupRole"), "change", "Teacher");
+    optDetails.open = true;
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    optDetails.open = false;
+    form.requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    const collapsedCompleteSaved = !document.getElementById("formReadyPanel").hidden;
+
+    form.setAttribute("data-endpoint", "");
+    document.getElementById("formEditBtn").click();
+    return { noCarryOver, partialSaved, collapsedCompleteSaved };
+  `);
+  assert.equal(mobileOptionalRes.noCarryOver, true, "Workshop school must not carry over into Free Videos optional section");
+  assert.equal(mobileOptionalRes.partialSaved, true, "Teacher with only a board selected in optional school must succeed");
+  assert.equal(mobileOptionalRes.collapsedCompleteSaved, true, "Complete Free Videos school selection must submit after collapsing");
+  const mobileCompletePayload = srv.receivedRequests.at(-1).payload;
+  const mobilePartialPayload = srv.receivedRequests.at(-2).payload;
+  assert.equal(mobilePartialPayload.interest, "Free Online Dance Tutorial");
+  assert.equal(mobilePartialPayload.email, "partial@example.org");
+  assert.equal(mobilePartialPayload.boardId, "", "Incomplete optional school (board only) must be omitted");
+  assert.equal(mobilePartialPayload.schoolId, "");
+  assert.equal(mobilePartialPayload.schoolName, "");
+  assert.equal(mobileCompletePayload.interest, "Free Online Dance Tutorial");
+  assert.equal(mobileCompletePayload.email, "complete@example.org");
+  assert.equal(mobileCompletePayload.boardId, "B67059", "Complete school entered on Free Videos must be included even after collapsing");
+  assert.equal(mobileCompletePayload.schoolId, "733024");
+  assert.equal(mobileCompletePayload.schoolName, "");
+
+  // Capture mobile screenshots of Chooser, Free Videos, Workshop, and Learn More
+  await evalInPage(cdp, `
+    window.__h4TeacherForm.returnToChooser();
+    document.getElementById("bookingCard").scrollIntoView({ block: "start", behavior: "instant" });
+    window.scrollBy({ top: -155, behavior: "instant" });
+  `);
+  await new Promise((r) => setTimeout(r, 200));
+  const mobChooserShot = await cdp.send("Page.captureScreenshot", { format: "png" });
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-chooser.png"), Buffer.from(mobChooserShot.data, "base64"));
+
+  await evalInPage(cdp, `
+    document.getElementById("choiceFreeVideosBtn").click();
+    document.getElementById("bookingCard").scrollIntoView({ block: "start", behavior: "instant" });
+    window.scrollBy({ top: -155, behavior: "instant" });
+  `);
+  await new Promise((r) => setTimeout(r, 200));
+  const mobFreeShot = await cdp.send("Page.captureScreenshot", { format: "png" });
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-free-videos.png"), Buffer.from(mobFreeShot.data, "base64"));
 
   const mobileFormAudit = await evalInPage(cdp, `
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceWorkshopBtn").click();
+    const card = document.getElementById("bookingCard");
+    card.scrollIntoView({ block: "start", behavior: "instant" });
+    window.scrollBy({ top: -155, behavior: "instant" });
     const form = document.getElementById("workshopForm");
-    form.scrollIntoView({ block: "start", behavior: "instant" });
-    window.scrollBy({ top: -185, behavior: "instant" });
-    const inputs = [...form.querySelectorAll('.school-picker input, .school-picker select, #teacherEmail')];
-    return { fits: form.scrollWidth <= form.clientWidth, heights: inputs.map((input) => input.offsetHeight) };
+    const inputs = [...form.querySelectorAll('#teacherName, #teacherEmail, #signupRole, #boardSearch, #schoolSearch')];
+    return {
+      fits: form.scrollWidth <= form.clientWidth && document.documentElement.scrollWidth <= window.innerWidth,
+      heights: inputs.map((input) => input.offsetHeight)
+    };
   `);
-  assert.equal(mobileFormAudit.fits, true);
-  assert.ok(mobileFormAudit.heights.every((height) => height >= 44));
-  const mobileFormShot = await cdp.send("Page.captureScreenshot", { format: "png" });
-  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-teacher-form.png"), Buffer.from(mobileFormShot.data, "base64"));
+  assert.equal(mobileFormAudit.fits, true, "Mobile workshop form must have zero horizontal overflow");
+  assert.ok(mobileFormAudit.heights.every((height) => height >= 48), `Expected mobile inputs >= 48px, got ${JSON.stringify(mobileFormAudit.heights)}`);
+  await new Promise((r) => setTimeout(r, 200));
+  const mobWorkshopShot = await cdp.send("Page.captureScreenshot", { format: "png" });
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-workshop.png"), Buffer.from(mobWorkshopShot.data, "base64"));
+
+  await evalInPage(cdp, `
+    document.getElementById("changeChoiceBtn").click();
+    document.getElementById("choiceLearnMoreBtn").click();
+    document.getElementById("bookingCard").scrollIntoView({ block: "start", behavior: "instant" });
+    window.scrollBy({ top: -155, behavior: "instant" });
+  `);
+  await new Promise((r) => setTimeout(r, 200));
+  const mobLearnShot = await cdp.send("Page.captureScreenshot", { format: "png" });
+  fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-learn-more.png"), Buffer.from(mobLearnShot.data, "base64"));
 
   assert.deepEqual(pageErrors, [], `Unexpected page errors: ${JSON.stringify(pageErrors)}`);
   // Ignore expected simulated network error console entry from our fail-network test
