@@ -135,7 +135,7 @@ test("write maps reordered headers, uses literal values, and deduplicates retrie
   assert.equal(sheet.get("Role"), "Teacher");
   assert.equal(sheet.get("Email Status"), "Sent");
   assert.equal(sheet.messages.length, 1);
-  assert.equal(sheet.messages[0].subject, "We received your H4 school programming request");
+  assert.equal(sheet.messages[0].subject, "Let's get your school movin'! | H4 Community");
   assert.ok(!sheet.messages[0].htmlBody.includes(youtubeUrl));
 });
 
@@ -231,8 +231,8 @@ test("teacher and principal free-video requests succeed with only email and role
   assert.equal(sheet.get("School Board"), "");
   assert.equal(sheet.get("School"), "");
   assert.equal(sheet.get("Role"), "Teacher");
-  assert.ok(sheet.messages[0].body.startsWith("Hi there,\n\n"));
-  assert.ok(sheet.messages[0].htmlBody.includes("<p>Hi there,</p>"));
+  assert.ok(sheet.messages[0].body.includes("Hey there,\n\n"));
+  assert.ok(sheet.messages[0].htmlBody.includes("Hey there,</p>"));
   assert.ok(sheet.messages[0].htmlBody.includes(`href="${youtubeUrl}"`));
 
   const principalRes = sheet.send({
@@ -244,7 +244,7 @@ test("teacher and principal free-video requests succeed with only email and role
   assert.equal(principalRes.emailStatus, "Sent");
   assert.equal(sheet.get("Full Name"), "");
   assert.equal(sheet.get("Role"), "Principal");
-  assert.ok(sheet.messages[1].body.startsWith("Hi there,\n\n"));
+  assert.ok(sheet.messages[1].body.includes("Hey there,\n\n"));
 });
 
 test("learn more succeeds without school for staff, requires name, and greets safely", () => {
@@ -260,15 +260,15 @@ test("learn more succeeds without school for staff, requires name, and greets sa
   }).code, "INVALID_REQUEST");
 
   const res = sheet.send({
-    interest: "Learn More", role: "Teacher", fullName: "Ms. A & <B>",
+    interest: "Learn More", role: "Teacher", fullName: "A&<B> Teacher",
     boardId: "", schoolId: "", schoolName: "", phone: "", instagram: "", grades: [], preferredTiming: ""
   });
   assert.equal(res.saved, true);
   assert.equal(res.emailStatus, "Sent");
   assert.equal(sheet.get("School Board"), "");
   assert.equal(sheet.get("School"), "");
-  assert.ok(sheet.messages[0].body.startsWith("Hi Ms. A & <B>,\n\n"));
-  assert.ok(sheet.messages[0].htmlBody.includes("<p>Hi Ms. A &amp; &lt;B&gt;,</p>"));
+  assert.ok(sheet.messages[0].body.startsWith("Hi A&<B>,\n\n"));
+  assert.ok(sheet.messages[0].htmlBody.includes("Hi A&amp;&lt;B&gt;,</p>"));
   assert.ok(!sheet.messages[0].htmlBody.includes(youtubeUrl));
 });
 
@@ -283,7 +283,7 @@ test("remains backwards compatible with live form payloads and rejects mismatche
   assert.equal(legacyFree.emailStatus, "Sent");
   assert.equal(sheet.get("Full Name"), "Ms. Jordan Lee");
   assert.equal(sheet.get("School"), "St Mother Teresa Catholic Academy");
-  assert.ok(sheet.messages[0].body.startsWith("Hi Ms. Jordan Lee,\n\n"));
+  assert.ok(sheet.messages[0].body.includes("Hey there,\n\n"));
 
   // Mismatched school outside selected board must still be rejected on Free Videos
   assert.equal(sheet.send({
@@ -313,8 +313,12 @@ test("supports all 6 flexible programming inquiry options in sheet records and e
     assert.equal(sheet.get("Interest"), interest);
     assert.equal(sheet.get("Preferred Timing"), "Flexible / Anytime");
     const msg = sheet.messages.at(-1);
-    assert.equal(msg.subject, "We received your H4 school programming request");
-    assert.ok(msg.body.includes(interest));
+    assert.equal(msg.subject, "Let's get your school movin'! | H4 Community");
+    assert.ok(msg.body.includes("We're excited to explore how we can bring more music, movement and confidence to your school."));
+    assert.ok(msg.htmlBody.includes("CONNECT WITH GLEN"));
+    assert.ok(msg.htmlBody.includes('href="mailto:glen@h4community.org"'));
+    assert.ok(msg.htmlBody.includes('href="https://dance.h4community.org/"'));
+    assert.ok(msg.htmlBody.includes("https://dance.h4community.org/images/h4-logo-mark.png"));
   });
 
   const tutorialRes = sheet.send({
@@ -331,7 +335,14 @@ test("supports all 6 flexible programming inquiry options in sheet records and e
   assert.equal(tutorialRes.saved, true);
   assert.equal(tutorialRes.emailStatus, "Sent");
   assert.equal(sheet.get("Interest"), "Free Teacher Tutorial");
-  assert.ok(sheet.messages.at(-1).htmlBody.includes(`href="${youtubeUrl}"`));
+  const tutorialMsg = sheet.messages.at(-1);
+  assert.equal(tutorialMsg.subject, "Let's get your classroom moving! Your free H4 dance tutorial");
+  assert.ok(tutorialMsg.htmlBody.includes(`href="${youtubeUrl}"`));
+  assert.ok(tutorialMsg.htmlBody.includes("https://i.ytimg.com/vi/bgyMPYTSN7Y/maxresdefault.jpg"));
+  assert.ok(tutorialMsg.htmlBody.includes("WATCH THE 10 FOUNDATIONAL HIP-HOP GROOVES"));
+  assert.ok(tutorialMsg.htmlBody.includes('href="https://dance.h4community.org/"'));
+  assert.ok(tutorialMsg.htmlBody.includes('href="https://dance.h4community.org/#book-workshop"'));
+  assert.ok(tutorialMsg.htmlBody.includes('href="https://dancestash.space/"'));
 
   const exploreRes = sheet.send({
     submissionKey: randomUUID(),
@@ -348,7 +359,12 @@ test("supports all 6 flexible programming inquiry options in sheet records and e
   assert.equal(exploreRes.saved, true);
   assert.equal(exploreRes.emailStatus, "Sent");
   assert.equal(sheet.get("Interest"), "Other / Let's Explore");
-  assert.ok(sheet.messages.at(-1).body.includes("Other / Let's Explore"));
+  const exploreMsg = sheet.messages.at(-1);
+  assert.equal(exploreMsg.subject, "Let's get your school movin'! | H4 Community");
+  assert.ok(exploreMsg.body.startsWith("Hi Jordan,\n\n"));
+  assert.ok(exploreMsg.body.includes("We'd love to hear what you have in mind and explore how we can bring more music, movement and confidence to your school."));
+  assert.ok(!exploreMsg.body.includes("Other / Let's Explore"));
+  assert.ok(!exploreMsg.htmlBody.includes("Other / Let's Explore"));
 });
 
 test("staff alerts are separate from confirmations, deduplicated by lead key and restricted to paid and general inquiries", () => {

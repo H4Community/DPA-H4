@@ -156,27 +156,377 @@ function escapeHtml_(value) {
   ));
 }
 
-function buildSignupEmail_(to, interest, resource, fullName) {
-  const free = isFreeResourceInterest_(interest);
-  const workshop = SCHOOL_PROGRAM_INTERESTS.includes(interest);
-  const cleanName = typeof fullName === "string" ? fullName.trim() : "";
-  const greeting = cleanName ? "Hi " + cleanName + "," : "Hi there,";
-  const subject = free ? "Your free H4 dance resources"
-    : workshop ? "We received your H4 school programming request" : "Thanks for reaching out to H4 Community";
-  const programLabel = interest === "Full-Day School Workshop" ? "an H4 school program" : interest;
-  const intro = free ? "Here’s the free H4 dance resource you requested. Press play to try it at school or at home."
-    : workshop ? "Thanks for asking about " + programLabel + " with H4 Community. Our team will follow up about your request, availability, and next steps."
-      : interest === "Other / Let's Explore"
-        ? "Thanks for reaching out to H4 Community (Other / Let's Explore). Our team will follow up by email to explore what fits your school best."
-        : "Thanks for your interest in H4 Community. Our team will follow up by email.";
-  const body = greeting + "\n\n" + intro + (free ? "\n\nWatch on YouTube: " + resource : "") +
-    "\n\nH4 Community\nHow Hip Hop Helps";
-  const button = free ? '<p style="margin:24px 0"><a style="display:inline-block;background:#a3e635;color:#141414;padding:12px 18px;border-radius:8px;font-weight:bold;text-decoration:none" href="' +
-    resource.replace(/&/g, "&amp;") + '">Watch on YouTube</a></p>' : "";
-  const htmlBody = '<div style="max-width:560px;margin:auto;font-family:Arial,sans-serif;color:#141414;line-height:1.55">' +
-    '<div style="background:#141414;color:#a3e635;padding:18px 24px;font-weight:bold">H4 COMMUNITY</div>' +
-    '<div style="background:#fffdf7;padding:24px"><h1 style="font-size:23px;margin:0 0 12px">' +
-    subject + '</h1><p>' + escapeHtml_(greeting) + '</p><p>' + intro + '</p>' + button +
-    '<p style="margin:24px 0 0;font-size:14px">How Hip Hop Helps</p></div></div>';
+const H4_SITE_URL = "https://h4community.org/";
+const H4_DPA_URL = "https://dance.h4community.org/";
+const H4_WORKSHOP_URL = "https://dance.h4community.org/#book-workshop";
+const H4_DANCESTASH_URL = "https://dancestash.space/";
+const H4_GLEN_EMAIL = "glen@h4community.org";
+const H4_LOGO_PNG_URL = "https://dance.h4community.org/images/h4-logo-mark.png";
+const EMAIL_FONT_STACK = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+function extractYouTubeVideoId_(url) {
+  const match = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  return match ? match[1] : "";
+}
+
+function extractFirstName_(fullName) {
+  const clean = typeof fullName === "string" ? fullName.trim() : "";
+  if (!clean) return "";
+  const parts = clean.split(/\s+/);
+  if (parts.length > 1 && /^(mr|mrs|ms|mx|dr|prof)\.?$/i.test(parts[0])) {
+    return parts[1];
+  }
+  return parts[0];
+}
+
+function renderEmailButton_(label, href, bgColor) {
+  const safeHref = escapeHtml_(href);
+  const safeLabel = escapeHtml_(label);
+  return '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:18px 0;max-width:100%">' +
+    '<tr><td style="border-radius:14px;background-color:' + bgColor + ';border:2px solid #111111;box-shadow:3px 3px 0 #111111">' +
+    '<a class="h4-btn-link" href="' + safeHref + '" target="_blank" rel="noopener noreferrer" ' +
+    'style="display:inline-block;padding:13px 22px;font-family:' + EMAIL_FONT_STACK + ';font-size:14px;font-weight:800;line-height:1.25;letter-spacing:0.03em;text-transform:uppercase;color:#111111;text-decoration:none">' +
+    safeLabel + '</a></td></tr></table>';
+}
+
+function renderEmailShell_(preheader, eyebrow, headline, bodyHtml, footerLinks) {
+  const safePreheader = escapeHtml_(preheader);
+  const safeHeadline = escapeHtml_(headline);
+  const footerNav = footerLinks.map((link) => (
+    '<a href="' + escapeHtml_(link.href) + '" target="_blank" rel="noopener noreferrer" ' +
+    'style="color:#111111;font-weight:700;text-decoration:underline">' + escapeHtml_(link.label) + '</a>'
+  )).join(' &nbsp;|&nbsp; ');
+
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<meta name="x-apple-disable-message-reformatting">' +
+    '<style>@media only screen and (max-width:480px){' +
+    '.h4-outer{padding:12px 8px !important;}' +
+    '.h4-card-pad{padding:18px 14px !important;}' +
+    '.h4-h1{font-size:23px !important;}' +
+    '.h4-eyebrow{font-size:10px !important;padding:4px 10px !important;}' +
+    '.h4-btn-link{padding:12px 14px !important;font-size:13px !important;}' +
+    '.h4-stat-cell{display:block !important;width:100% !important;box-sizing:border-box !important;padding:4px 0 !important;}' +
+    '}</style></head>' +
+    '<body style="margin:0;padding:0;background-color:#FDF9E7;color:#111111;font-family:' + EMAIL_FONT_STACK + ';-webkit-text-size-adjust:100%">' +
+    '<div style="display:none;font-size:1px;color:#FDF9E7;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all">' +
+    safePreheader + '&#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847;</div>' +
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#FDF9E7;table-layout:fixed">' +
+    '<tr><td class="h4-outer" align="center" style="padding:24px 12px">' +
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;margin:0 auto;table-layout:fixed">' +
+
+    // Header
+    '<tr><td style="padding:0 0 14px 0">' +
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>' +
+    '<td valign="middle">' +
+    '<table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr>' +
+    '<td style="background-color:#111111;border:2px solid #111111;border-radius:10px;padding:6px 9px;box-shadow:2px 2px 0 #FB923C" valign="middle">' +
+    '<img src="' + H4_LOGO_PNG_URL + '" alt="H4 Community" width="24" height="26" style="display:block;border:0;color:#A3E635;font-family:' + EMAIL_FONT_STACK + ';font-size:11px;font-weight:800">' +
+    '</td>' +
+    '<td style="padding-left:10px;font-family:' + EMAIL_FONT_STACK + ';font-size:14px;font-weight:800;letter-spacing:0.05em;color:#111111;text-transform:uppercase" valign="middle">' +
+    'H4 COMMUNITY &middot; DANCE</td>' +
+    '</tr></table></td></tr></table></td></tr>' +
+
+    // Main Card
+    '<tr><td class="h4-card-pad" style="background-color:#FFFDF7;border:2px solid #111111;border-radius:18px;box-shadow:4px 4px 0 #111111;padding:28px 26px;overflow-wrap:break-word;word-wrap:break-word">' +
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:fixed">' +
+    '<tr><td><span class="h4-eyebrow" style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:#FFD426;border:2px solid #111111;border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.04em;color:#111111;text-transform:uppercase">' +
+    escapeHtml_(eyebrow) + '</span></td></tr>' +
+    '<tr><td style="padding:14px 0 8px 0">' +
+    '<h1 class="h4-h1" style="margin:0;font-family:' + EMAIL_FONT_STACK + ';font-size:28px;line-height:1.18;font-weight:800;color:#111111">' +
+    safeHeadline + '</h1></td></tr>' +
+    '<tr><td style="font-family:' + EMAIL_FONT_STACK + ';font-size:16px;line-height:1.6;color:#111111">' +
+    bodyHtml + '</td></tr>' +
+    '</table></td></tr>' +
+
+    // Footer
+    '<tr><td align="center" style="padding:20px 12px 8px 12px;font-family:' + EMAIL_FONT_STACK + ';font-size:13px;line-height:1.6;color:#111111">' +
+    '<p style="margin:0 0 2px 0;font-weight:800;letter-spacing:0.04em;text-transform:uppercase">HOW HIP HOP HELPS.</p>' +
+    '<p style="margin:0 0 10px 0;font-weight:600">Confidence in Motion.</p>' +
+    '<p style="margin:0;font-size:13px">' + footerNav + '</p>' +
+    '</td></tr>' +
+
+    '</table></td></tr></table></body></html>';
+}
+
+function renderProgramCard_(badge, accentColor, title, description) {
+  return '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 12px 0">' +
+    '<tr><td style="background-color:#FFFDF7;border:2px solid #111111;border-left:8px solid ' + accentColor + ';border-radius:14px;padding:14px 16px">' +
+    '<span style="display:inline-block;background-color:' + accentColor + ';border:1.5px solid #111111;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:800;letter-spacing:0.05em;color:#111111;text-transform:uppercase">' +
+    escapeHtml_(badge) + '</span>' +
+    '<p style="margin:8px 0 4px 0;font-size:16px;font-weight:800;line-height:1.3;color:#111111">' + escapeHtml_(title) + '</p>' +
+    '<p style="margin:0;font-size:14px;line-height:1.55;color:#111111">' + escapeHtml_(description) + '</p>' +
+    '</td></tr></table>';
+}
+
+function buildTutorialEmail_(to, resource) {
+  const subject = "Let's get your classroom moving! Your free H4 dance tutorial";
+  const preheader = "Your free hip-hop tutorial, classroom tips and five minutes of movement—no dance experience required.";
+  const videoId = extractYouTubeVideoId_(resource);
+  const safeResource = escapeHtml_(resource);
+
+  const thumbnailHtml = videoId
+    ? '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:18px 0 4px 0">' +
+      '<tr><td style="border:2px solid #111111;border-radius:14px;overflow:hidden;background-color:#111111;box-shadow:3px 3px 0 #111111">' +
+      '<a href="' + safeResource + '" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none">' +
+      '<img src="https://i.ytimg.com/vi/' + videoId + '/maxresdefault.jpg" alt="Watch the 10 Foundational Hip-Hop Grooves video tutorial on YouTube" width="100%" style="display:block;width:100%;max-width:548px;height:auto;border:0;color:#FFFDF7;font-size:14px;font-weight:700">' +
+      '</a></td></tr></table>'
+    : "";
+
+  const tips = [
+    ["Set up your space:", 'Tuck chairs away and give everyone their own "home base" with enough room to move safely.'],
+    ["1. Start with the bounce.", "Catch the groove and feel the music before worrying about the steps."],
+    ["2. Count like dancers.", 'Let\'s hear that "5, 6, 7, 8!" Try stomping on the odd numbers and clapping on the even numbers.'],
+    ["3. Switch it up.", "Encourage your students to explore different grooves and create some moves of their own. There's no perfect way to dance!"]
+  ];
+  const tipsHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:12px 0 22px 0">' +
+    '<tr><td style="background-color:#FFF28E;border:2px solid #111111;border-radius:16px;box-shadow:3px 3px 0 #111111;padding:18px 18px 10px 18px">' +
+    '<p style="margin:0 0 12px 0;font-size:17px;font-weight:800;line-height:1.3;color:#111111">A few quick tips before you hit play!</p>' +
+    tips.map(([heading, detail], idx) => (
+      '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="' +
+      (idx < tips.length - 1 ? 'border-bottom:1.5px solid #111111;padding-bottom:10px;margin-bottom:10px;' : 'margin-bottom:4px;') + '">' +
+      '<tr><td style="font-size:15px;line-height:1.5;color:#111111">' +
+      '<strong>' + escapeHtml_(heading) + '</strong><br>' + escapeHtml_(detail) +
+      '</td></tr></table>'
+    )).join("") +
+    '</td></tr></table>';
+
+  const dpaCardHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:4px 0 22px 0">' +
+    '<tr><td style="background-color:#FDF9E7;border:2px solid #111111;border-radius:16px;padding:18px">' +
+    '<p style="margin:0 0 8px 0;font-size:18px;font-weight:800;line-height:1.3;color:#111111">Five minutes. Every day. Zero prep.</p>' +
+    '<p style="margin:0;font-size:15px;line-height:1.55;color:#111111">Keep the momentum going with our free, interactive classroom DPA tool. Ten foundational moves, music and endless combinations&mdash;all at the press of a button.</p>' +
+    renderEmailButton_("START YOUR 5-MINUTE DPA", H4_DPA_URL, "#38BDF8") +
+    '</td></tr></table>';
+
+  const schoolBullets = [
+    "One workshop to introduce hip-hop and get your classroom moving.",
+    "Three workshops to support your dance curriculum and build on what students learn.",
+    "Multiple sessions to prepare for a spring concert or school performance.",
+    "A school-wide experience that gets everyone dancing."
+  ];
+  const schoolHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 18px 0;border-top:2px solid #111111;padding-top:18px">' +
+    '<tr><td style="padding-top:18px;font-size:15px;line-height:1.55;color:#111111">' +
+    '<p style="margin:0 0 10px 0;font-size:18px;font-weight:800;line-height:1.3">Rather have the pros get things started?</p>' +
+    '<p style="margin:0 0 8px 0">Whether you\'re looking for:</p>' +
+    '<ul style="margin:0 0 12px 0;padding-left:20px">' +
+    schoolBullets.map((item) => '<li style="margin:0 0 6px 0">' + escapeHtml_(item) + '</li>').join("") +
+    '</ul>' +
+    '<p style="margin:0 0 8px 0;font-weight:700">We can get you movin\'!</p>' +
+    '<p style="margin:0 0 8px 0">Every school is different, and we\'d love to create something that works for yours.</p>' +
+    '<p style="margin:0">Get in touch with Glen to explore programming options, rates and availability.</p>' +
+    renderEmailButton_("LET'S GET YOUR SCHOOL MOVING", H4_WORKSHOP_URL, "#FFD426") +
+    '<p style="margin:0;font-size:14px">Or simply reply to this email. We\'re happy to help!</p>' +
+    '</td></tr></table>';
+
+  const signoffHtml = '<p style="margin:18px 0 0 0;font-size:15px;line-height:1.55;color:#111111">' +
+    'Keep dancing,<br><strong>Glen Reyes</strong><br>Founder, H4 Community (How Hip Hop Helps)<br>' +
+    '<a href="mailto:' + H4_GLEN_EMAIL + '" style="color:#111111;font-weight:700;text-decoration:underline">' + H4_GLEN_EMAIL + '</a></p>';
+
+  const bodyHtml = '<p style="margin:0 0 12px 0">Hey there,</p>' +
+    '<p style="margin:0 0 12px 0">Here\'s your free H4 dance tutorial, along with a few helpful tips from one of our H4 co-op students!</p>' +
+    '<p style="margin:0">No dance experience? No problem! You don\'t have to be a dancer to inspire one. Just press play, find your rhythm and have some fun with your students.</p>' +
+    thumbnailHtml +
+    renderEmailButton_("WATCH THE 10 FOUNDATIONAL HIP-HOP GROOVES", resource, "#A3E635") +
+    tipsHtml +
+    dpaCardHtml +
+    schoolHtml +
+    signoffHtml;
+
+  const htmlBody = renderEmailShell_(
+    preheader,
+    "FREE · NO LOGIN · ZERO PREP · MADE FOR CLASSROOMS",
+    "Ready to get the room moving?",
+    bodyHtml,
+    [
+      { label: "H4 Community", href: H4_SITE_URL },
+      { label: "Free Classroom DPA", href: H4_DPA_URL },
+      { label: "DanceStash", href: H4_DANCESTASH_URL }
+    ]
+  );
+
+  const body = [
+    "H4 COMMUNITY · DANCE",
+    "FREE · NO LOGIN · ZERO PREP · MADE FOR CLASSROOMS",
+    "",
+    "Ready to get the room moving?",
+    "",
+    "Hey there,",
+    "",
+    "Here's your free H4 dance tutorial, along with a few helpful tips from one of our H4 co-op students!",
+    "No dance experience? No problem! You don't have to be a dancer to inspire one. Just press play, find your rhythm and have some fun with your students.",
+    "",
+    "WATCH THE 10 FOUNDATIONAL HIP-HOP GROOVES: " + resource,
+    "",
+    "A few quick tips before you hit play!",
+    '- Set up your space: Tuck chairs away and give everyone their own "home base" with enough room to move safely.',
+    "- 1. Start with the bounce. Catch the groove and feel the music before worrying about the steps.",
+    '- 2. Count like dancers. Let\'s hear that "5, 6, 7, 8!" Try stomping on the odd numbers and clapping on the even numbers.',
+    "- 3. Switch it up. Encourage your students to explore different grooves and create some moves of their own. There's no perfect way to dance!",
+    "",
+    "Five minutes. Every day. Zero prep.",
+    "Keep the momentum going with our free, interactive classroom DPA tool. Ten foundational moves, music and endless combinations—all at the press of a button.",
+    "START YOUR 5-MINUTE DPA: " + H4_DPA_URL,
+    "",
+    "Rather have the pros get things started?",
+    "Whether you're looking for:",
+    "- One workshop to introduce hip-hop and get your classroom moving.",
+    "- Three workshops to support your dance curriculum and build on what students learn.",
+    "- Multiple sessions to prepare for a spring concert or school performance.",
+    "- A school-wide experience that gets everyone dancing.",
+    "",
+    "We can get you movin'!",
+    "Every school is different, and we'd love to create something that works for yours.",
+    "Get in touch with Glen to explore programming options, rates and availability.",
+    "LET'S GET YOUR SCHOOL MOVING: " + H4_WORKSHOP_URL,
+    "Or simply reply to this email. We're happy to help!",
+    "",
+    "Keep dancing,",
+    "Glen Reyes",
+    "Founder, H4 Community (How Hip Hop Helps)",
+    H4_GLEN_EMAIL,
+    "",
+    "HOW HIP HOP HELPS.",
+    "Confidence in Motion.",
+    "H4 Community: " + H4_SITE_URL,
+    "Free Classroom DPA: " + H4_DPA_URL,
+    "DanceStash: " + H4_DANCESTASH_URL
+  ].join("\n");
+
   return { to, subject, body, htmlBody, name: "H4 Community", replyTo: H4_REPLY_EMAIL };
+}
+
+function buildProgrammingEmail_(to, interest, fullName) {
+  const subject = "Let's get your school movin'! | H4 Community";
+  const preheader = "One workshop, a dance program or something bigger. Let's create something that works for your school.";
+  const firstName = extractFirstName_(fullName);
+  const greeting = firstName ? "Hi " + firstName + "," : "Hi there,";
+  const isPaidProgram = SCHOOL_PROGRAM_INTERESTS.includes(interest);
+  const openingLine = isPaidProgram
+    ? "Thanks for reaching out to H4 Community! We're excited to explore how we can bring more music, movement and confidence to your school."
+    : "Thanks for reaching out to H4 Community! We'd love to hear what you have in mind and explore how we can bring more music, movement and confidence to your school.";
+
+  const cardsHtml =
+    renderProgramCard_(
+      "ONE WORKSHOP", "#A3E635",
+      "One Workshop. A Great Start.",
+      "Introduce your students to hip-hop, get them excited about movement and discover how easy it can be to bring dance into the classroom."
+    ) +
+    renderProgramCard_(
+      "THREE WORKSHOPS", "#38BDF8",
+      "Three Workshops. Build Their Skills.",
+      "Help your students build on what they've learned, explore dance foundations and develop their creativity while supporting your dance curriculum."
+    ) +
+    renderProgramCard_(
+      "MULTIPLE SESSIONS", "#FFD426",
+      "Multiple Sessions. Something Bigger.",
+      "Preparing for a spring concert, school showcase or special event? Let's work together to create an experience your students will be proud of."
+    );
+
+  const somethingElseHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 20px 0">' +
+    '<tr><td style="background-color:#FFF28E;border:2px solid #111111;border-radius:14px;padding:14px 16px">' +
+    '<p style="margin:0 0 4px 0;font-size:15px;font-weight:800;color:#111111">Something Else Entirely?</p>' +
+    '<p style="margin:0;font-size:14px;line-height:1.55;color:#111111">We\'re always open to new ideas. Tell us what you\'re imagining, and let\'s see how we can make it happen!</p>' +
+    '</td></tr></table>';
+
+  const stats = [
+    ["40+", "Schools Reached"],
+    ["1,000+", "Students Dancing"],
+    ["40+", "Youth Mentors Trained"]
+  ];
+  const socialProofHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 22px 0">' +
+    '<tr><td style="background-color:#FDF9E7;border:2px solid #111111;border-radius:16px;box-shadow:3px 3px 0 #111111;padding:18px">' +
+    '<p style="margin:0 0 4px 0;font-size:18px;font-weight:800;color:#111111">Small Moves. Big Impact.</p>' +
+    '<p style="margin:0 0 12px 0;font-size:14px;color:#111111">Over the past two years:</p>' +
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>' +
+    stats.map(([num, label]) => (
+      '<td class="h4-stat-cell" width="33%" valign="top" style="padding:4px">' +
+      '<div style="background-color:#FFFDF7;border:2px solid #111111;border-radius:12px;padding:10px 8px;text-align:center">' +
+      '<div style="font-size:20px;font-weight:800;line-height:1.1;color:#111111">' + num + '</div>' +
+      '<div style="margin-top:4px;font-size:12px;font-weight:700;line-height:1.3;color:#111111">' + label + '</div>' +
+      '</div></td>'
+    )).join("") +
+    '</tr></table>' +
+    '<p style="margin:12px 0 0 0;font-size:14px;line-height:1.5;font-weight:600;color:#111111">We\'re not just teaching dance. We\'re helping young people discover what they\'re capable of.</p>' +
+    '</td></tr></table>';
+
+  const ctaSectionHtml = '<p style="margin:0 0 8px 0;font-size:18px;font-weight:800;color:#111111">Let\'s make it happen.</p>' +
+    '<p style="margin:0 0 10px 0">I\'ll be following up to learn more about your school, answer your questions and discuss programming options, rates and availability.</p>' +
+    '<p style="margin:0">In the meantime, feel free to reply directly to this email. I\'d love to hear what you have in mind!</p>' +
+    renderEmailButton_("CONNECT WITH GLEN", "mailto:" + H4_GLEN_EMAIL, "#A3E635");
+
+  const dpaStripHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:6px 0 18px 0">' +
+    '<tr><td style="background-color:#FDF9E7;border:2px solid #111111;border-radius:14px;padding:16px">' +
+    '<p style="margin:0;font-size:14px;line-height:1.55;color:#111111">Want to get your students moving today? Our free five-minute classroom DPA resource is always available.</p>' +
+    renderEmailButton_("TRY H4'S FREE CLASSROOM DPA", H4_DPA_URL, "#FFD426") +
+    '</td></tr></table>';
+
+  const signoffHtml = '<p style="margin:14px 0 0 0;font-size:15px;line-height:1.55;color:#111111">' +
+    'Looking forward to connecting!<br><strong>Glen Reyes</strong><br>Founder, H4 Community (How Hip Hop Helps)<br>' +
+    '<a href="mailto:' + H4_GLEN_EMAIL + '" style="color:#111111;font-weight:700;text-decoration:underline">' + H4_GLEN_EMAIL + '</a></p>';
+
+  const bodyHtml = '<p style="margin:0 0 12px 0">' + escapeHtml_(greeting) + '</p>' +
+    '<p style="margin:0 0 12px 0">' + escapeHtml_(openingLine) + '</p>' +
+    '<p style="margin:0 0 18px 0">We know that every school has different needs, schedules and budgets. That\'s why we believe great dance programming should start with a conversation, not a fixed package.</p>' +
+    '<p style="margin:0 0 12px 0;font-size:18px;font-weight:800;color:#111111">What do you have in mind?</p>' +
+    cardsHtml +
+    somethingElseHtml +
+    socialProofHtml +
+    ctaSectionHtml +
+    dpaStripHtml +
+    signoffHtml;
+
+  const htmlBody = renderEmailShell_(
+    preheader,
+    "MOVEMENT · CREATIVITY · CONFIDENCE",
+    "Let's get your school movin'!",
+    bodyHtml,
+    [
+      { label: "H4 Community", href: H4_SITE_URL },
+      { label: "H4 Dance", href: H4_DPA_URL }
+    ]
+  );
+
+  const body = [
+    greeting,
+    "",
+    openingLine,
+    "We know that every school has different needs, schedules and budgets. That's why we believe great dance programming should start with a conversation, not a fixed package.",
+    "",
+    "What do you have in mind?",
+    "- One Workshop. A Great Start. Introduce your students to hip-hop, get them excited about movement and discover how easy it can be to bring dance into the classroom.",
+    "- Three Workshops. Build Their Skills. Help your students build on what they've learned, explore dance foundations and develop their creativity while supporting your dance curriculum.",
+    "- Multiple Sessions. Something Bigger. Preparing for a spring concert, school showcase or special event? Let's work together to create an experience your students will be proud of.",
+    "- Something Else Entirely? We're always open to new ideas. Tell us what you're imagining, and let's see how we can make it happen!",
+    "",
+    "Small Moves. Big Impact.",
+    "Over the past two years: 40+ Schools Reached | 1,000+ Students Dancing | 40+ Youth Mentors Trained.",
+    "We're not just teaching dance. We're helping young people discover what they're capable of.",
+    "",
+    "Let's make it happen.",
+    "I'll be following up to learn more about your school, answer your questions and discuss programming options, rates and availability.",
+    "In the meantime, feel free to reply directly to this email. I'd love to hear what you have in mind!",
+    "CONNECT WITH GLEN: mailto:" + H4_GLEN_EMAIL,
+    "",
+    "Want to get your students moving today? Our free five-minute classroom DPA resource is always available.",
+    "TRY H4'S FREE CLASSROOM DPA: " + H4_DPA_URL,
+    "",
+    "Looking forward to connecting!",
+    "Glen Reyes",
+    "Founder, H4 Community (How Hip Hop Helps)",
+    H4_GLEN_EMAIL,
+    "",
+    "HOW HIP HOP HELPS.",
+    "Confidence in Motion.",
+    "H4 Community: " + H4_SITE_URL,
+    "H4 Dance: " + H4_DPA_URL
+  ].join("\n");
+
+  return { to, subject, body, htmlBody, name: "H4 Community", replyTo: H4_REPLY_EMAIL };
+}
+
+function buildSignupEmail_(to, interest, resource, fullName) {
+  if (isFreeResourceInterest_(interest)) {
+    return buildTutorialEmail_(to, resource);
+  }
+  return buildProgrammingEmail_(to, interest, fullName);
 }
