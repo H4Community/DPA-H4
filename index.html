@@ -318,10 +318,18 @@
     }
 
     .hero p {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       color: var(--ink-soft);
-      margin-bottom: 18px;
+      margin-bottom: 10px;
       max-width: 56ch;
+    }
+
+    .hero-microcopy {
+      font-size: 0.9rem !important;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-top: 10px;
+      margin-bottom: 0 !important;
     }
 
     .hero-cta-row {
@@ -987,28 +995,43 @@
       border-radius: 8px;
     }
 
+    .tutorial-subhead {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+    }
+
     .tutorial-explainer-lead {
       font-size: 0.96rem;
       color: var(--ink);
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
 
-    .tutorial-explainer-meta {
+    .tutorial-cta-wrap {
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 2px;
-      background: #FFEDD5;
-      border: 2.5px solid var(--ink);
-      border-radius: 14px;
-      padding: 9px 13px;
-      font-size: 0.88rem;
-      color: var(--ink);
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
     }
 
-    .tutorial-explainer-meta strong {
+    .tutorial-primary-cta {
+      background: var(--tangerine);
+      color: var(--ink);
+      padding: 12px 20px;
+      font-size: 0.98rem;
+      min-height: 44px;
+    }
+
+    .tutorial-bullets-closing {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 2px dashed rgba(20, 20, 20, 0.25);
       font-family: 'Fredoka', sans-serif;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 0.94rem;
+      color: var(--ink);
     }
 
     .tutorial-bullets-box {
@@ -1086,6 +1109,41 @@
 
     .conversion-perks li::before {
       content: "⚡ ";
+    }
+
+    .conversion-subhead {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.08rem;
+      color: var(--yellow) !important;
+      margin-bottom: 8px !important;
+    }
+
+    .conversion-closing {
+      font-weight: 700;
+      color: #FFFFFF !important;
+      margin-bottom: 14px !important;
+    }
+
+    .conversion-cta-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .conversion-primary-cta {
+      background: var(--lime);
+      color: var(--ink);
+      padding: 13px 22px;
+      font-size: 1rem;
+      min-height: 44px;
+    }
+
+    .conversion-microcopy {
+      font-size: 0.86rem;
+      color: #D4D4D8;
+      font-weight: 600;
     }
 
     .booking-card {
@@ -1513,29 +1571,343 @@
       }
     }
 
+    /* Impact, Testimonial, Parent & DanceStash Sections */
+    .impact-card,
+    .testimonial-card,
+    .parent-card,
+    .dancestash-final-card {
+      background: var(--bg-card);
+      border: var(--border-w) solid var(--ink);
+      border-radius: 24px;
+      box-shadow: var(--shadow-md);
+      padding: 24px 28px;
+    }
+
+    .impact-header h2,
+    .testimonial-card h2,
+    .parent-card h2,
+    .dancestash-final-card h2 {
+      font-size: clamp(1.5rem, 2.8vw, 2.05rem);
+      line-height: 1.12;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .impact-header p {
+      color: var(--ink-soft);
+      font-size: 0.98rem;
+      max-width: 62ch;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 18px 0 16px;
+    }
+
+    .impact-stat {
+      background: var(--bg-paper);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: var(--shadow-sm);
+      padding: 16px 14px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .impact-number {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .impact-label {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--ink-soft);
+    }
+
+    .impact-closing {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--ink);
+    }
+
+    .testimonial-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .testimonial-h4-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.86rem;
+      color: var(--ink);
+      background: var(--bg-paper);
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      padding: 4px 12px;
+    }
+
+    .testimonial-h4-badge img {
+      display: block;
+      width: 16px;
+      height: 18px;
+      filter: invert(1);
+    }
+
+    .testimonial-body {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 20px;
+      align-items: center;
+      margin: 14px 0 18px;
+    }
+
+    .testimonial-portrait-wrap {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 3.5px solid var(--ink);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      background: var(--bg-paper);
+      flex-shrink: 0;
+    }
+
+    .testimonial-portrait {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .testimonial-quote {
+      font-size: 1.02rem;
+      line-height: 1.5;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .testimonial-author {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.92rem;
+      color: var(--ink-soft);
+    }
+
+    .testimonial-author strong {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .testimonial-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .testimonial-cta {
+      background: var(--yellow);
+      color: var(--ink);
+      padding: 12px 22px;
+      font-size: 1rem;
+      min-height: 44px;
+    }
+
+    .parent-card {
+      background: #FFFDF7;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .parent-card p {
+      font-size: 0.97rem;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+    }
+
+    .parent-tagline {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      color: var(--ink) !important;
+      margin-top: 6px;
+      margin-bottom: 0 !important;
+    }
+
+    .parent-share-box {
+      background: var(--bg-paper);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: var(--shadow-sm);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .parent-share-copy {
+      font-size: 0.94rem !important;
+      font-weight: 700;
+      color: var(--ink) !important;
+      margin-bottom: 0 !important;
+    }
+
+    .parent-share-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .parent-share-btn {
+      background: var(--cobalt);
+      color: var(--ink);
+      padding: 12px 18px;
+      font-size: 0.98rem;
+      min-height: 44px;
+    }
+
+    .share-status-pill {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink);
+      min-height: 1.2em;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .share-status-pill.is-visible {
+      opacity: 1;
+    }
+
+    .dancestash-final-card {
+      background: #F4FAFF;
+      display: grid;
+      grid-template-columns: auto 1.15fr 0.75fr;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .dancestash-final-logo {
+      width: 96px;
+      height: 96px;
+      padding: 10px;
+      border-radius: 20px;
+      background: #FFFFFF;
+      border: 3px solid var(--ink);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dancestash-final-copy p {
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+    }
+
+    .dancestash-final-audience {
+      font-weight: 700;
+      color: var(--ink) !important;
+      margin-bottom: 0 !important;
+    }
+
+    .dancestash-final-cta-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .dancestash-final-btn {
+      background: #FFFFFF;
+      color: var(--ink);
+      padding: 12px 20px;
+      font-size: 0.98rem;
+      min-height: 44px;
+    }
+
+    .dancestash-final-tagline {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+    }
+
     /* Footer */
     .site-footer {
       margin-top: 34px;
       border-top: var(--border-w) solid var(--ink);
       background: #FFFFFF;
-      padding: 24px 0 34px;
+      padding: 24px 0 30px;
     }
 
     .footer-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      align-items: start;
+      gap: 20px 28px;
+    }
+
+    .footer-title {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .footer-desc {
+      font-size: 0.9rem;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      max-width: 62ch;
+    }
+
+    .footer-motto {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--ink);
+    }
+
+    .footer-contact-lead {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .footer-contact-sub {
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+      margin-bottom: 10px;
     }
 
     .footer-links {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 14px;
+      gap: 10px 14px;
       font-weight: 700;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
 
     .footer-links a {
@@ -2228,8 +2600,23 @@
 
       .hero-grid,
       .conversion-strip,
-      .player-stage {
+      .player-stage,
+      .impact-grid,
+      .parent-card,
+      .dancestash-final-card,
+      .footer-inner {
         grid-template-columns: 1fr;
+      }
+
+      .testimonial-body {
+        grid-template-columns: 1fr;
+      }
+
+      .impact-card,
+      .testimonial-card,
+      .parent-card,
+      .dancestash-final-card {
+        padding: 20px;
       }
     }
   </style>
@@ -2283,9 +2670,10 @@
       <div class="hero-grid">
         <div>
           <div class="hero-badges">
-            <span class="tag-chip" style="background: var(--lime);">5 Minutes</span>
-            <span class="tag-chip" style="background: var(--cobalt);">Zero Login</span>
-            <span class="tag-chip" style="background: var(--yellow);">Desk-Safe · All Classrooms</span>
+            <span class="tag-chip" style="background: var(--lime);">Free</span>
+            <span class="tag-chip" style="background: var(--cobalt);">No Login</span>
+            <span class="tag-chip" style="background: var(--yellow);">No Equipment</span>
+            <span class="tag-chip" style="background: var(--tangerine);">Made for Classrooms</span>
           </div>
 
           <h1 id="hero-heading">
@@ -2293,9 +2681,15 @@
           </h1>
 
           <p>
-            Free, music-driven hip-hop movement breaks built for classrooms by <strong>H4 Community</strong>.
-            <strong>Teachers:</strong> project this on your screen and hit <strong>DPA START</strong> to cycle randomly
-            through all 10 hip-hop grooves on the beat—no student accounts, no equipment, and no boring repeats!
+            Get your students moving, smiling and building confidence—one beat at a time!
+          </p>
+          <p>
+            Created by <strong>H4 Community</strong> (How Hip Hop Helps), our free hip-hop movement breaks make Daily
+            Physical Activity fun and easy for everyone.
+          </p>
+          <p>
+            <strong>Teachers:</strong> Simply project this page, press <strong>DPA START</strong> and dance along with
+            your students. No dance experience needed. We'll take care of the moves and the music!
           </p>
 
           <div class="hero-cta-row">
@@ -2306,6 +2700,7 @@
               Explore All 10 Grooves ↓
             </a>
           </div>
+          <p class="hero-microcopy">Five minutes of movement. A classroom full of energy.</p>
         </div>
 
         <!-- Floor Kids Style Interactive Crew Stage -->
@@ -2342,10 +2737,13 @@
     <section class="section-wrap" id="ten-grooves" aria-labelledby="grooves-heading">
       <div class="section-head">
         <div>
-          <h2 id="grooves-heading">The 10 Techniques of Hip-Hop</h2>
+          <h2 id="grooves-heading">10 Moves. Endless Possibilities.</h2>
           <p class="section-sub">
-            Learn each groove solo with your class, or hit <strong>DPA START</strong> above to remix all 10 moves
-            randomly every 2 counts of 8 (~8 seconds) for a full 5-minute energy boost!
+            Every great dancer starts with the basics! Explore the 10 foundational techniques of hip-hop, practise
+            them individually, or press <strong>DPA START</strong> to mix things up with a fun, five-minute dance break.
+          </p>
+          <p class="section-sub" style="margin-top: 4px; font-weight: 700; color: var(--ink);">
+            There's no perfect way to dance. Find your rhythm, make it your own and keep moving!
           </p>
         </div>
         <button type="button" class="comic-btn btn-shuffle-sketch" id="startRandomDpaBtn2">
@@ -2485,27 +2883,31 @@
         <div class="tutorial-explainer-grid">
           <div>
             <span class="tag-chip" style="background: #FFEDD5; color: var(--ink);">
-              Free Online Tutorial · For Teachers
+              FREE ONLINE TUTORIAL · NO DANCE EXPERIENCE REQUIRED
             </span>
-            <h3 id="teacher-tutorial-heading" tabindex="-1">Teach Dance with Confidence.</h3>
+            <h3 id="teacher-tutorial-heading" tabindex="-1">Teachers, We've Got You!</h3>
+            <p class="tutorial-subhead">Build Your Confidence. Inspire Theirs.</p>
             <p class="tutorial-explainer-lead">
-              <strong>No dance experience? No problem!</strong> Our free online tutorial helps teachers feel comfortable
-              leading the H4 dance warm-up in their classrooms.
+              Not quite ready to lead a dance warm-up? We can help! Our free online tutorial helps elementary school
+              educators bring more movement, music and creativity into their classrooms.
             </p>
-            <div class="tutorial-explainer-meta">
-              <strong>Request Your Free Online Tutorial</strong>
-              <span>Designed for educators. No dance experience required.</span>
+            <div class="tutorial-cta-wrap">
+              <a href="#book-workshop" class="comic-btn tutorial-primary-cta" id="requestTutorialExplainerCta"
+                data-select-interest="Free Online Dance Tutorial">
+                Request Your Free Teacher Tutorial
+              </a>
             </div>
           </div>
 
           <div class="tutorial-bullets-box">
-            <p class="tutorial-bullets-title">We'll help you:</p>
+            <p class="tutorial-bullets-title">Together, we'll help you:</p>
             <ul class="tutorial-bullets">
-              <li>Learn the 10 foundational dance moves.</li>
+              <li>Learn the 10 foundational hip-hop moves.</li>
               <li>Understand how to count and move to music.</li>
-              <li>Put together a simple classroom warm-up.</li>
-              <li>Build confidence leading your students.</li>
+              <li>Create your own classroom dance warm-up.</li>
+              <li>Feel more confident dancing with your students.</li>
             </ul>
+            <p class="tutorial-bullets-closing">You don't have to be a dancer to inspire one.</p>
           </div>
         </div>
       </div>
@@ -2514,22 +2916,36 @@
       <div class="conversion-strip" id="book-workshop">
         <div>
           <span class="tag-chip" style="background: var(--tangerine); color: var(--ink); margin-bottom: 10px;">
-            Live School Workshops · GTA &amp; Ontario
+            LIVE SCHOOL PROGRAMS · GTA &amp; ONTARIO
           </span>
-          <h2>Want a Pro to Lead Day 1 Live? Hire H4.</h2>
+          <h2>Want Us to Get the Dancing Started?</h2>
           <p>
-            Videos keep the daily habit alive—a live kickoff makes the whole school buy in. Bring an <strong>H4
-              Community</strong> professional breaking and hip-hop educator into your gym for a <strong>Full-Day Kickoff
-              Workshop</strong> (up to 5 classes in one day—tailored for primary, junior, or intermediate divisions).
+            Would you rather have H4 lead the first few sessions? Looking to introduce your students to hip-hop?
+            Planning something exciting for your school? We'd love to help!
           </p>
+          <p>
+            Our professional dance educators bring music, movement and creativity directly to your school, helping
+            students build confidence while having fun. From individual classroom workshops to school-wide
+            experiences, we'll work with you to create something that fits your students, your goals and your
+            school's needs.
+          </p>
+          <p class="conversion-subhead">Let's Get Your School Moving!</p>
           <ul class="conversion-perks">
-            <li>Students learn real breaking &amp; hip-hop foundations live with pro educators</li>
-            <li>Teachers get an effortless handoff so 5-minute DPA sticks all winter</li>
-            <li>Now booking <strong>January–March</strong> school dates · <a href="https://h4community.org"
-                target="_blank" rel="noopener noreferrer"
-                style="color: var(--yellow); font-weight: 700;">h4community.org</a></li>
+            <li>Hip-hop and breaking workshops.</li>
+            <li>Classroom and school-wide DPA experiences.</li>
+            <li>Dance programs for primary, junior and intermediate students.</li>
+            <li>Multi-session programs that build skills and confidence.</li>
+            <li>Special events, celebrations and customized programming.</li>
           </ul>
-          <p style="font-size: 0.9rem; color: #A1A1AA;">
+          <p class="conversion-closing">Every school is different. Let's find out what works for yours.</p>
+          <div class="conversion-cta-wrap">
+            <a href="#bookingCard" class="comic-btn conversion-primary-cta" id="planProgrammingCta"
+              data-select-interest="Full-Day School Workshop">
+              Let's Plan Something Together
+            </a>
+            <span class="conversion-microcopy">Ask us about programming, pricing and availability.</span>
+          </div>
+          <p style="font-size: 0.9rem; color: #A1A1AA; margin-top: 12px; margin-bottom: 0;">
             Direct inquiries: <a href="mailto:info@h4community.org"
               style="color: var(--lime); font-weight: 700;">info@h4community.org</a>
           </p>
@@ -2705,23 +3121,178 @@
         </div>
       </div>
     </section>
+
+    <!-- H4 IMPACT & CREDIBILITY -->
+    <section class="section-wrap impact-section" id="h4-impact" aria-labelledby="impact-heading">
+      <div class="impact-card">
+        <div class="impact-header">
+          <h2 id="impact-heading">Small Moves. Big Impact.</h2>
+          <p>
+            Over the past two years, H4 Community has helped bring dance, creativity and leadership opportunities to
+            school communities.
+          </p>
+        </div>
+
+        <div class="impact-grid">
+          <div class="impact-stat">
+            <span class="impact-number">40+</span>
+            <span class="impact-label">Schools Reached</span>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-number">1,000+</span>
+            <span class="impact-label">Students Dancing</span>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-number">40+</span>
+            <span class="impact-label">Mentors Trained</span>
+          </div>
+        </div>
+
+        <p class="impact-closing">
+          We're not just teaching dance. We're creating opportunities for young people to discover what they're
+          capable of.
+        </p>
+      </div>
+    </section>
+
+    <!-- PRINCIPAL TESTIMONIAL -->
+    <section class="section-wrap testimonial-section" id="principal-testimonial" aria-labelledby="testimonial-heading">
+      <div class="testimonial-card">
+        <div class="testimonial-top-row">
+          <span class="tag-chip" style="background: var(--lime); color: var(--ink);">
+            TRUSTED BY SCHOOL LEADERS
+          </span>
+          <span class="testimonial-h4-badge">
+            <img src="images/h4-logo-mark.svg" alt="" width="18" height="20" aria-hidden="true" />
+            <span>H4 Community Partner</span>
+          </span>
+        </div>
+
+        <h2 id="testimonial-heading">Building Confidence. Earning Trust.</h2>
+
+        <div class="testimonial-body">
+          <figure class="testimonial-portrait-wrap">
+            <img class="testimonial-portrait" src="images/melissa-brown.webp"
+              alt="Melissa Brown, Principal at St. Jean de Brebeuf (TCDSB)" width="160" height="160"
+              loading="lazy" decoding="async" />
+          </figure>
+          <div class="testimonial-content">
+            <blockquote class="testimonial-quote">
+              “I've had the pleasure of bringing Glen into three different schools, first as a teacher back in 2019 and
+              now as a principal. No matter the setting, his ability to connect with students and build their confidence
+              is incredible. He's a trusted partner who consistently leaves a positive mark on our school community.”
+            </blockquote>
+            <p class="testimonial-author">
+              <strong>Melissa Brown</strong>
+              <span>Principal · St. Jean de Brebeuf (TCDSB)</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="testimonial-cta-row">
+          <a href="#book-workshop" class="comic-btn testimonial-cta" id="bringH4Cta"
+            data-select-interest="Full-Day School Workshop">
+            Bring H4 to Your School
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARENT ENGAGEMENT -->
+    <section class="section-wrap parent-section" id="for-families" aria-labelledby="parent-heading">
+      <div class="parent-card">
+        <div>
+          <span class="tag-chip" style="background: #FFEDD5; color: var(--ink); margin-bottom: 10px;">
+            FOR FAMILIES
+          </span>
+          <h2 id="parent-heading">Hey Parents! It's Your Turn to Learn.</h2>
+          <p>
+            Ask your child to show you their favourite hip-hop move!
+          </p>
+          <p>
+            These aren't just dance steps. They're opportunities to practise coordination, creativity, perseverance and
+            confidence.
+          </p>
+          <p>
+            Explore the moves together, put on some music and let your child become the teacher. Who knows? You might
+            learn a few new moves yourself!
+          </p>
+          <p class="parent-tagline">Keep Dancing. Keep Growing. Keep Having Fun.</p>
+        </div>
+
+        <div class="parent-share-box">
+          <p class="parent-share-copy">
+            Want to see more dance opportunities at your child's school? Share H4 with their teacher or principal.
+          </p>
+          <div class="parent-share-actions">
+            <button type="button" class="comic-btn parent-share-btn" id="shareH4Btn">
+              Share H4 With Your School
+            </button>
+            <span class="share-status-pill" id="shareH4Status" role="status"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DANCESTASH FINAL PROMOTIONAL CTA -->
+    <section class="section-wrap dancestash-final-section" id="dancestash-more" aria-labelledby="dancestash-final-heading">
+      <div class="dancestash-final-card">
+        <div class="dancestash-final-art">
+          <div class="promo-logo-frame dancestash-final-logo">
+            <img class="promo-logo-img" src="DanceStashLogo.png" alt="DanceStash logo" width="500" height="500"
+              loading="lazy" decoding="async" />
+          </div>
+        </div>
+        <div class="dancestash-final-copy">
+          <span class="tag-chip" style="background: #FFFFFF; color: var(--ink); margin-bottom: 8px;">
+            KEEP THE MOVEMENT GOING
+          </span>
+          <h2 id="dancestash-final-heading">Need More Moves?</h2>
+          <p>
+            Mastered the basics? Ready to try something new?
+          </p>
+          <p>
+            Discover DanceStash, explore new dance moves, challenge yourself and keep building your confidence—one move
+            at a time.
+          </p>
+          <p class="dancestash-final-audience">
+            Perfect for curious students, creative teachers and families who love to move.
+          </p>
+        </div>
+        <div class="dancestash-final-cta-col">
+          <a href="https://dancestash.space/" target="_blank" rel="noopener noreferrer"
+            class="comic-btn dancestash-final-btn" id="dancestashFinalCta"
+            aria-label="Explore DanceStash (opens in a new tab)">
+            Explore DanceStash →
+          </a>
+          <p class="dancestash-final-tagline">Keep Learning. Keep Moving. Keep Growing.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <div>
-        <strong>H4 Community (How Hip Hop Helps)</strong> · Toronto Non-Profit Youth Organization<br />
-        <span style="font-size: 0.88rem; color: var(--ink-soft);">
-          Questions or school bookings: <a href="mailto:info@h4community.org"
-            style="color: var(--ink); font-weight: 700;">info@h4community.org</a>
-        </span>
+      <div class="footer-org">
+        <p class="footer-title">More Than Dance.</p>
+        <p class="footer-desc">
+          At H4 Community, we believe movement can help young people discover their potential, express themselves and
+          find a sense of belonging. We're a Toronto-based non-profit youth organization creating opportunities through
+          hip-hop, education and leadership.
+        </p>
+        <p class="footer-motto">How Hip Hop Helps. · Confidence in Motion.</p>
       </div>
 
-      <div class="footer-links">
-        <a href="https://h4community.org" target="_blank" rel="noopener noreferrer">Main Hub (h4community.org)</a>
-        <a href="https://goalquest.h4community.org" target="_blank" rel="noopener noreferrer">High School Goal Quest</a>
-        <button type="button" class="mini-ctrl" id="toggleOfflineBtn">Test Low-Bandwidth Mode</button>
+      <div class="footer-contact-col">
+        <p class="footer-contact-lead">Questions? Ideas? Want to bring H4 to your school?</p>
+        <p class="footer-contact-sub">We'd love to hear from you.</p>
+        <div class="footer-links">
+          <a href="mailto:info@h4community.org">info@h4community.org</a>
+          <a href="https://h4community.org" target="_blank" rel="noopener noreferrer">h4community.org</a>
+          <a href="https://goalquest.h4community.org" target="_blank" rel="noopener noreferrer">High School Goal Quest</a>
+          <button type="button" class="mini-ctrl" id="toggleOfflineBtn">Test Low-Bandwidth Mode</button>
+        </div>
       </div>
     </div>
   </footer>
@@ -4606,8 +5177,6 @@
         }
       });
 
-          const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
-          const bookWorkshopTopCta = document.getElementById("bookWorkshopTopCta");
           const bookWorkshopSection = document.getElementById("book-workshop");
           const bookingFormHeading = document.getElementById("bookingFormHeading");
 
@@ -4622,17 +5191,77 @@
             target.focus({ preventScroll: true });
           }
 
-          if (requestTutorialPromoCta) {
-            requestTutorialPromoCta.addEventListener("click", (event) => {
+          document.querySelectorAll("[data-select-interest]").forEach((cta) => {
+            cta.addEventListener("click", (event) => {
+              const interest = cta.getAttribute("data-select-interest");
+              if (!interest) return;
               event.preventDefault();
-              openSignupFromCta("Free Online Dance Tutorial");
+              openSignupFromCta(interest);
             });
-          }
+          });
 
-          if (bookWorkshopTopCta) {
-            bookWorkshopTopCta.addEventListener("click", (event) => {
-              event.preventDefault();
-              openSignupFromCta("Full-Day School Workshop");
+          const shareH4Btn = document.getElementById("shareH4Btn");
+          const shareH4Status = document.getElementById("shareH4Status");
+          if (shareH4Btn && shareH4Status) {
+            const SHARE_URL = "https://dance.h4community.org/";
+            let shareTimer = null;
+            let lastShareMsg = "";
+
+            function setShareStatus(message) {
+              clearTimeout(shareTimer);
+              const nextMsg = message === lastShareMsg ? `${message}\u00A0` : message;
+              lastShareMsg = message;
+              shareH4Status.classList.remove("is-visible");
+              shareH4Status.textContent = "";
+              requestAnimationFrame(() => {
+                shareH4Status.textContent = nextMsg;
+                shareH4Status.classList.add("is-visible");
+              });
+              shareTimer = setTimeout(() => {
+                shareH4Status.classList.remove("is-visible");
+                shareH4Status.textContent = "";
+              }, 3500);
+            }
+
+            function legacyCopy(text) {
+              const previousFocus = document.activeElement;
+              const field = Object.assign(document.createElement("textarea"), { value: text });
+              field.setAttribute("readonly", "");
+              field.style.cssText = "position:fixed;inset-block-start:0;opacity:0";
+              document.body.append(field);
+              field.select();
+              try {
+                return document.execCommand("copy");
+              } finally {
+                field.remove();
+                previousFocus?.focus({ preventScroll: true });
+              }
+            }
+
+            shareH4Btn.addEventListener("click", async () => {
+              if (navigator.share) {
+                try {
+                  await navigator.share({
+                    title: "H4 Dance DPA — Free 5-Minute Hip-Hop Movement Breaks",
+                    text: "Check out H4 Community's free 5-minute hip-hop movement breaks and school programs!",
+                    url: SHARE_URL
+                  });
+                  setShareStatus("Thanks for sharing H4!");
+                  return;
+                } catch (err) {
+                  if (err && err.name === "AbortError") return;
+                }
+              }
+              try {
+                await navigator.clipboard.writeText(SHARE_URL);
+                setShareStatus(`Link copied! Share ${SHARE_URL}`);
+              } catch {
+                if (legacyCopy(SHARE_URL)) {
+                  setShareStatus(`Link copied! Share ${SHARE_URL}`);
+                } else {
+                  setShareStatus(`Share link: ${SHARE_URL}`);
+                }
+              }
             });
           }
 

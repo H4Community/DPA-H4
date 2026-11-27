@@ -411,9 +411,9 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(navResult.formHeadingFocused, true, "Free tutorial CTA must focus the form heading");
   assert.equal(navResult.headingVisibleBelowTopbar, true, "Form heading must land visibly below sticky header");
   assert.equal(navResult.formHeadingText, "Get the Free Dance Videos");
-  assert.ok(navResult.explainerText.includes("No dance experience? No problem!"));
-  assert.ok(navResult.explainerText.includes("Learn the 10 foundational dance moves."));
-  assert.ok(navResult.explainerText.includes("Designed for educators. No dance experience required."));
+  assert.ok(navResult.explainerText.includes("Teachers, We've Got You!"));
+  assert.ok(navResult.explainerText.includes("Learn the 10 foundational hip-hop moves."));
+  assert.ok(navResult.explainerText.includes("Request Your Free Teacher Tutorial"));
   assert.equal(navResult.submitText, "Email Me the Free Videos");
 
   // Capture Desktop Tutorial Explanation + Preselected Form screenshot
