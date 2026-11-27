@@ -22,18 +22,20 @@ function hasRecentMatchingEmail_(tab, headers, lastRow, lead) {
   });
 }
 
-function sendQueuedLeadEmail_(leadId) {
+function sendQueuedLeadEmail_(leadId, rowHint) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(8000)) return "Queued";
   let status = "Queued";
   try {
     const context = openLeadSheet_();
     if (!context) return status;
-    const { tab, headers } = context;
-    const row = findLeadRow_(tab, headers.indexOf("Lead ID") + 1, tab.getLastRow(), leadId);
+    const { id, tab, headers } = context;
+    const row = rowHint || findLeadRow_(tab, headers.indexOf("Lead ID") + 1, tab.getLastRow(), leadId);
     if (!row) return status;
-    const values = tab.getRange(row, 1, 1, headers.length).getValues()[0];
-    const read = (name) => values[headers.indexOf(name)];
+    // Read via Sheets API v4 so rows just written by Values.update are never stale in SpreadsheetApp's cache.
+    const values = Sheets.Spreadsheets.Values.get(id, "'Teacher Leads'!" + row + ":" + row).values?.[0] || [];
+    const read = (name) => values[headers.indexOf(name)] || "";
+    if (read("Lead ID") !== leadId) return status;
     status = read("Email Status");
     if (status !== "Queued") return status;
 

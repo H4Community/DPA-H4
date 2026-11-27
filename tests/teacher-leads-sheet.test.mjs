@@ -78,6 +78,13 @@ function testSheet() {
       createTextOutput(value) { return { setMimeType: () => value }; }
     },
     Sheets: { Spreadsheets: { Values: {
+      get(id, range) {
+        assert.equal(id, "test-sheet");
+        const match = /^'Teacher Leads'!(\d+):\1$/.exec(range);
+        assert.ok(match, `Unexpected range: ${range}`);
+        const row = rows[Number(match[1]) - 2];
+        return { values: row ? [row] : [] };
+      },
       update({ values: [row] }, id, range, options) {
         assert.equal(locked, true);
         assert.equal(id, "test-sheet");

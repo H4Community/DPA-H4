@@ -380,6 +380,8 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     const parentNoSchool = document.getElementById("signupSchoolDetails").hidden && board.disabled;
     update(role, "change", "Teacher");
     const form = document.getElementById("workshopForm");
+    const configuredEndpoint = (form.getAttribute("data-endpoint") || "").trim();
+    form.setAttribute("data-endpoint", "");
     const message = document.getElementById("formError");
     update(boardSearch, "input", "Toronto Catholic District School Board");
     const boards = [...board.options].map((option) => option.value);
@@ -405,10 +407,11 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     const requiredName = !message.hidden && teacher.getAttribute("aria-invalid") === "true";
     update(teacher, "input", "Ms. Maya Chen");
     form.requestSubmit();
-    return { boards, matching, reset, aliasMatches, manualRequired, other, requiredName, parentNoSchool,
+    return { configuredEndpoint, boards, matching, reset, aliasMatches, manualRequired, other, requiredName, parentNoSchool,
       unavailable: message.textContent.includes("temporarily unavailable"),
       successHidden: document.getElementById("formReadyPanel").hidden };
   `);
+  assert.match(pickerCheck.configuredEndpoint, /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/);
   assert.deepEqual(pickerCheck.boards, ["", "B67059", "other"]);
   assert.deepEqual(pickerCheck.matching, ["", "733024", "manual"]);
   assert.equal(pickerCheck.reset, true);

@@ -15,8 +15,10 @@ function doPost(event) {
   }
 
   const saved = saveTeacherLead_(lead);
+  const rowHint = saved.row;
+  delete saved.row;
   if (saved.saved && saved.emailStatus === "Queued") {
-    saved.emailStatus = sendQueuedLeadEmail_(lead.id);
+    saved.emailStatus = sendQueuedLeadEmail_(lead.id, rowHint);
   }
   return teacherLeadResponse_(saved);
 }
@@ -87,7 +89,7 @@ function saveTeacherLead_(lead) {
     Sheets.Spreadsheets.Values.update({
       values: [headers.map((header) => Object.prototype.hasOwnProperty.call(values, header) ? values[header] : "")]
     }, id, "'Teacher Leads'!A" + newRow, { valueInputOption: "RAW" });
-    return { ok: true, saved: true, leadId: lead.id, emailStatus };
+    return { ok: true, saved: true, leadId: lead.id, emailStatus, row: newRow };
   } catch {
     return { ok: false, code: "SAVE_FAILED" };
   } finally {
