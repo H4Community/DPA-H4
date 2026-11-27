@@ -607,35 +607,38 @@
     }
 
     .groove-art .move-video {
-      transform: scale(1.28);
-      transform-origin: center bottom;
+      --char-scale: 1;
+      --char-y: 0%;
+      padding: 0;
+      object-fit: contain;
+      object-position: center center;
+      transform: translateY(var(--char-y, 0%)) scale(var(--char-scale, 1));
+      transform-origin: center center;
     }
 
-    .groove-card:hover .groove-art .move-video {
-      transform: scale(1.33);
-    }
+    .groove-art .move-video[data-move="bounce"] { --char-scale: 1.32; --char-y: -25%; }
+    .groove-art .move-video[data-move="rock"]   { --char-scale: 1;    --char-y: 0%; }
+    .groove-art .move-video[data-move="hop"]    { --char-scale: 1.28; --char-y: -20%; }
+    .groove-art .move-video[data-move="slide"]  { --char-scale: 1.34; --char-y: -24%; }
+    .groove-art .move-video[data-move="shift"]  { --char-scale: 1.45; --char-y: -27%; }
+    .groove-art .move-video[data-move="shake"]  { --char-scale: 1.32; --char-y: -23%; }
+    .groove-art .move-video[data-move="twist"]  { --char-scale: 1.28; --char-y: -3%; }
+    .groove-art .move-video[data-move="tick"]   { --char-scale: 1.22; --char-y: -19%; }
+    .groove-art .move-video[data-move="roll"]   { --char-scale: 1.36; --char-y: 5%; }
+    .groove-art .move-video[data-move="wave"]   { --char-scale: 1.38; --char-y: -24.5%; }
 
-    .groove-art .move-video[data-move="roll"] {
-      transform: translateY(22%) scale(1.26);
-      transform-origin: center 76%;
-    }
+    @media (prefers-reduced-motion: no-preference) {
+      body:not(.calm-motion) .groove-art .move-video {
+        transition: transform 0.2s ease;
+      }
 
-    .groove-card:hover .groove-art .move-video[data-move="roll"] {
-      transform: translateY(22%) scale(1.31);
-    }
-
-    .groove-art .move-video[data-move="twist"] {
-      transform: translateY(12%) scale(1.22);
-      transform-origin: center 85%;
-    }
-
-    .groove-card:hover .groove-art .move-video[data-move="twist"] {
-      transform: translateY(12%) scale(1.27);
+      body:not(.calm-motion) .groove-card:hover .groove-art .move-video {
+        transform: translateY(var(--char-y, 0%)) scale(calc(var(--char-scale, 1) * 1.04));
+      }
     }
 
     .groove-art svg,
-    .groove-art .groove-char-img,
-    .groove-art .move-video {
+    .groove-art .groove-char-img {
       transition: transform 0.2s ease;
     }
 
@@ -661,7 +664,7 @@
       position: relative;
       z-index: 1;
       mix-blend-mode: multiply;
-      filter: contrast(1.12) brightness(1.06);
+      filter: contrast(1.14) brightness(1.06);
     }
 
     .move-fallback {
@@ -1233,6 +1236,7 @@
     }
 
     @media (pointer: coarse) {
+
       .interest-choice,
       .form-field input,
       .form-field select,
@@ -1622,6 +1626,11 @@
       object-fit: contain;
       transform: scale(1.28);
       transform-origin: center bottom;
+    }
+
+    .stage-dancer-wrap .move-video[data-move="rock"] {
+      transform: scale(1);
+      transform-origin: center center;
     }
 
     .stage-dancer-wrap .move-video[data-move="roll"] {
@@ -2026,7 +2035,9 @@
           </h1>
 
           <p>
-            Free, music-driven hip-hop movement breaks built for classrooms by <strong>H4 Community</strong>. <strong>Teachers:</strong> project this on your screen and hit <strong>DPA START</strong> to cycle randomly through all 10 hip-hop grooves on the beat—no student accounts, no equipment, and no boring repeats!
+            Free, music-driven hip-hop movement breaks built for classrooms by <strong>H4 Community</strong>.
+            <strong>Teachers:</strong> project this on your screen and hit <strong>DPA START</strong> to cycle randomly
+            through all 10 hip-hop grooves on the beat—no student accounts, no equipment, and no boring repeats!
           </p>
 
           <div class="hero-cta-row">
@@ -2104,11 +2115,11 @@
             <p class="groove-desc">Discover new dance moves and keep dancing with DanceStash!</p>
           </div>
           <a href="https://dancestash.space/" target="_blank" rel="noopener noreferrer"
-            class="comic-btn groove-btn promo-cta"
-            aria-label="Explore DanceStash (opens in a new tab)">
+            class="comic-btn groove-btn promo-cta" aria-label="Explore DanceStash (opens in a new tab)">
             <span>Explore DanceStash</span>
             <svg class="promo-ext-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M14 4H20V10M20 4L10 14M18 14V19C18 19.5523 17.5523 20 17 20H5C4.44772 20 4 19.5523 4 19V7C4 6.44772 4.44772 6 5 6H10"
+              <path
+                d="M14 4H20V10M20 4L10 14M18 14V19C18 19.5523 17.5523 20 17 20H5C4.44772 20 4 19.5523 4 19V7C4 6.44772 4.44772 6 5 6H10"
                 stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </a>
@@ -2128,29 +2139,29 @@
                   <!-- Soft comic ground shadow -->
                   <ellipse cx="79" cy="98" rx="58" ry="6.5" fill="rgba(20,20,20,0.16)" />
                   <!-- Comic sparkles (top-left & top-right) -->
-                  <path d="M21 16L23.2 21.8L29 24L23.2 26.2L21 32L18.8 26.2L13 24L18.8 21.8L21 16Z"
-                    fill="#FACC15" stroke="#141414" stroke-width="2.4" stroke-linejoin="round" />
+                  <path d="M21 16L23.2 21.8L29 24L23.2 26.2L21 32L18.8 26.2L13 24L18.8 21.8L21 16Z" fill="#FACC15"
+                    stroke="#141414" stroke-width="2.4" stroke-linejoin="round" />
                   <path d="M138 12L140 16.5L144.5 18.5L140 20.5L138 25L136 20.5L131.5 18.5L136 16.5L138 12Z"
                     fill="#FFFDF7" stroke="#141414" stroke-width="2.4" stroke-linejoin="round" />
                   <circle cx="143" cy="36" r="3.4" fill="#FB923C" stroke="#141414" stroke-width="2" />
                   <circle cx="15" cy="43" r="3" fill="#A3E635" stroke="#141414" stroke-width="2" />
                   <!-- Laptop lid outer yellow shell -->
-                  <rect x="33" y="16" width="92" height="63" rx="9" fill="#FACC15" stroke="#141414"
-                    stroke-width="3.8" stroke-linejoin="round" />
+                  <rect x="33" y="16" width="92" height="63" rx="9" fill="#FACC15" stroke="#141414" stroke-width="3.8"
+                    stroke-linejoin="round" />
                   <!-- Subtle lid highlight strip -->
                   <path d="M40 20.5H118" stroke="#FEF08A" stroke-width="2.2" stroke-linecap="round" />
                   <!-- Webcam dot -->
                   <circle cx="79" cy="21" r="1.9" fill="#141414" />
                   <!-- Cream laptop screen -->
-                  <rect x="41" y="25" width="76" height="46" rx="5" fill="#FFFDF7" stroke="#141414"
-                    stroke-width="3.2" stroke-linejoin="round" />
+                  <rect x="41" y="25" width="76" height="46" rx="5" fill="#FFFDF7" stroke="#141414" stroke-width="3.2"
+                    stroke-linejoin="round" />
                   <!-- Screen decorative progress bar -->
                   <rect x="48" y="63" width="62" height="4" rx="2" fill="#FFEDD5" stroke="#141414" stroke-width="1.6" />
                   <rect x="48" y="63" width="28" height="4" rx="2" fill="#FB923C" />
                   <!-- Prominent comic play badge & triangle -->
                   <circle cx="79" cy="44" r="14.5" fill="#A3E635" stroke="#141414" stroke-width="3.2" />
-                  <path d="M74.8 37.6L86.8 44L74.8 50.4V37.6Z" fill="#141414" stroke="#141414"
-                    stroke-width="1.8" stroke-linejoin="round" />
+                  <path d="M74.8 37.6L86.8 44L74.8 50.4V37.6Z" fill="#141414" stroke="#141414" stroke-width="1.8"
+                    stroke-linejoin="round" />
                   <!-- Laptop keyboard deck & base -->
                   <path d="M22 79H136L142 90C142.8 91.8 141.5 94 139.5 94H18.5C16.5 94 15.2 91.8 16 90L22 79Z"
                     fill="#FACC15" stroke="#141414" stroke-width="3.8" stroke-linejoin="round" />
@@ -2163,7 +2174,8 @@
               <span class="promo-brand promo-brand-tutorial">FREE ONLINE TUTORIAL</span>
             </div>
             <h3 class="groove-title" id="teacher-tutorial-promo-heading">Need a Little Help?</h3>
-            <p class="groove-desc">Teachers! Need help leading the dance warm-up? We'll help you learn the moves, step by step.</p>
+            <p class="groove-desc">Teachers! Need help leading the dance warm-up? We'll help you learn the moves, step
+              by step.</p>
           </div>
           <a href="#teacher-tutorial-section" class="comic-btn groove-btn promo-cta" id="requestTutorialPromoCta"
             data-select-interest="Free Online Dance Tutorial">
@@ -2267,13 +2279,14 @@
 
         <div class="booking-card" id="bookingCard">
           <h3 id="bookingFormHeading">Request a Workshop or Free Tutorial</h3>
-          <form id="workshopForm" method="POST" action="" data-endpoint="" aria-labelledby="bookingFormHeading" novalidate>
+          <form id="workshopForm" method="POST" action="" data-endpoint="" aria-labelledby="bookingFormHeading"
+            novalidate>
             <fieldset class="form-fieldset" id="inquiryTypeFieldset">
               <legend>How can H4 help? <span aria-hidden="true">*</span></legend>
               <div class="interest-radio-stack">
                 <div class="interest-choice">
-                  <input type="radio" id="interestWorkshop" name="inquiryType" value="Full-Day School Workshop"
-                    checked required />
+                  <input type="radio" id="interestWorkshop" name="inquiryType" value="Full-Day School Workshop" checked
+                    required />
                   <label for="interestWorkshop">Full-Day School Workshop</label>
                 </div>
                 <div class="interest-choice interest-choice-tutorial">
@@ -2375,8 +2388,7 @@
             title="Switch every 2 counts of 8 (16 beats)">
             2×8 Counts
           </button>
-          <button type="button" class="mini-ctrl" id="interval3x8Btn"
-            title="Switch every 3 counts of 8 (24 beats)">
+          <button type="button" class="mini-ctrl" id="interval3x8Btn" title="Switch every 3 counts of 8 (24 beats)">
             3×8 Counts
           </button>
           <button type="button" class="mini-ctrl" id="quickDemoBtn"
@@ -2387,7 +2399,8 @@
             <button type="button" class="mini-ctrl" id="bpmDownBtn" title="Slow down by 5 BPM">-5</button>
             <span class="bpm-readout" id="bpmDisplay">115 BPM</span>
             <button type="button" class="mini-ctrl" id="bpmUpBtn" title="Speed up by 5 BPM">+5</button>
-            <button type="button" class="mini-ctrl" id="tapBpmBtn" title="Tap along with your music to set BPM, or tap once on Count 1 to manually re-align phase">
+            <button type="button" class="mini-ctrl" id="tapBpmBtn"
+              title="Tap along with your music to set BPM, or tap once on Count 1 to manually re-align phase">
               👆 Tap BPM
             </button>
           </div>
@@ -2416,7 +2429,8 @@
           </button>
           <label class="music-vol-wrap" for="musicVolSlider" title="Music volume">
             <span>🔊</span>
-            <input type="range" id="musicVolSlider" class="music-vol-slider" min="0.1" max="1" step="0.05" value="0.85" />
+            <input type="range" id="musicVolSlider" class="music-vol-slider" min="0.1" max="1" step="0.05"
+              value="0.85" />
           </label>
         </div>
       </div>
@@ -2640,7 +2654,7 @@
             video.pause();
           } else if (!isStageVideo || isPlaying) {
             video.setAttribute("autoplay", "");
-            video.play().catch(() => {});
+            video.play().catch(() => { });
           }
         });
       }
@@ -2907,7 +2921,7 @@
       function getNearestBpmTier(bpm) {
         return BPM_TIERS.reduce((best, tier) =>
           Math.abs(tier - bpm) < Math.abs(best - bpm) ? tier : best
-        , BPM_TIERS[0]);
+          , BPM_TIERS[0]);
       }
 
       function getSongsForTier(tierBpm) {
@@ -3182,7 +3196,7 @@
         const stageVideo = stageDancerWrap.querySelector("video.move-video");
         if (stageVideo) {
           if (isPlaying && !isMotionReduced()) {
-            stageVideo.play().catch(() => {});
+            stageVideo.play().catch(() => { });
           } else {
             stageVideo.pause();
           }
@@ -3909,7 +3923,7 @@
         playerStage.classList.add("is-playing");
         playPauseBtn.textContent = "⏸ Pause (Space)";
         const stageVideo = stageDancerWrap.querySelector("video.move-video");
-        if (stageVideo && !isMotionReduced()) stageVideo.play().catch(() => {});
+        if (stageVideo && !isMotionReduced()) stageVideo.play().catch(() => { });
         ensureAudio();
         syncBpmUI();
 
@@ -4225,284 +4239,284 @@
         }
       });
 
-          const FREE_TUTORIAL_INTEREST = "Free Online Dance Tutorial";
-          const WORKSHOP_INTEREST = "Full-Day School Workshop";
-          const workshopForm = document.getElementById("workshopForm");
-          const formError = document.getElementById("formError");
-          const teacherNameInput = document.getElementById("teacherName");
-          const schoolNameInput = document.getElementById("schoolName");
-          const targetMonthSelect = document.getElementById("targetMonth");
-          const targetMonthLabel = document.getElementById("targetMonthLabel");
-          const workshopSubmitBtn = document.getElementById("workshopSubmitBtn");
-          const formReadyPanel = document.getElementById("formReadyPanel");
-          const formReadyTitle = document.getElementById("formReadyTitle");
-          const formReadyBody = document.getElementById("formReadyBody");
-          const formMailtoLink = document.getElementById("formMailtoLink");
-          const formEditBtn = document.getElementById("formEditBtn");
-          const inquiryRadios = Array.from(workshopForm.querySelectorAll('input[name="inquiryType"]'));
-          const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
-          const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
-          const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
-          let isTeacherFormSubmitting = false;
+      const FREE_TUTORIAL_INTEREST = "Free Online Dance Tutorial";
+      const WORKSHOP_INTEREST = "Full-Day School Workshop";
+      const workshopForm = document.getElementById("workshopForm");
+      const formError = document.getElementById("formError");
+      const teacherNameInput = document.getElementById("teacherName");
+      const schoolNameInput = document.getElementById("schoolName");
+      const targetMonthSelect = document.getElementById("targetMonth");
+      const targetMonthLabel = document.getElementById("targetMonthLabel");
+      const workshopSubmitBtn = document.getElementById("workshopSubmitBtn");
+      const formReadyPanel = document.getElementById("formReadyPanel");
+      const formReadyTitle = document.getElementById("formReadyTitle");
+      const formReadyBody = document.getElementById("formReadyBody");
+      const formMailtoLink = document.getElementById("formMailtoLink");
+      const formEditBtn = document.getElementById("formEditBtn");
+      const inquiryRadios = Array.from(workshopForm.querySelectorAll('input[name="inquiryType"]'));
+      const requestTutorialPromoCta = document.getElementById("requestTutorialPromoCta");
+      const teacherTutorialSection = document.getElementById("teacher-tutorial-section");
+      const teacherTutorialHeading = document.getElementById("teacher-tutorial-heading");
+      let isTeacherFormSubmitting = false;
 
-          function getSelectedInquiryType() {
-            const checked = inquiryRadios.find((r) => r.checked);
-            return checked ? checked.value : WORKSHOP_INTEREST;
-          }
+      function getSelectedInquiryType() {
+        const checked = inquiryRadios.find((r) => r.checked);
+        return checked ? checked.value : WORKSHOP_INTEREST;
+      }
 
-          function getTeacherFormEndpoint() {
-            if (window.H4_TEACHER_FORM_CONFIG && typeof window.H4_TEACHER_FORM_CONFIG.endpoint === "string" && window.H4_TEACHER_FORM_CONFIG.endpoint.trim()) {
-              return window.H4_TEACHER_FORM_CONFIG.endpoint.trim();
-            }
-            return (workshopForm.getAttribute("data-endpoint") || "").trim();
-          }
+      function getTeacherFormEndpoint() {
+        if (window.H4_TEACHER_FORM_CONFIG && typeof window.H4_TEACHER_FORM_CONFIG.endpoint === "string" && window.H4_TEACHER_FORM_CONFIG.endpoint.trim()) {
+          return window.H4_TEACHER_FORM_CONFIG.endpoint.trim();
+        }
+        return (workshopForm.getAttribute("data-endpoint") || "").trim();
+      }
 
-          function syncInquiryFormUI() {
-            const isTutorial = getSelectedInquiryType() === FREE_TUTORIAL_INTEREST;
-            if (targetMonthLabel) {
-              targetMonthLabel.textContent = isTutorial ? "Preferred Timing / Month" : "Preferred Month";
-            }
-            if (workshopSubmitBtn && !isTeacherFormSubmitting) {
-              workshopSubmitBtn.textContent = isTutorial
-                ? "Request Your Free Online Tutorial →"
-                : "Teachers & Principals: Request School Dates →";
-            }
-          }
+      function syncInquiryFormUI() {
+        const isTutorial = getSelectedInquiryType() === FREE_TUTORIAL_INTEREST;
+        if (targetMonthLabel) {
+          targetMonthLabel.textContent = isTutorial ? "Preferred Timing / Month" : "Preferred Month";
+        }
+        if (workshopSubmitBtn && !isTeacherFormSubmitting) {
+          workshopSubmitBtn.textContent = isTutorial
+            ? "Request Your Free Online Tutorial →"
+            : "Teachers & Principals: Request School Dates →";
+        }
+      }
 
-          function clearTeacherFormError() {
-            formError.hidden = true;
-            teacherNameInput.removeAttribute("aria-invalid");
-            teacherNameInput.classList.remove("is-field-invalid");
-            schoolNameInput.removeAttribute("aria-invalid");
-            schoolNameInput.classList.remove("is-field-invalid");
-          }
+      function clearTeacherFormError() {
+        formError.hidden = true;
+        teacherNameInput.removeAttribute("aria-invalid");
+        teacherNameInput.classList.remove("is-field-invalid");
+        schoolNameInput.removeAttribute("aria-invalid");
+        schoolNameInput.classList.remove("is-field-invalid");
+      }
 
-          function showTeacherFormError(message, focusEl) {
-            formError.textContent = message;
-            formError.hidden = false;
-            if (focusEl && typeof focusEl.focus === "function") {
-              focusEl.focus();
-            }
-          }
+      function showTeacherFormError(message, focusEl) {
+        formError.textContent = message;
+        formError.hidden = false;
+        if (focusEl && typeof focusEl.focus === "function") {
+          focusEl.focus();
+        }
+      }
 
-          function selectTeacherInterest(interestValue) {
-            const match = inquiryRadios.find((r) => r.value === interestValue);
-            if (match) {
-              match.checked = true;
-            }
-            if (formReadyPanel && !formReadyPanel.hidden) {
-              formReadyPanel.hidden = true;
-              workshopForm.hidden = false;
-            }
-            syncInquiryFormUI();
-          }
+      function selectTeacherInterest(interestValue) {
+        const match = inquiryRadios.find((r) => r.value === interestValue);
+        if (match) {
+          match.checked = true;
+        }
+        if (formReadyPanel && !formReadyPanel.hidden) {
+          formReadyPanel.hidden = true;
+          workshopForm.hidden = false;
+        }
+        syncInquiryFormUI();
+      }
 
-          function buildTeacherInquiryPayload() {
-            return {
-              interest: getSelectedInquiryType(),
-              teacherName: teacherNameInput.value.trim(),
-              schoolName: schoolNameInput.value.trim(),
-              targetMonth: targetMonthSelect.value,
-              source: "dance.h4community.org"
-            };
-          }
+      function buildTeacherInquiryPayload() {
+        return {
+          interest: getSelectedInquiryType(),
+          teacherName: teacherNameInput.value.trim(),
+          schoolName: schoolNameInput.value.trim(),
+          targetMonth: targetMonthSelect.value,
+          source: "dance.h4community.org"
+        };
+      }
 
-          function buildTeacherMailtoHref(payload) {
-            const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
-            const subject = isTutorial
-              ? `H4 Free Online Dance Tutorial Request — ${payload.schoolName}`
-              : `H4 Full-Day Dance Workshop Inquiry — ${payload.schoolName} (${payload.targetMonth})`;
-            const intro = isTutorial
-              ? "I'd love to request a Free Online Dance Tutorial to help lead the H4 dance warm-up in my classroom."
-              : "We'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.";
-            const body =
-              `Hi H4 Community Team,\n\n${intro}\n\n` +
-              `Interest: ${payload.interest}\n` +
-              `Contact Name: ${payload.teacherName}\n` +
-              `School / Board: ${payload.schoolName}\n` +
-              `${isTutorial ? "Preferred Timing" : "Preferred Month"}: ${payload.targetMonth}\n\n` +
-              `Sent from ${payload.source}`;
-            return `mailto:info@h4community.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-          }
+      function buildTeacherMailtoHref(payload) {
+        const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
+        const subject = isTutorial
+          ? `H4 Free Online Dance Tutorial Request — ${payload.schoolName}`
+          : `H4 Full-Day Dance Workshop Inquiry — ${payload.schoolName} (${payload.targetMonth})`;
+        const intro = isTutorial
+          ? "I'd love to request a Free Online Dance Tutorial to help lead the H4 dance warm-up in my classroom."
+          : "We'd love to request dates and a quote for a Full-Day Kickoff Hip-Hop & Breaking Workshop.";
+        const body =
+          `Hi H4 Community Team,\n\n${intro}\n\n` +
+          `Interest: ${payload.interest}\n` +
+          `Contact Name: ${payload.teacherName}\n` +
+          `School / Board: ${payload.schoolName}\n` +
+          `${isTutorial ? "Preferred Timing" : "Preferred Month"}: ${payload.targetMonth}\n\n` +
+          `Sent from ${payload.source}`;
+        return `mailto:info@h4community.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }
 
-          function showTeacherConfirmation(payload, confirmedByBackend) {
-            const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
-            workshopForm.hidden = true;
-            formReadyPanel.hidden = false;
-            if (confirmedByBackend) {
-              formReadyTitle.textContent = isTutorial
-                ? "✅ Tutorial Request Received!"
-                : `✅ Request Saved for ${payload.schoolName}!`;
-              formReadyBody.textContent = isTutorial
-                ? "Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
-                : `Thanks, ${payload.teacherName}! H4 received your ${payload.interest} request for ${payload.schoolName} and will follow up soon.`;
-              formMailtoLink.hidden = true;
-            } else {
-              formReadyTitle.textContent = isTutorial
-                ? "✅ Free Tutorial Request Ready!"
-                : `✅ Request Ready for ${payload.schoolName}!`;
-              formReadyBody.textContent = isTutorial
-                ? "Click below to send your pre-filled Free Online Dance Tutorial request to info@h4community.org. Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
-                : "Click below to send your pre-filled date request straight to info@h4community.org.";
-              formMailtoLink.href = buildTeacherMailtoHref(payload);
-              formMailtoLink.hidden = false;
-            }
-            formReadyPanel.focus();
-          }
+      function showTeacherConfirmation(payload, confirmedByBackend) {
+        const isTutorial = payload.interest === FREE_TUTORIAL_INTEREST;
+        workshopForm.hidden = true;
+        formReadyPanel.hidden = false;
+        if (confirmedByBackend) {
+          formReadyTitle.textContent = isTutorial
+            ? "✅ Tutorial Request Received!"
+            : `✅ Request Saved for ${payload.schoolName}!`;
+          formReadyBody.textContent = isTutorial
+            ? "Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
+            : `Thanks, ${payload.teacherName}! H4 received your ${payload.interest} request for ${payload.schoolName} and will follow up soon.`;
+          formMailtoLink.hidden = true;
+        } else {
+          formReadyTitle.textContent = isTutorial
+            ? "✅ Free Tutorial Request Ready!"
+            : `✅ Request Ready for ${payload.schoolName}!`;
+          formReadyBody.textContent = isTutorial
+            ? "Click below to send your pre-filled Free Online Dance Tutorial request to info@h4community.org. Thanks for reaching out! H4 will be in touch to help you get started with the dance warm-up."
+            : "Click below to send your pre-filled date request straight to info@h4community.org.";
+          formMailtoLink.href = buildTeacherMailtoHref(payload);
+          formMailtoLink.hidden = false;
+        }
+        formReadyPanel.focus();
+      }
 
-          inquiryRadios.forEach((radio) => {
-            radio.addEventListener("change", () => {
-              syncInquiryFormUI();
-              clearTeacherFormError();
-            });
-          });
-
-          [teacherNameInput, schoolNameInput].forEach((input) => {
-            input.addEventListener("input", () => {
-              if (input.value.trim()) {
-                input.removeAttribute("aria-invalid");
-                input.classList.remove("is-field-invalid");
-              }
-              if (teacherNameInput.value.trim() && schoolNameInput.value.trim()) {
-                formError.hidden = true;
-              }
-            });
-          });
-
-          if (formEditBtn) {
-            formEditBtn.addEventListener("click", () => {
-              formReadyPanel.hidden = true;
-              workshopForm.hidden = false;
-              syncInquiryFormUI();
-              teacherNameInput.focus();
-            });
-          }
-
-          if (requestTutorialPromoCta && teacherTutorialSection) {
-            requestTutorialPromoCta.addEventListener("click", (e) => {
-              e.preventDefault();
-              selectTeacherInterest(FREE_TUTORIAL_INTEREST);
-              const topbar = document.querySelector(".topbar");
-              const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
-              const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
-              window.scrollTo({
-                top: targetTop,
-                behavior: isMotionReduced() ? "instant" : "smooth"
-              });
-              if (teacherTutorialHeading && typeof teacherTutorialHeading.focus === "function") {
-                teacherTutorialHeading.focus({ preventScroll: true });
-              }
-            });
-          }
-
+      inquiryRadios.forEach((radio) => {
+        radio.addEventListener("change", () => {
           syncInquiryFormUI();
+          clearTeacherFormError();
+        });
+      });
 
-          workshopForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (isTeacherFormSubmitting) return;
-            clearTeacherFormError();
+      [teacherNameInput, schoolNameInput].forEach((input) => {
+        input.addEventListener("input", () => {
+          if (input.value.trim()) {
+            input.removeAttribute("aria-invalid");
+            input.classList.remove("is-field-invalid");
+          }
+          if (teacherNameInput.value.trim() && schoolNameInput.value.trim()) {
+            formError.hidden = true;
+          }
+        });
+      });
 
-            const payload = buildTeacherInquiryPayload();
-            let firstInvalid = null;
-            if (!payload.teacherName) {
-              teacherNameInput.setAttribute("aria-invalid", "true");
-              teacherNameInput.classList.add("is-field-invalid");
-              firstInvalid = firstInvalid || teacherNameInput;
-            }
-            if (!payload.schoolName) {
-              schoolNameInput.setAttribute("aria-invalid", "true");
-              schoolNameInput.classList.add("is-field-invalid");
-              firstInvalid = firstInvalid || schoolNameInput;
-            }
-            if (firstInvalid) {
-              showTeacherFormError(
-                "Please enter both your name and school name so we can follow up on your request.",
-                firstInvalid
-              );
-              return;
-            }
+      if (formEditBtn) {
+        formEditBtn.addEventListener("click", () => {
+          formReadyPanel.hidden = true;
+          workshopForm.hidden = false;
+          syncInquiryFormUI();
+          teacherNameInput.focus();
+        });
+      }
 
-            const endpoint = getTeacherFormEndpoint();
-            if (!endpoint) {
-              showTeacherConfirmation(payload, false);
-              return;
-            }
-
-            isTeacherFormSubmitting = true;
-            workshopSubmitBtn.disabled = true;
-            workshopSubmitBtn.setAttribute("aria-busy", "true");
-            workshopSubmitBtn.textContent = "Sending Request...";
-
-            try {
-              const response = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(payload)
-              });
-              let data = null;
-              try {
-                data = await response.json();
-              } catch (_) {
-                data = null;
-              }
-              if (!response.ok || !data || data.ok !== true || data.saved !== true) {
-                const msg = (data && data.error)
-                  ? data.error
-                  : "We could not confirm your request right now. Your details are still below—please try again.";
-                showTeacherFormError(msg, workshopSubmitBtn);
-                return;
-              }
-              showTeacherConfirmation(payload, true);
-            } catch (_) {
-              showTeacherFormError(
-                "Connection error while sending your request. Your details are still below—please try again.",
-                workshopSubmitBtn
-              );
-            } finally {
-              isTeacherFormSubmitting = false;
-              workshopSubmitBtn.disabled = false;
-              workshopSubmitBtn.setAttribute("aria-busy", "false");
-              syncInquiryFormUI();
-            }
+      if (requestTutorialPromoCta && teacherTutorialSection) {
+        requestTutorialPromoCta.addEventListener("click", (e) => {
+          e.preventDefault();
+          selectTeacherInterest(FREE_TUTORIAL_INTEREST);
+          const topbar = document.querySelector(".topbar");
+          const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
+          const targetTop = Math.max(0, window.scrollY + teacherTutorialSection.getBoundingClientRect().top - headerOffset);
+          window.scrollTo({
+            top: targetTop,
+            behavior: isMotionReduced() ? "instant" : "smooth"
           });
+          if (teacherTutorialHeading && typeof teacherTutorialHeading.focus === "function") {
+            teacherTutorialHeading.focus({ preventScroll: true });
+          }
+        });
+      }
 
-          window.__h4TeacherForm = {
-            FREE_TUTORIAL_INTEREST,
-            WORKSHOP_INTEREST,
-            getSelectedInquiryType,
-            selectTeacherInterest,
-            buildTeacherInquiryPayload,
-            buildTeacherMailtoHref
-          };
+      syncInquiryFormUI();
 
-          // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
-          window.__h4DpaSync = {
-            getVisualOffsetMs: () => visualSyncOffsetMs,
-            setVisualOffsetMs: setVisualSyncOffsetMs,
-            getSongBeatsElapsed,
-            getSongPhraseBeatsElapsed,
-            getSongTimeForBeat,
-            getSongCountOneBeat,
-            getSongFirstCountOneSec,
-            getCurrentSong,
-            getAudioElement: () => songAudio,
-            getState: () => ({
-              isPlaying,
-              audioMode,
-              currentBpm,
-              currentSongId,
-              currentBeatInEight,
-              hasActiveBeat,
-              isWaitingForIntro,
-              lastRenderedBeatIndex,
-              moveBarsCompleted,
-              visualSyncOffsetMs,
-              playbackRate: songAudio.playbackRate,
-              currentTime: songAudio.currentTime,
-            }),
-            SONGS,
-          };
-        }) ();
+      workshopForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (isTeacherFormSubmitting) return;
+        clearTeacherFormError();
+
+        const payload = buildTeacherInquiryPayload();
+        let firstInvalid = null;
+        if (!payload.teacherName) {
+          teacherNameInput.setAttribute("aria-invalid", "true");
+          teacherNameInput.classList.add("is-field-invalid");
+          firstInvalid = firstInvalid || teacherNameInput;
+        }
+        if (!payload.schoolName) {
+          schoolNameInput.setAttribute("aria-invalid", "true");
+          schoolNameInput.classList.add("is-field-invalid");
+          firstInvalid = firstInvalid || schoolNameInput;
+        }
+        if (firstInvalid) {
+          showTeacherFormError(
+            "Please enter both your name and school name so we can follow up on your request.",
+            firstInvalid
+          );
+          return;
+        }
+
+        const endpoint = getTeacherFormEndpoint();
+        if (!endpoint) {
+          showTeacherConfirmation(payload, false);
+          return;
+        }
+
+        isTeacherFormSubmitting = true;
+        workshopSubmitBtn.disabled = true;
+        workshopSubmitBtn.setAttribute("aria-busy", "true");
+        workshopSubmitBtn.textContent = "Sending Request...";
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+          let data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+          if (!response.ok || !data || data.ok !== true || data.saved !== true) {
+            const msg = (data && data.error)
+              ? data.error
+              : "We could not confirm your request right now. Your details are still below—please try again.";
+            showTeacherFormError(msg, workshopSubmitBtn);
+            return;
+          }
+          showTeacherConfirmation(payload, true);
+        } catch (_) {
+          showTeacherFormError(
+            "Connection error while sending your request. Your details are still below—please try again.",
+            workshopSubmitBtn
+          );
+        } finally {
+          isTeacherFormSubmitting = false;
+          workshopSubmitBtn.disabled = false;
+          workshopSubmitBtn.setAttribute("aria-busy", "false");
+          syncInquiryFormUI();
+        }
+      });
+
+      window.__h4TeacherForm = {
+        FREE_TUTORIAL_INTEREST,
+        WORKSHOP_INTEREST,
+        getSelectedInquiryType,
+        selectTeacherInterest,
+        buildTeacherInquiryPayload,
+        buildTeacherMailtoHref
+      };
+
+      // Non-UI diagnostic & device-latency hook for automated browser verification and dev calibrator
+      window.__h4DpaSync = {
+        getVisualOffsetMs: () => visualSyncOffsetMs,
+        setVisualOffsetMs: setVisualSyncOffsetMs,
+        getSongBeatsElapsed,
+        getSongPhraseBeatsElapsed,
+        getSongTimeForBeat,
+        getSongCountOneBeat,
+        getSongFirstCountOneSec,
+        getCurrentSong,
+        getAudioElement: () => songAudio,
+        getState: () => ({
+          isPlaying,
+          audioMode,
+          currentBpm,
+          currentSongId,
+          currentBeatInEight,
+          hasActiveBeat,
+          isWaitingForIntro,
+          lastRenderedBeatIndex,
+          moveBarsCompleted,
+          visualSyncOffsetMs,
+          playbackRate: songAudio.playbackRate,
+          currentTime: songAudio.currentTime,
+        }),
+        SONGS,
+      };
+    })();
   </script>
 </body>
 
