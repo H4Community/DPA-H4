@@ -1311,6 +1311,10 @@
       background: var(--bg-paper);
     }
 
+    #programInterestLabel {
+      display: none;
+    }
+
     .form-field input:disabled,
     .form-field select:disabled {
       opacity: 0.6;
@@ -2625,6 +2629,63 @@
         grid-template-columns: 1fr;
       }
 
+      .hero-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .hero-grid .crew-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hero-grid .crew-char-img {
+        max-width: 100%;
+      }
+
+      .program-interest-picker {
+        position: relative;
+        display: grid;
+      }
+
+      .program-interest-picker > * {
+        grid-area: 1 / 1;
+        min-width: 0;
+      }
+
+      .program-interest-picker::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: 14px;
+        width: 7px;
+        height: 7px;
+        border: solid var(--ink);
+        border-width: 0 2px 2px 0;
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+      }
+
+      #programInterestSelect {
+        appearance: none;
+        color: transparent;
+      }
+
+      #programInterestSelect option {
+        color: var(--ink);
+      }
+
+      #programInterestLabel {
+        display: block;
+        align-self: center;
+        padding: 10px 32px 10px 14px;
+        pointer-events: none;
+        overflow-wrap: anywhere;
+      }
+
+      .program-interest-picker:has(select:disabled)::after,
+      .program-interest-picker:has(select:disabled) #programInterestLabel {
+        opacity: 0.6;
+      }
+
       .testimonial-body {
         grid-template-columns: 1fr;
       }
@@ -2940,7 +3001,7 @@
           <span class="tag-chip" style="background: var(--tangerine); color: var(--ink); margin-bottom: 10px;">
             LIVE SCHOOL PROGRAMS · GTA &amp; ONTARIO
           </span>
-          <h2>Want Us to Get the Dancing Started?</h2>
+          <h2 tabindex="-1">Want Us to Get the Dancing Started?</h2>
           <p>
             Would you rather have H4 lead the first few sessions? Looking to introduce your students to hip-hop?
             Planning something exciting for your school? We'd love to help!
@@ -3003,13 +3064,16 @@
 
             <div class="form-field" id="programInterestField" hidden>
               <label for="programInterestSelect">What are you interested in? (optional)</label>
-              <select id="programInterestSelect" name="programInterest" aria-invalid="false">
-                <option value="Hip-Hop &amp; Breaking Workshops">Hip-Hop &amp; Breaking Workshops</option>
-                <option value="DPA &amp; Classroom Dance">DPA &amp; Classroom Dance</option>
-                <option value="Multi-Session Dance Programs">Multi-Session Dance Programs</option>
-                <option value="School-Wide Events &amp; Celebrations">School-Wide Events &amp; Celebrations</option>
-                <option value="Other / Let's Explore">Other / Let's Explore</option>
-              </select>
+              <div class="program-interest-picker">
+                <select id="programInterestSelect" name="programInterest" aria-invalid="false">
+                  <option value="Hip-Hop &amp; Breaking Workshops">Hip-Hop &amp; Breaking Workshops</option>
+                  <option value="DPA &amp; Classroom Dance">DPA &amp; Classroom Dance</option>
+                  <option value="Multi-Session Dance Programs">Multi-Session Dance Programs</option>
+                  <option value="School-Wide Events &amp; Celebrations">School-Wide Events &amp; Celebrations</option>
+                  <option value="Other / Let's Explore">Other / Let's Explore</option>
+                </select>
+                <span id="programInterestLabel" aria-hidden="true"></span>
+              </div>
             </div>
 
             <div class="form-field" id="fullNameField">
@@ -3142,6 +3206,7 @@
             </button>
           </form>
 
+          <p id="formSendingStatus" class="teacher-form-note" role="status" tabindex="-1" hidden>Sending request…</p>
           <div class="form-success" id="formReadyPanel" role="status" tabindex="-1" hidden>
             <h3 id="formReadyTitle" style="margin-bottom: 6px;"></h3>
             <p id="formReadyBody"></p>
@@ -5208,10 +5273,9 @@
 
           const bookWorkshopSection = document.getElementById("book-workshop");
           const bookingFormHeading = document.getElementById("bookingFormHeading");
+          const programHeading = bookWorkshopSection.querySelector("h2");
 
-          function openSignupFromCta(interest) {
-            window.__h4TeacherForm?.selectInterest(interest, { focus: false });
-            const target = bookingFormHeading || bookWorkshopSection;
+          function focusBelowHeader(target) {
             if (!target) return;
             const topbar = document.querySelector(".topbar");
             const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
@@ -5225,7 +5289,10 @@
               const interest = cta.getAttribute("data-select-interest");
               if (!interest) return;
               event.preventDefault();
-              openSignupFromCta(interest);
+              const form = window.__h4TeacherForm;
+              if (!form || form.isSending()) return;
+              form.selectInterest(interest, { focus: false });
+              focusBelowHeader(bookingFormHeading);
             });
           });
 
@@ -5233,10 +5300,8 @@
           if (heroSchoolShortcut && bookWorkshopSection) {
             heroSchoolShortcut.addEventListener("click", (event) => {
               event.preventDefault();
-              const topbar = document.querySelector(".topbar");
-              const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
-              const targetTop = Math.max(0, window.scrollY + bookWorkshopSection.getBoundingClientRect().top - headerOffset);
-              window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
+              if (window.__h4TeacherForm?.isSending()) return;
+              focusBelowHeader(programHeading);
             });
           }
 

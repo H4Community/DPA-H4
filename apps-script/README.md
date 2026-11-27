@@ -72,3 +72,52 @@ Download the pipe-separated English Publicly Funded Schools export from the
 
 Run `python scripts/refresh_ontario_schools.py path/to/export.txt` and deploy the
 same generated directory to the site and Apps Script.
+
+## Release procedure with staff lead notifications
+
+1. Prepare a separate Apps Script project and private test spreadsheet as
+   described above. In the test sheet, add the optional headers
+   `Staff Notification Status` and `Staff Notification Sent At` to row 1 of
+   `Teacher Leads`, exactly once each. Format both timestamp columns as
+   date/time. Set `TEST_EMAIL_OVERRIDE` and `H4_LEAD_NOTIFICATION_EMAIL` to an
+   authorized test inbox before enabling the test endpoint. The override
+   takes precedence for both kinds of email. Use the test `/exec` URL in a
+   local or staging copy only.
+2. After approval, test the candidate from a signed-out browser against that
+   test endpoint. Verify a programming request and an Other inquiry produce
+   separate requester and staff messages, and a free tutorial sends only the
+   requester resource. Check actual Sheet rows, both status columns, correct
+   timing and timestamps, and retrying with the same submission key.
+   Verify a queued alert by running the configured `processQueuedEmails`
+   trigger under the test owner. Verify the old frontend against this test
+   deployment as well.
+3. After production authorization, record the current production deployment
+   version, `/exec` URL and frontend commit. Add the same two headers and
+   date/time formats to the production Sheet without editing historical
+   rows. The handler accepts the old sheet layout, but staff alerts require
+   both headers. Records with blank staff status are not backfilled. Monitor
+   the Sheet during rollout to catch any submissions handled by the old
+   deployment before the update.
+4. Set `H4_LEAD_NOTIFICATION_EMAIL` to the approved staff inbox (proposed:
+   `info@h4community.org`). Confirm `TEST_EMAIL_OVERRIDE` is cleared in
+   production. Upload `Code.gs` and `Email.gs` to the existing Apps Script
+   project under the deployment owner. Check private Sheet access, Advanced
+   Sheets, MailApp authorization and that exactly one scheduled
+   `processQueuedEmails` trigger exists. Edit the existing deployment and
+   choose **New version**. Confirm the public `/exec` URL stays the same.
+5. With authorization, check the current live form against the updated
+   backend before publishing the frontend. After publishing, verify one paid
+   inquiry and one tutorial using the approved production smoke process.
+   Inspect requester delivery and staff handoff, including the staff status.
+6. For normal rollback, revert the frontend first and keep the compatible
+   backend so open tabs still work. If the backend must be rolled back, edit
+   the existing deployment to select the old version. Review the current
+   project source separately because the scheduled trigger uses it. Keep
+   Sheet data and the added headers, and account for any queued rows before
+   reverting trigger code.
+
+Staff status is independent of requester mail. Quota exhaustion or missing
+recipient configuration leaves alerts queued. `Sending` and `Needs review`
+require checking the authorized sender's delivery history before requeuing.
+Leave ambiguous attempts alone until that check to avoid duplicate emails.
+Staff alerts are skipped for both names of the free tutorial.

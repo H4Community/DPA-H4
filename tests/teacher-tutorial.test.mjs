@@ -709,6 +709,64 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(workshopPayload.boardId, "B67059");
   assert.equal(workshopPayload.schoolId, "733024");
 
+  // A slow paid submission must not accept a different program or email while pending.
+  srv.setMode("timeout");
+  const beforeLocked = srv.receivedRequests.length;
+  const lockedSubmission = await evalInPage(cdp, `
+    const get = (id) => document.getElementById(id);
+    get("formEditBtn").click();
+    get("choiceWorkshopBtn").click();
+    get("programInterestSelect").value = "DPA & Classroom Dance";
+    get("programInterestSelect").dispatchEvent(new Event("change", { bubbles: true }));
+    get("teacherName").value = "Ms. Jordan Lee";
+    get("teacherEmail").value = "jordan@example.org";
+    get("signupRole").value = "Teacher";
+    window.__h4TeacherForm.selectBoardById("B67059");
+    window.__h4TeacherForm.selectSchoolById("733024");
+    const requiredSchool = get("schoolSearch").required;
+    window.H4_TEACHER_FORM_CONFIG = { timeoutMs: 350 };
+    const form = get("workshopForm");
+    form.requestSubmit();
+    get("programInterestSelect").focus();
+    get("teacherEmail").focus();
+    get("changeChoiceBtn").click();
+    get("formEditBtn").click();
+    get("requestTutorialPromoCta").click();
+    window.__h4TeacherForm.selectBoardById("other");
+    form.requestSubmit();
+    const pending = form.getAttribute("aria-busy") === "true" &&
+      [...form.querySelectorAll("input, select, button")].every((el) => el.disabled) &&
+      [...form.querySelectorAll("summary")].every((el) => el.inert) &&
+      !get("formSendingStatus").hidden && document.activeElement.id === "formSendingStatus";
+    await new Promise((r) => setTimeout(r, 500));
+    delete window.H4_TEACHER_FORM_CONFIG;
+    return {
+      pending, requiredSchool, interest: get("inquiryTypeInput").value,
+      email: get("teacherEmail").value, board: get("boardId").value,
+      editable: !get("teacherEmail").disabled && !get("programInterestSelect").disabled &&
+        !get("schoolSearch").disabled && !get("optionalWorkshopDetails").querySelector("summary").inert,
+      errorFocused: document.activeElement.id === "formError",
+      successHidden: get("formReadyPanel").hidden
+    };
+  `);
+  assert.deepEqual(lockedSubmission, {
+    pending: true, requiredSchool: true, interest: "DPA & Classroom Dance",
+    email: "jordan@example.org", board: "B67059", editable: true, errorFocused: true, successHidden: true
+  });
+  assert.equal(srv.receivedRequests.length, beforeLocked + 1);
+  srv.setMode("ok");
+  const retryFocus = await evalInPage(cdp, `
+    document.getElementById("workshopForm").requestSubmit();
+    await new Promise((r) => setTimeout(r, 200));
+    return document.activeElement.id;
+  `);
+  assert.equal(retryFocus, "formReadyPanel");
+  const lockedAttempts = srv.receivedRequests.slice(beforeLocked);
+  assert.equal(lockedAttempts.length, 2);
+  assert.deepEqual(lockedAttempts[0].payload, lockedAttempts[1].payload);
+  assert.equal(lockedAttempts[1].payload.interest, "DPA & Classroom Dance");
+  assert.equal(lockedAttempts[1].payload.email, "jordan@example.org");
+
   // Reset form back to default chooser state for tablet & mobile screenshots
   await evalInPage(cdp, `
     document.getElementById("workshopForm").setAttribute("data-endpoint", "");

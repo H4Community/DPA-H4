@@ -4,6 +4,9 @@ const LEAD_HEADERS = [
   "Status", "Next Follow-Up Date", "Notes", "Role", "Email Status", "Email Sent At"
 ];
 
+const STAFF_STATUS_HEADER = "Staff Notification Status";
+const STAFF_SENT_AT_HEADER = "Staff Notification Sent At";
+
 function doPost(event) {
   const content = event?.postData?.contents || "";
   let lead;
@@ -20,6 +23,14 @@ function doPost(event) {
   if (saved.saved && saved.emailStatus === "Queued") {
     saved.emailStatus = sendQueuedLeadEmail_(lead.id, rowHint);
   }
+  if (saved.saved && rowHint && !isFreeResourceInterest_(lead.interest)) {
+    // The saved row is the source of truth. A staff alert failure must not affect the response.
+    try {
+      sendQueuedLeadEmail_(lead.id, rowHint, true);
+    } catch {
+      // The trigger retries queued rows. Ambiguous attempts remain available for manual review.
+    }
+  }
   return teacherLeadResponse_(saved);
 }
 
@@ -33,7 +44,9 @@ function openLeadSheet_() {
   if (!LEAD_HEADERS.every((header) => headers.filter((cell) => cell === header).length === 1)) {
     return null;
   }
-  return { id, spreadsheet, tab, headers };
+  const staffReady = [STAFF_STATUS_HEADER, STAFF_SENT_AT_HEADER]
+    .every((header) => headers.filter((cell) => cell === header).length === 1);
+  return { id, spreadsheet, tab, headers, staffReady };
 }
 
 function findLeadRow_(tab, column, lastRow, leadId) {
@@ -83,7 +96,9 @@ function saveTeacherLead_(lead) {
       "Notes": "",
       "Role": lead.role,
       "Email Status": emailStatus,
-      "Email Sent At": ""
+      "Email Sent At": "",
+      [STAFF_STATUS_HEADER]: isFreeResourceInterest_(lead.interest) ? "" : "Queued",
+      [STAFF_SENT_AT_HEADER]: ""
     };
     // RAW stores user input without formula evaluation or numeric conversion.
     Sheets.Spreadsheets.Values.update({

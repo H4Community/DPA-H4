@@ -401,7 +401,7 @@
     const schoolEnabled = schoolActive && hasDirectoryBoard && !isOther;
     schoolSearch.disabled = !schoolEnabled;
     schoolSearch.placeholder = schoolEnabled ? "Search schools" : "Select a board first";
-    schoolSearch.required = schoolEnabled && activeInterest === WORKSHOP;
+    schoolSearch.required = schoolEnabled && isWorkshopInterest(activeInterest);
     schoolCombobox.syncClearIcon();
     updateManualSchool();
   }
@@ -502,6 +502,7 @@
         const matchOption = [...programInterestSelect.options].some((o) => o.value === activeInterest);
         programInterestSelect.value = matchOption ? activeInterest : WORKSHOP;
       }
+      field("programInterestLabel").textContent = programInterestSelect.selectedOptions[0]?.textContent || "";
     }
 
     // Full name: hidden & disabled on Free Teacher Tutorial (value preserved in DOM for switching)
@@ -594,6 +595,7 @@
   }
 
   function resetForm() {
+    if (sending) return;
     form.reset();
     activeInterest = "";
     lastAttempt = undefined;
@@ -613,6 +615,7 @@
   });
   if (programInterestSelect) {
     programInterestSelect.addEventListener("change", () => {
+      if (sending) return;
       const next = programInterestSelect.value;
       if (!ALL_INTERESTS.includes(next)) return;
       const prevPath = getPathKey(activeInterest);
@@ -626,7 +629,7 @@
     });
   }
   field("changeChoiceBtn").addEventListener("click", returnToChooser);
-  role.addEventListener("change", () => updateView());
+  role.addEventListener("change", () => { if (!sending) updateView(); });
   form.addEventListener("input", (event) => {
     if (!sending) error.hidden = true;
     event.target.setAttribute("aria-invalid", "false");
@@ -709,8 +712,17 @@
     const snapshot = JSON.stringify(payload);
     if (lastAttempt?.snapshot !== snapshot) lastAttempt = { snapshot, key: crypto.randomUUID() };
 
+    const controls = Array.from(form.querySelectorAll("button, input, select, textarea"))
+      .filter((control) => !control.disabled);
+    const disclosures = Array.from(form.querySelectorAll("summary"));
+    const sendingStatus = field("formSendingStatus");
     sending = true;
-    submit.disabled = true;
+    boardCombobox.close();
+    schoolCombobox.close();
+    controls.forEach((control) => { control.disabled = true; });
+    disclosures.forEach((summary) => { summary.inert = true; });
+    sendingStatus.hidden = false;
+    sendingStatus.focus({ preventScroll: true });
     form.setAttribute("aria-busy", "true");
     submit.textContent = "Sending request…";
     const controller = new AbortController();
@@ -745,7 +757,9 @@
     } finally {
       clearTimeout(timeoutId);
       sending = false;
-      submit.disabled = false;
+      controls.forEach((control) => { control.disabled = false; });
+      disclosures.forEach((summary) => { summary.inert = false; });
+      sendingStatus.hidden = true;
       form.removeAttribute("aria-busy");
       if (form.hidden === false) updateView();
     }
@@ -756,9 +770,10 @@
 
   window.__h4TeacherForm = {
     selectInterest,
+    isSending: () => sending,
     returnToChooser,
     getSelectedInquiryType: () => activeInterest,
-    selectBoardById: (id) => boardCombobox.chooseById(id),
-    selectSchoolById: (id) => schoolCombobox.chooseById(id)
+    selectBoardById: (id) => !sending && boardCombobox.chooseById(id),
+    selectSchoolById: (id) => !sending && schoolCombobox.chooseById(id)
   };
 })();

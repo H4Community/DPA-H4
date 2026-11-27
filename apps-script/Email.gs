@@ -27,44 +27,53 @@ function hasRecentMatchingEmail_(tab, headers, lastRow, lead) {
     const row = tab.getRange(match.getRow(), 1, 1, headers.length).getValues()[0];
     const submitted = row[headers.indexOf("Submitted At")];
     const status = row[headers.indexOf("Email Status")];
+    const interest = row[headers.indexOf("Interest")];
+    const sameInterest = interest === lead.interest ||
+      (isFreeResourceInterest_(interest) && isFreeResourceInterest_(lead.interest));
     return submitted instanceof Date && submitted.getTime() >= cutoff &&
-      row[headers.indexOf("Interest")] === lead.interest &&
+      sameInterest &&
       ["Queued", "Sending", "Sent", "Needs review"].includes(status);
   });
 }
 
-function sendQueuedLeadEmail_(leadId, rowHint) {
+function sendQueuedLeadEmail_(leadId, rowHint, staff = false) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(8000)) return "Queued";
   let status = "Queued";
   try {
     const context = openLeadSheet_();
-    if (!context) return status;
+    if (!context || (staff && !context.staffReady)) return status;
     const { id, tab, headers } = context;
+    const statusHeader = staff ? STAFF_STATUS_HEADER : "Email Status";
+    const sentAtHeader = staff ? STAFF_SENT_AT_HEADER : "Email Sent At";
     const row = rowHint || findLeadRow_(tab, headers.indexOf("Lead ID") + 1, tab.getLastRow(), leadId);
     if (!row) return status;
     // Read via Sheets API v4 so rows just written by Values.update are never stale in SpreadsheetApp's cache.
     const values = Sheets.Spreadsheets.Values.get(id, "'Teacher Leads'!" + row + ":" + row).values?.[0] || [];
     const read = (name) => values[headers.indexOf(name)] || "";
     if (read("Lead ID") !== leadId) return status;
-    status = read("Email Status");
+    status = read(statusHeader);
     if (status !== "Queued") return status;
 
     const properties = PropertiesService.getScriptProperties();
     const resource = properties.getProperty("FREE_RESOURCE_YOUTUBE_URL") || DEFAULT_FREE_RESOURCE_YOUTUBE_URL;
     const interest = read("Interest");
-    if (isFreeResourceInterest_(interest) && !isYouTubeResourceUrl_(resource)) return status;
+    const staffRecipient = properties.getProperty("H4_LEAD_NOTIFICATION_EMAIL");
+    if (staff && (!staffRecipient || isFreeResourceInterest_(interest))) return status;
+    if (!staff && isFreeResourceInterest_(interest) && !isYouTubeResourceUrl_(resource)) return status;
     if (MailApp.getRemainingDailyQuota() < 1) return status;
 
-    const to = properties.getProperty("TEST_EMAIL_OVERRIDE") || read("Contact Email");
-    const statusCell = tab.getRange(row, headers.indexOf("Email Status") + 1);
+    const to = properties.getProperty("TEST_EMAIL_OVERRIDE") || (staff ? staffRecipient : read("Contact Email"));
+    const statusCell = tab.getRange(row, headers.indexOf(statusHeader) + 1);
     if (!isSingleSignupEmail_(to)) {
       statusCell.setValue("Needs review");
       SpreadsheetApp.flush();
       return "Needs review";
     }
 
-    const message = buildSignupEmail_(to, interest, resource, read("Full Name"));
+    const message = staff
+      ? buildStaffLeadEmail_(to, read)
+      : buildSignupEmail_(to, interest, resource, read("Full Name"));
     // Record the in-flight attempt first. An ambiguous outcome requires review,
     // since sending and recording an email cannot share a transaction.
     statusCell.setValue("Sending");
@@ -78,7 +87,7 @@ function sendQueuedLeadEmail_(leadId, rowHint) {
       return "Needs review";
     }
 
-    tab.getRange(row, headers.indexOf("Email Sent At") + 1).setValue(new Date());
+    tab.getRange(row, headers.indexOf(sentAtHeader) + 1).setValue(new Date());
     statusCell.setValue("Sent");
     SpreadsheetApp.flush();
     return "Sent";
@@ -93,7 +102,7 @@ function sendQueuedLeadEmail_(leadId, rowHint) {
 function processQueuedEmails() {
   const context = openLeadSheet_();
   if (!context) throw new Error("Check Teacher Leads headers.");
-  const { tab, headers } = context;
+  const { tab, headers, staffReady } = context;
   const total = tab.getLastRow() - 1;
   if (total <= 0) return;
   const rows = tab.getRange(2, 1, total, headers.length).getValues();
@@ -105,7 +114,36 @@ function processQueuedEmails() {
   const pending = rows.filter((row) => row[statusIndex] === "Queued" &&
     (resourceReady || !isFreeResourceInterest_(row[interestIndex])));
   const batchSize = Math.min(20, MailApp.getRemainingDailyQuota());
-  pending.slice(0, batchSize).forEach((row) => sendQueuedLeadEmail_(row[leadIndex]));
+  const staffIndex = headers.indexOf(STAFF_STATUS_HEADER);
+  const staffPending = staffReady && PropertiesService.getScriptProperties().getProperty("H4_LEAD_NOTIFICATION_EMAIL")
+    ? rows.filter((row) => row[staffIndex] === "Queued" && !isFreeResourceInterest_(row[interestIndex]))
+    : [];
+  // Give both queues a turn even if one has a backlog.
+  const staffFirst = new Date().getMinutes() % 30 >= 15;
+  let remaining = batchSize;
+  for (let i = 0; remaining > 0 && (i < pending.length || i < staffPending.length); i++) {
+    const send = (row, staff) => {
+      if (!row || remaining <= 0) return;
+      sendQueuedLeadEmail_(row[leadIndex], undefined, staff);
+      remaining--;
+    };
+    if (staffFirst) send(staffPending[i], true);
+    send(pending[i], false);
+    if (!staffFirst) send(staffPending[i], true);
+  }
+}
+
+function buildStaffLeadEmail_(to, read) {
+  const label = String(read("School") || read("Interest")).replace(/[\r\n]+/g, " ");
+  const fields = [
+    "Full Name", "School", "School Board", "Contact Email", "Interest",
+    "Preferred Timing", "Grades", "Phone Number", "Lead ID", "Submitted At"
+  ];
+  const body = fields.map((field) => [field, read(field)])
+    .filter(([, value]) => value)
+    .map(([field, value]) => field + ": " + value)
+    .join("\n");
+  return { to, subject: "New H4 School Inquiry — " + label, body, name: "H4 Community" };
 }
 
 function isYouTubeResourceUrl_(url) {
