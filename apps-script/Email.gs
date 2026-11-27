@@ -1,6 +1,17 @@
-const FREE_RESOURCES_INTEREST = "Free Online Dance Tutorial";
+const FREE_RESOURCES_INTERESTS = ["Free Teacher Tutorial", "Free Online Dance Tutorial"];
+const SCHOOL_PROGRAM_INTERESTS = [
+  "Hip-Hop & Breaking Workshops",
+  "DPA & Classroom Dance",
+  "Multi-Session Dance Programs",
+  "School-Wide Events & Celebrations",
+  "Full-Day School Workshop"
+];
 const DEFAULT_FREE_RESOURCE_YOUTUBE_URL = "https://youtu.be/bgyMPYTSN7Y?feature=shared";
 const H4_REPLY_EMAIL = "info@h4community.org";
+
+function isFreeResourceInterest_(interest) {
+  return FREE_RESOURCES_INTERESTS.includes(interest);
+}
 
 function isSingleSignupEmail_(email) {
   // MailApp accepts recipient lists, so only pass one literal address.
@@ -42,7 +53,7 @@ function sendQueuedLeadEmail_(leadId, rowHint) {
     const properties = PropertiesService.getScriptProperties();
     const resource = properties.getProperty("FREE_RESOURCE_YOUTUBE_URL") || DEFAULT_FREE_RESOURCE_YOUTUBE_URL;
     const interest = read("Interest");
-    if (interest === FREE_RESOURCES_INTEREST && !isYouTubeResourceUrl_(resource)) return status;
+    if (isFreeResourceInterest_(interest) && !isYouTubeResourceUrl_(resource)) return status;
     if (MailApp.getRemainingDailyQuota() < 1) return status;
 
     const to = properties.getProperty("TEST_EMAIL_OVERRIDE") || read("Contact Email");
@@ -92,7 +103,7 @@ function processQueuedEmails() {
   const resource = PropertiesService.getScriptProperties().getProperty("FREE_RESOURCE_YOUTUBE_URL") || DEFAULT_FREE_RESOURCE_YOUTUBE_URL;
   const resourceReady = isYouTubeResourceUrl_(resource);
   const pending = rows.filter((row) => row[statusIndex] === "Queued" &&
-    (resourceReady || row[interestIndex] !== FREE_RESOURCES_INTEREST));
+    (resourceReady || !isFreeResourceInterest_(row[interestIndex])));
   const batchSize = Math.min(20, MailApp.getRemainingDailyQuota());
   pending.slice(0, batchSize).forEach((row) => sendQueuedLeadEmail_(row[leadIndex]));
 }
@@ -108,15 +119,18 @@ function escapeHtml_(value) {
 }
 
 function buildSignupEmail_(to, interest, resource, fullName) {
-  const free = interest === FREE_RESOURCES_INTEREST;
-  const workshop = interest === "Full-Day School Workshop";
+  const free = isFreeResourceInterest_(interest);
+  const workshop = SCHOOL_PROGRAM_INTERESTS.includes(interest);
   const cleanName = typeof fullName === "string" ? fullName.trim() : "";
   const greeting = cleanName ? "Hi " + cleanName + "," : "Hi there,";
   const subject = free ? "Your free H4 dance resources"
-    : workshop ? "We received your H4 workshop request" : "Thanks for reaching out to H4 Community";
+    : workshop ? "We received your H4 school programming request" : "Thanks for reaching out to H4 Community";
+  const programLabel = interest === "Full-Day School Workshop" ? "an H4 school program" : interest;
   const intro = free ? "Here’s the free H4 dance resource you requested. Press play to try it at school or at home."
-    : workshop ? "Thanks for asking about an H4 school workshop. Our team will follow up about your request, availability, and next steps."
-      : "Thanks for your interest in H4 Community. Our team will follow up by email.";
+    : workshop ? "Thanks for asking about " + programLabel + " with H4 Community. Our team will follow up about your request, availability, and next steps."
+      : interest === "Other / Let's Explore"
+        ? "Thanks for reaching out to H4 Community (Other / Let's Explore). Our team will follow up by email to explore what fits your school best."
+        : "Thanks for your interest in H4 Community. Our team will follow up by email.";
   const body = greeting + "\n\n" + intro + (free ? "\n\nWatch on YouTube: " + resource : "") +
     "\n\nH4 Community\nHow Hip Hop Helps";
   const button = free ? '<p style="margin:24px 0"><a style="display:inline-block;background:#a3e635;color:#141414;padding:12px 18px;border-radius:8px;font-weight:bold;text-decoration:none" href="' +

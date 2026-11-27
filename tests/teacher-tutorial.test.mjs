@@ -331,9 +331,9 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(directState.chooserVisible, true, "Three choices must show up front on direct visit");
   assert.equal(directState.formHidden, true, "Form fields must stay hidden until a choice is selected");
   assert.deepEqual(directState.choiceTexts, [
-    "Email Me the Free Videos",
-    "Request Workshop Dates",
-    "Learn more"
+    "Free Teacher Tutorial",
+    "Plan School Programming",
+    "Other / Let's Explore"
   ]);
 
   // Topbar workshop CTA opens Request Workshop Dates directly
@@ -350,9 +350,9 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
       optionalClosed: !document.getElementById("optionalWorkshopDetails").open
     };
   `);
-  assert.equal(topCtaResult.selectedInterest, "Full-Day School Workshop");
-  assert.equal(topCtaResult.heading, "Request Workshop Dates");
-  assert.equal(topCtaResult.submitText, "Request Workshop Dates");
+  assert.equal(topCtaResult.selectedInterest, "Hip-Hop & Breaking Workshops");
+  assert.equal(topCtaResult.heading, "Plan School Programming");
+  assert.equal(topCtaResult.submitText, "Send Programming Inquiry");
   assert.equal(topCtaResult.schoolDisabledInitially, true, "School picker must be disabled until board is selected");
   assert.equal(topCtaResult.optionalClosed, true, "Optional workshop details must start collapsed");
 
@@ -368,7 +368,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     window.__h4TeacherForm.selectBoardById("B67059");
     window.__h4TeacherForm.selectSchoolById("733024");
     document.querySelector('[name=grades][value="6"]').checked = true;
-    document.getElementById("targetMonth").value = "March 2027";
+    document.getElementById("targetMonth").value = "Next 1–2 Months";
     document.getElementById("teacherPhone").value = "416-555-0199";
     document.getElementById("teacherInstagram").value = "@h4dance";
     document.body.classList.add("calm-motion");
@@ -399,7 +399,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     };
   `);
 
-  assert.equal(navResult.selectedInterest, "Free Online Dance Tutorial");
+  assert.equal(navResult.selectedInterest, "Free Teacher Tutorial");
   assert.equal(navResult.teacherNameValuePreserved, "Ms. Maya Chen", "Entered name must be preserved in memory when switching");
   assert.equal(navResult.fullNameHidden, true, "Full name field must be hidden on Free Videos");
   assert.equal(navResult.emailPreserved, "maya@example.org");
@@ -410,11 +410,11 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(navResult.workshopBoardDidNotCarryOver, true, "Workshop school must not carry over to Free Videos");
   assert.equal(navResult.formHeadingFocused, true, "Free tutorial CTA must focus the form heading");
   assert.equal(navResult.headingVisibleBelowTopbar, true, "Form heading must land visibly below sticky header");
-  assert.equal(navResult.formHeadingText, "Get the Free Dance Videos");
+  assert.equal(navResult.formHeadingText, "Request Your Free Teacher Tutorial");
   assert.ok(navResult.explainerText.includes("Teachers, We've Got You!"));
   assert.ok(navResult.explainerText.includes("Learn the 10 foundational hip-hop moves."));
   assert.ok(navResult.explainerText.includes("Request Your Free Teacher Tutorial"));
-  assert.equal(navResult.submitText, "Email Me the Free Videos");
+  assert.equal(navResult.submitText, "Request Free Tutorial");
 
   // Capture Desktop Tutorial Explanation + Preselected Form screenshot
   const deskFormShot = await cdp.send("Page.captureScreenshot", { format: "png" });
@@ -615,7 +615,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.ok(retryAttempts.length >= 4, "Expected network, 500, timeout, and ok attempts");
   assert.equal(new Set(retryAttempts.map((r) => r.payload.submissionKey)).size, 1, "Retries must reuse the exact same submissionKey");
   const teacherFreePayload = retryAttempts.at(-1).payload;
-  assert.equal(teacherFreePayload.interest, "Free Online Dance Tutorial");
+  assert.equal(teacherFreePayload.interest, "Free Teacher Tutorial");
   assert.equal(teacherFreePayload.role, "Teacher");
   assert.equal(teacherFreePayload.email, "maya@example.org");
   assert.equal(teacherFreePayload.fullName, "", "Hidden fullName from Workshop must NOT leak into Free Videos");
@@ -647,7 +647,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.ok(!parentQueued.body.includes("Check your inbox"), "Queued email must not claim Check your inbox");
   assert.ok(parentQueued.body.includes("saved") && parentQueued.body.includes("queued"));
   const parentPayload = srv.receivedRequests.at(-1).payload;
-  assert.equal(parentPayload.interest, "Free Online Dance Tutorial");
+  assert.equal(parentPayload.interest, "Free Teacher Tutorial");
   assert.equal(parentPayload.role, "Parent / Caregiver");
   assert.equal(parentPayload.fullName, "");
   assert.equal(parentPayload.boardId, "");
@@ -677,11 +677,11 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     await new Promise((r) => setTimeout(r, 200));
     return { submitLabel, preserved, body: document.getElementById("formReadyBody").textContent };
   `);
-  assert.equal(learnMoreRes.submitLabel, "Send My Request");
+  assert.equal(learnMoreRes.submitLabel, "Send Inquiry");
   assert.equal(learnMoreRes.preserved, true);
   assert.equal(learnMoreRes.body, "Thanks! Check your inbox for an email from H4 Community.");
   const learnMorePayload = srv.receivedRequests.at(-1).payload;
-  assert.equal(learnMorePayload.interest, "Learn More");
+  assert.equal(learnMorePayload.interest, "Other / Let's Explore");
   assert.equal(learnMorePayload.fullName, "Mr. Alex Patel");
   assert.equal(learnMorePayload.role, "Principal");
   assert.equal(learnMorePayload.boardId, "");
@@ -705,7 +705,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   `);
   assert.equal(workshopSubmitRes.successVisible, true);
   const workshopPayload = srv.receivedRequests.at(-1).payload;
-  assert.equal(workshopPayload.interest, "Full-Day School Workshop");
+  assert.equal(workshopPayload.interest, "Hip-Hop & Breaking Workshops");
   assert.equal(workshopPayload.boardId, "B67059");
   assert.equal(workshopPayload.schoolId, "733024");
 
@@ -789,8 +789,8 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   `);
   const mobTutorialLandingShot = await cdp.send("Page.captureScreenshot", { format: "png" });
   fs.writeFileSync(path.join(SCREENSHOT_DIR, "mobile-tutorial-cta-landing.png"), Buffer.from(mobTutorialLandingShot.data, "base64"));
-  assert.equal(mobileTutorialLanding.interest, "Free Online Dance Tutorial");
-  assert.equal(mobileTutorialLanding.headingText, "Get the Free Dance Videos");
+  assert.equal(mobileTutorialLanding.interest, "Free Teacher Tutorial");
+  assert.equal(mobileTutorialLanding.headingText, "Request Your Free Teacher Tutorial");
   assert.equal(mobileTutorialLanding.focused, true, "Mobile free tutorial button must focus the form heading");
   assert.equal(
     mobileTutorialLanding.visibleBelowTopbar,
@@ -818,8 +818,8 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
       topbarBottom: Math.round(topbarBottom)
     };
   `);
-  assert.equal(mobileWorkshopLanding.interest, "Full-Day School Workshop");
-  assert.equal(mobileWorkshopLanding.headingText, "Request Workshop Dates");
+  assert.equal(mobileWorkshopLanding.interest, "Hip-Hop & Breaking Workshops");
+  assert.equal(mobileWorkshopLanding.headingText, "Plan School Programming");
   assert.equal(mobileWorkshopLanding.focused, true, "Mobile workshop button must focus the form heading");
   assert.equal(
     mobileWorkshopLanding.visibleBelowTopbar,
@@ -879,12 +879,12 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(mobileOptionalRes.collapsedCompleteSaved, true, "Complete Free Videos school selection must submit after collapsing");
   const mobileCompletePayload = srv.receivedRequests.at(-1).payload;
   const mobilePartialPayload = srv.receivedRequests.at(-2).payload;
-  assert.equal(mobilePartialPayload.interest, "Free Online Dance Tutorial");
+  assert.equal(mobilePartialPayload.interest, "Free Teacher Tutorial");
   assert.equal(mobilePartialPayload.email, "partial@example.org");
   assert.equal(mobilePartialPayload.boardId, "", "Incomplete optional school (board only) must be omitted");
   assert.equal(mobilePartialPayload.schoolId, "");
   assert.equal(mobilePartialPayload.schoolName, "");
-  assert.equal(mobileCompletePayload.interest, "Free Online Dance Tutorial");
+  assert.equal(mobileCompletePayload.interest, "Free Teacher Tutorial");
   assert.equal(mobileCompletePayload.email, "complete@example.org");
   assert.equal(mobileCompletePayload.boardId, "B67059", "Complete school entered on Free Videos must be included even after collapsing");
   assert.equal(mobileCompletePayload.schoolId, "733024");

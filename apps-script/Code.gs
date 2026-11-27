@@ -98,18 +98,38 @@ function saveTeacherLead_(lead) {
 }
 
 function validateTeacherLead_(input) {
-  const interests = ["Full-Day School Workshop", "Free Online Dance Tutorial", "Learn More"];
+  const schoolProgramInterests = [
+    "Hip-Hop & Breaking Workshops",
+    "DPA & Classroom Dance",
+    "Multi-Session Dance Programs",
+    "School-Wide Events & Celebrations",
+    "Full-Day School Workshop"
+  ];
+  const freeTutorialInterests = ["Free Teacher Tutorial", "Free Online Dance Tutorial"];
+  const exploreInterests = ["Other / Let's Explore", "Learn More"];
+  const interests = [...schoolProgramInterests, ...freeTutorialInterests, ...exploreInterests];
   const roles = ["Teacher", "Principal", "Parent / Caregiver"];
   const gradeOptions = ["JK", "SK", ...Array.from({ length: 12 }, (_, i) => String(i + 1))];
-  const timingOptions = ["", "January 2027", "February 2027", "March 2027", "Spring 2027 (April–June)", "Flexible / Anytime"];
+  const timingOptions = [
+    "",
+    "Flexible / Anytime",
+    "This Month",
+    "Next 1–2 Months",
+    "Later This School Year",
+    "Next School Year",
+    "January 2027",
+    "February 2027",
+    "March 2027",
+    "Spring 2027 (April–June)"
+  ];
   const readText = (value, max) => {
     if (typeof value !== "string" || value.length > max) throw new Error("Invalid field");
     return value.trim();
   };
   const fullName = readText(input.fullName, 120);
   const email = readText(input.email, 254);
-  const workshop = input.interest === interests[0];
-  const free = input.interest === interests[1];
+  const workshop = schoolProgramInterests.includes(input.interest);
+  const free = freeTutorialInterests.includes(input.interest);
   if ((!free && !fullName) || !isSingleSignupEmail_(email) ||
       !roles.includes(input.role) || !interests.includes(input.interest) || input.website ||
       typeof input.submissionKey !== "string" ||

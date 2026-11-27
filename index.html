@@ -332,6 +332,23 @@
       margin-bottom: 0 !important;
     }
 
+    .hero-school-shortcut {
+      margin-top: 6px;
+      margin-bottom: 0 !important;
+      font-size: 0.88rem !important;
+    }
+
+    .hero-shortcut-link {
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .hero-shortcut-link:hover {
+      color: var(--lime-dark);
+    }
+
     .hero-cta-row {
       display: flex;
       flex-wrap: wrap;
@@ -2649,9 +2666,9 @@
         </button>
 
         <a href="#book-workshop" class="comic-btn" id="bookWorkshopTopCta"
-          data-select-interest="Full-Day School Workshop"
+          data-select-interest="Hip-Hop &amp; Breaking Workshops"
           style="background: var(--yellow); padding: 7px 16px; font-size: 0.9rem; border-width: 3.5px; box-shadow: 4px 4px 0px #141414;">
-          Book a Live Workshop
+          School Programs
         </a>
       </div>
     </div>
@@ -2701,6 +2718,11 @@
             </a>
           </div>
           <p class="hero-microcopy">Five minutes of movement. A classroom full of energy.</p>
+          <p class="hero-school-shortcut">
+            <a href="#book-workshop" class="hero-shortcut-link" id="heroSchoolShortcut">
+              Want H4 to visit your school? Explore our school programs →
+            </a>
+          </p>
         </div>
 
         <!-- Floor Kids Style Interactive Crew Stage -->
@@ -2834,7 +2856,7 @@
               by step.</p>
           </div>
           <a href="#teacher-tutorial-section" class="comic-btn groove-btn promo-cta" id="requestTutorialPromoCta"
-            data-select-interest="Free Online Dance Tutorial">
+            data-select-interest="Free Teacher Tutorial">
             <span>Request a Free Tutorial</span>
             <span aria-hidden="true">↓</span>
           </a>
@@ -2893,7 +2915,7 @@
             </p>
             <div class="tutorial-cta-wrap">
               <a href="#book-workshop" class="comic-btn tutorial-primary-cta" id="requestTutorialExplainerCta"
-                data-select-interest="Free Online Dance Tutorial">
+                data-select-interest="Free Teacher Tutorial">
                 Request Your Free Teacher Tutorial
               </a>
             </div>
@@ -2940,7 +2962,7 @@
           <p class="conversion-closing">Every school is different. Let's find out what works for yours.</p>
           <div class="conversion-cta-wrap">
             <a href="#bookingCard" class="comic-btn conversion-primary-cta" id="planProgrammingCta"
-              data-select-interest="Full-Day School Workshop">
+              data-select-interest="Hip-Hop &amp; Breaking Workshops">
               Let's Plan Something Together
             </a>
             <span class="conversion-microcopy">Ask us about programming, pricing and availability.</span>
@@ -2955,16 +2977,16 @@
           <div class="signup-chooser" id="signupChooser">
             <h3 id="signupChooserHeading" tabindex="-1">How can H4 help?</h3>
             <button type="button" class="comic-btn signup-choice-btn signup-choice-btn-videos"
-              id="choiceFreeVideosBtn" data-interest-choice="Free Online Dance Tutorial" aria-pressed="false">
-              Email Me the Free Videos
+              id="choiceFreeVideosBtn" data-interest-choice="Free Teacher Tutorial" aria-pressed="false">
+              Free Teacher Tutorial
             </button>
             <button type="button" class="comic-btn signup-choice-btn signup-choice-btn-workshop"
-              id="choiceWorkshopBtn" data-interest-choice="Full-Day School Workshop" aria-pressed="false">
-              Request Workshop Dates
+              id="choiceWorkshopBtn" data-interest-choice="Hip-Hop &amp; Breaking Workshops" aria-pressed="false">
+              Plan School Programming
             </button>
             <button type="button" class="signup-choice-link" id="choiceLearnMoreBtn"
-              data-interest-choice="Learn More" aria-pressed="false">
-              Learn more
+              data-interest-choice="Other / Let's Explore" aria-pressed="false">
+              Other / Let's Explore
             </button>
           </div>
 
@@ -2977,6 +2999,17 @@
                 <span aria-hidden="true">←</span> Change choice
               </button>
               <h3 id="bookingFormHeading" tabindex="-1">How can H4 help?</h3>
+            </div>
+
+            <div class="form-field" id="programInterestField" hidden>
+              <label for="programInterestSelect">What are you interested in? (optional)</label>
+              <select id="programInterestSelect" name="programInterest" aria-invalid="false">
+                <option value="Hip-Hop &amp; Breaking Workshops">Hip-Hop &amp; Breaking Workshops</option>
+                <option value="DPA &amp; Classroom Dance">DPA &amp; Classroom Dance</option>
+                <option value="Multi-Session Dance Programs">Multi-Session Dance Programs</option>
+                <option value="School-Wide Events &amp; Celebrations">School-Wide Events &amp; Celebrations</option>
+                <option value="Other / Let's Explore">Other / Let's Explore</option>
+              </select>
             </div>
 
             <div class="form-field" id="fullNameField">
@@ -3080,12 +3113,12 @@
                 <div class="form-field">
                   <label for="targetMonth">Preferred timing (optional)</label>
                   <select id="targetMonth" name="targetMonth" aria-invalid="false">
-                    <option value="">Select a date range</option>
-                    <option>January 2027</option>
-                    <option>February 2027</option>
-                    <option>March 2027</option>
-                    <option>Spring 2027 (April–June)</option>
+                    <option value="">Select preferred timing (optional)</option>
                     <option>Flexible / Anytime</option>
+                    <option>This Month</option>
+                    <option>Next 1–2 Months</option>
+                    <option>Later This School Year</option>
+                    <option>Next School Year</option>
                   </select>
                 </div>
                 <div class="form-field">
@@ -3162,10 +3195,6 @@
           <span class="tag-chip" style="background: var(--lime); color: var(--ink);">
             TRUSTED BY SCHOOL LEADERS
           </span>
-          <span class="testimonial-h4-badge">
-            <img src="images/h4-logo-mark.svg" alt="" width="18" height="20" aria-hidden="true" />
-            <span>H4 Community Partner</span>
-          </span>
         </div>
 
         <h2 id="testimonial-heading">Building Confidence. Earning Trust.</h2>
@@ -3191,7 +3220,7 @@
 
         <div class="testimonial-cta-row">
           <a href="#book-workshop" class="comic-btn testimonial-cta" id="bringH4Cta"
-            data-select-interest="Full-Day School Workshop">
+            data-select-interest="Hip-Hop &amp; Breaking Workshops">
             Bring H4 to Your School
           </a>
         </div>
@@ -5199,6 +5228,17 @@
               openSignupFromCta(interest);
             });
           });
+
+          const heroSchoolShortcut = document.getElementById("heroSchoolShortcut");
+          if (heroSchoolShortcut && bookWorkshopSection) {
+            heroSchoolShortcut.addEventListener("click", (event) => {
+              event.preventDefault();
+              const topbar = document.querySelector(".topbar");
+              const headerOffset = (topbar ? topbar.getBoundingClientRect().height : 76) + 16;
+              const targetTop = Math.max(0, window.scrollY + bookWorkshopSection.getBoundingClientRect().top - headerOffset);
+              window.scrollTo({ top: targetTop, behavior: isMotionReduced() ? "instant" : "smooth" });
+            });
+          }
 
           const shareH4Btn = document.getElementById("shareH4Btn");
           const shareH4Status = document.getElementById("shareH4Status");

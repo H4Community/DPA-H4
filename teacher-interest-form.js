@@ -5,6 +5,8 @@
   const chooserHeading = field("signupChooserHeading");
   const formHeading = field("bookingFormHeading");
   const inquiryInput = field("inquiryTypeInput");
+  const programInterestField = field("programInterestField");
+  const programInterestSelect = field("programInterestSelect");
   const fullNameField = field("fullNameField");
   const teacherName = field("teacherName");
   const teacherEmail = field("teacherEmail");
@@ -37,9 +39,24 @@
   const confirmation = field("formReadyPanel");
   const choiceButtons = [...chooser.querySelectorAll("[data-interest-choice]")];
 
-  const WORKSHOP = "Full-Day School Workshop";
-  const FREE_VIDEOS = "Free Online Dance Tutorial";
-  const LEARN_MORE = "Learn More";
+  const SCHOOL_PROGRAMS = [
+    "Hip-Hop & Breaking Workshops",
+    "DPA & Classroom Dance",
+    "Multi-Session Dance Programs",
+    "School-Wide Events & Celebrations",
+    "Full-Day School Workshop"
+  ];
+  const WORKSHOP = "Hip-Hop & Breaking Workshops";
+  const FREE_VIDEOS = "Free Teacher Tutorial";
+  const FREE_VIDEOS_ALIASES = ["Free Teacher Tutorial", "Free Online Dance Tutorial"];
+  const LEARN_MORE = "Other / Let's Explore";
+  const LEARN_MORE_ALIASES = ["Other / Let's Explore", "Learn More"];
+  const ALL_INTERESTS = [...SCHOOL_PROGRAMS, ...FREE_VIDEOS_ALIASES, ...LEARN_MORE_ALIASES];
+
+  const isWorkshopInterest = (value) => SCHOOL_PROGRAMS.includes(value);
+  const isFreeInterest = (value) => FREE_VIDEOS_ALIASES.includes(value);
+  const isExploreInterest = (value) => LEARN_MORE_ALIASES.includes(value);
+  const getPathKey = (value) => (isWorkshopInterest(value) ? "workshop" : isFreeInterest(value) ? "free" : isExploreInterest(value) ? "explore" : "");
 
   const boardAliases = {
     B28010: ["ADSB", "Algoma District School Board"],
@@ -318,12 +335,14 @@
 
   const emptySchoolState = () => ({ boardId: "", boardText: "", schoolId: "", schoolText: "", manualName: "" });
   const schoolStateByPath = {
-    [WORKSHOP]: emptySchoolState(),
-    [FREE_VIDEOS]: emptySchoolState()
+    workshop: emptySchoolState(),
+    free: emptySchoolState(),
+    explore: emptySchoolState()
   };
 
-  function saveSchoolState(path) {
-    if (path !== WORKSHOP && path !== FREE_VIDEOS) return;
+  function saveSchoolState(interest) {
+    const path = getPathKey(interest);
+    if (!path) return;
     schoolStateByPath[path] = {
       boardId: boardId.value,
       boardText: boardSearch.value,
@@ -333,7 +352,8 @@
     };
   }
 
-  function restoreSchoolState(path) {
+  function restoreSchoolState(interest) {
+    const path = getPathKey(interest);
     const saved = schoolStateByPath[path] || emptySchoolState();
     boardCombobox.setRaw(saved.boardId, saved.boardText);
     schoolCombobox.setRaw(saved.schoolId, saved.schoolText);
@@ -365,7 +385,7 @@
     const enabled = schoolActive && isManual;
     manualField.hidden = !enabled;
     manualName.disabled = !enabled;
-    manualName.required = enabled && activeInterest === WORKSHOP;
+    manualName.required = enabled && isWorkshopInterest(activeInterest);
     if (!enabled) {
       if (schoolActive) manualName.value = "";
       manualName.setAttribute("aria-invalid", "false");
@@ -444,14 +464,18 @@
 
   function updateView({ focus = false } = {}) {
     const isSelected = Boolean(activeInterest);
-    const isFree = activeInterest === FREE_VIDEOS;
-    const isWorkshop = activeInterest === WORKSHOP;
-    const isLearnMore = activeInterest === LEARN_MORE;
+    const isFree = isFreeInterest(activeInterest);
+    const isWorkshop = isWorkshopInterest(activeInterest);
+    const isExplore = isExploreInterest(activeInterest);
     const isParent = role.value === "Parent / Caregiver";
 
     inquiryInput.value = activeInterest;
     choiceButtons.forEach((btn) => {
-      btn.setAttribute("aria-pressed", btn.dataset.interestChoice === activeInterest ? "true" : "false");
+      const choice = btn.dataset.interestChoice;
+      const active = (isWorkshop && isWorkshopInterest(choice))
+        || (isFree && isFreeInterest(choice))
+        || (isExplore && isExploreInterest(choice));
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
     });
 
     if (!isSelected) {
@@ -467,16 +491,26 @@
     form.hidden = false;
 
     formHeading.textContent = isFree
-      ? "Get the Free Dance Videos"
-      : isWorkshop ? "Request Workshop Dates" : "Learn More";
+      ? "Request Your Free Teacher Tutorial"
+      : isWorkshop ? "Plan School Programming" : "Other / Let's Explore";
 
-    // Full name: hidden & disabled on Free Videos (value preserved in DOM for switching)
+    if (programInterestField && programInterestSelect) {
+      const showProgramPicker = isWorkshop || isExplore;
+      programInterestField.hidden = !showProgramPicker;
+      programInterestSelect.disabled = !showProgramPicker;
+      if (showProgramPicker) {
+        const matchOption = [...programInterestSelect.options].some((o) => o.value === activeInterest);
+        programInterestSelect.value = matchOption ? activeInterest : WORKSHOP;
+      }
+    }
+
+    // Full name: hidden & disabled on Free Teacher Tutorial (value preserved in DOM for switching)
     fullNameField.hidden = isFree;
     teacherName.disabled = isFree;
     teacherName.required = !isFree;
 
     // School Board & School placement
-    const showOptionalSchool = isFree && !isParent;
+    const showOptionalSchool = (isFree || isExplore) && !isParent;
     const showWorkshopSchool = isWorkshop;
     optionalSchoolDetails.hidden = !showOptionalSchool;
     if (!showOptionalSchool) optionalSchoolDetails.open = false;
@@ -511,8 +545,8 @@
 
     if (!sending) {
       submit.textContent = isFree
-        ? "Email Me the Free Videos"
-        : isWorkshop ? "Request Workshop Dates" : "Send My Request";
+        ? "Request Free Tutorial"
+        : isWorkshop ? "Send Programming Inquiry" : "Send Inquiry";
     }
 
     if (focus) formHeading.focus();
@@ -530,7 +564,7 @@
 
   function selectInterest(interest, options = {}) {
     if (sending) return;
-    if (![WORKSHOP, FREE_VIDEOS, LEARN_MORE].includes(interest)) return;
+    if (!ALL_INTERESTS.includes(interest)) return;
     if (confirmation.hidden === false) {
       confirmation.hidden = true;
       lastAttempt = undefined;
@@ -538,7 +572,7 @@
     const previous = activeInterest;
     saveSchoolState(previous);
     activeInterest = interest;
-    if (previous !== interest) {
+    if (getPathKey(previous) !== getPathKey(interest)) {
       optionalSchoolDetails.open = false;
       optionalWorkshopDetails.open = false;
       boardCombobox.close();
@@ -563,8 +597,9 @@
     form.reset();
     activeInterest = "";
     lastAttempt = undefined;
-    schoolStateByPath[WORKSHOP] = emptySchoolState();
-    schoolStateByPath[FREE_VIDEOS] = emptySchoolState();
+    schoolStateByPath.workshop = emptySchoolState();
+    schoolStateByPath.free = emptySchoolState();
+    schoolStateByPath.explore = emptySchoolState();
     boardCombobox.clear();
     schoolCombobox.clear();
     optionalSchoolDetails.open = false;
@@ -576,6 +611,20 @@
   choiceButtons.forEach((btn) => {
     btn.addEventListener("click", () => selectInterest(btn.dataset.interestChoice, { focus: true }));
   });
+  if (programInterestSelect) {
+    programInterestSelect.addEventListener("change", () => {
+      const next = programInterestSelect.value;
+      if (!ALL_INTERESTS.includes(next)) return;
+      const prevPath = getPathKey(activeInterest);
+      saveSchoolState(activeInterest);
+      activeInterest = next;
+      if (prevPath !== getPathKey(next)) {
+        restoreSchoolState(next);
+      }
+      clearValidationVisuals();
+      updateView({ focus: false });
+    });
+  }
   field("changeChoiceBtn").addEventListener("click", returnToChooser);
   role.addEventListener("change", () => updateView());
   form.addEventListener("input", (event) => {
@@ -595,8 +644,9 @@
     if (sending || !activeInterest) return;
     clearValidationVisuals();
 
-    const isFree = activeInterest === FREE_VIDEOS;
-    const isWorkshop = activeInterest === WORKSHOP;
+    const isFree = isFreeInterest(activeInterest);
+    const isWorkshop = isWorkshopInterest(activeInterest);
+    const isExplore = isExploreInterest(activeInterest);
     const isParent = role.value === "Parent / Caregiver";
 
     if (!isFree && !teacherName.value.trim()) {
@@ -633,7 +683,7 @@
       return;
     }
 
-    const selectedSchool = (isWorkshop || (isFree && !isParent)) ? getCompleteSchoolSelection() : null;
+    const selectedSchool = (isWorkshop || ((isFree || isExplore) && !isParent)) ? getCompleteSchoolSelection() : null;
     const activeBoardId = selectedSchool ? selectedSchool.boardId : "";
     const activeSchoolId = selectedSchool ? selectedSchool.schoolId : "";
     const activeSchoolName = selectedSchool ? selectedSchool.schoolName : "";

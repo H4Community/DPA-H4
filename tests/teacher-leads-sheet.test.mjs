@@ -133,7 +133,7 @@ test("write maps reordered headers, uses literal values, and deduplicates retrie
   assert.equal(sheet.get("Role"), "Teacher");
   assert.equal(sheet.get("Email Status"), "Sent");
   assert.equal(sheet.messages.length, 1);
-  assert.equal(sheet.messages[0].subject, "We received your H4 workshop request");
+  assert.equal(sheet.messages[0].subject, "We received your H4 school programming request");
   assert.ok(!sheet.messages[0].htmlBody.includes(youtubeUrl));
 });
 
@@ -288,4 +288,63 @@ test("remains backwards compatible with live form payloads and rejects mismatche
     submissionKey: randomUUID(), email: "other@example.org", interest: freeInterest,
     role: "Teacher", fullName: "", boardId: "B66052", schoolId: "733024", schoolName: ""
   }).code, "INVALID_REQUEST");
+});
+
+test("supports all 6 flexible programming inquiry options in sheet records and email notifications", () => {
+  const sheet = testSheet();
+  const programOptions = [
+    "Hip-Hop & Breaking Workshops",
+    "DPA & Classroom Dance",
+    "Multi-Session Dance Programs",
+    "School-Wide Events & Celebrations"
+  ];
+
+  programOptions.forEach((interest, idx) => {
+    const res = sheet.send({
+      submissionKey: randomUUID(),
+      email: `program${idx}@example.org`,
+      interest,
+      preferredTiming: "Flexible / Anytime"
+    });
+    assert.equal(res.saved, true);
+    assert.equal(res.emailStatus, "Sent");
+    assert.equal(sheet.get("Interest"), interest);
+    assert.equal(sheet.get("Preferred Timing"), "Flexible / Anytime");
+    const msg = sheet.messages.at(-1);
+    assert.equal(msg.subject, "We received your H4 school programming request");
+    assert.ok(msg.body.includes(interest));
+  });
+
+  const tutorialRes = sheet.send({
+    submissionKey: randomUUID(),
+    email: "tutorial-new@example.org",
+    interest: "Free Teacher Tutorial",
+    fullName: "",
+    boardId: "",
+    schoolId: "",
+    schoolName: "",
+    grades: [],
+    preferredTiming: ""
+  });
+  assert.equal(tutorialRes.saved, true);
+  assert.equal(tutorialRes.emailStatus, "Sent");
+  assert.equal(sheet.get("Interest"), "Free Teacher Tutorial");
+  assert.ok(sheet.messages.at(-1).htmlBody.includes(`href="${youtubeUrl}"`));
+
+  const exploreRes = sheet.send({
+    submissionKey: randomUUID(),
+    email: "explore-new@example.org",
+    interest: "Other / Let's Explore",
+    fullName: "Jordan Principal",
+    role: "Principal",
+    boardId: "",
+    schoolId: "",
+    schoolName: "",
+    grades: [],
+    preferredTiming: ""
+  });
+  assert.equal(exploreRes.saved, true);
+  assert.equal(exploreRes.emailStatus, "Sent");
+  assert.equal(sheet.get("Interest"), "Other / Let's Explore");
+  assert.ok(sheet.messages.at(-1).body.includes("Other / Let's Explore"));
 });
