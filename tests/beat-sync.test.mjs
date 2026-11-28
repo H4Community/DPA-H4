@@ -380,6 +380,11 @@ function createAppHarness(initialStorage = {}) {
         if (ms <= 50) fn();
       }
     },
+    stepSecondTimers() {
+      for (const { fn, ms } of Array.from(intervals.values())) {
+        if (ms === 1000) fn();
+      }
+    },
     getActiveBeatNumber() {
       const idx = beatBoxes.findIndex((b) => b.classList.contains("is-active"));
       return idx === -1 ? 0 : idx + 1;
@@ -766,9 +771,11 @@ test("Own Music mode supports manual Tap BPM phase recalibration without claimin
   h.el("startRandomDpaBtn").click();
   await h.flushMicrotasks();
 
-  // Status note must be honest about manual sync / not listening to external audio
+  // Status note must be teacher-friendly and honest about manual sync (never claiming auto-listening)
   const note = h.el("musicStatusNote").textContent.toLowerCase();
-  assert.ok(note.includes("does not listen"), `Expected explicit non-listening notice, got: ${note}`);
+  assert.ok(note.includes("play your favourite song separately and match the bpm"), `Expected simplified Own Music guidance, got: ${note}`);
+  assert.ok(note.includes("tap bpm") && note.includes("count 1"), `Expected Tap BPM & Count 1 guidance, got: ${note}`);
+  assert.ok(!note.includes("automatically listens") && !note.includes("auto-sync"), `Must not claim automatic audio listening: ${note}`);
 
   // Advance 2.5 beats (1500ms at 100 BPM -> Beat 3)
   h.advancePerfNow(1500);
@@ -889,4 +896,244 @@ test("Intro stays inactive with 'Get Ready!' until first danceable Count 1 acros
     hZero.stepRaf();
     assert.equal(hZero.getActiveBeatNumber(), 1, `${id} must still activate Count 1 right after beatOffsetSec`);
   }
+});
+
+// =========================================================================
+// 11. Bounce-First Randomization, Shuffle Bag Integrity, & Coaching Cues
+// =========================================================================
+test("Every randomized DPA session starts with Bounce, shuffles other 9 grooves without repeats, and preserves solo practice", async () => {
+  // Test multiple randomized sessions to verify Bounce is deterministic while subsequent grooves are randomized
+  const secondGrooves = new Set();
+  for (let run = 0; run < 20; run++) {
+    const h = createAppHarness();
+    const startBtn = run % 2 === 0 ? "startRandomDpaBtn" : "startRandomDpaBtn2";
+    h.el(startBtn).click();
+    await h.flushMicrotasks();
+
+    assert.equal(h.getSyncState().currentGrooveId, "bounce", `Run ${run} must start with Bounce`);
+    assert.equal(h.getMoveTitle(), "01 · THE BOUNCE");
+    assert.equal(h.getSyncState().isOpeningRandomBounce, true);
+    assert.ok(h.el("playerCoachCue").innerHTML.includes("Start with the Bounce!"));
+    assert.ok(h.el("playerCoachCue").innerHTML.includes("Soft knees. Feel the beat. Find your groove."));
+    assert.ok(h.el("playerCoachCue").innerHTML.includes("Every great dancer starts here."));
+
+    // Collect first full cycle (Bounce + other 9 grooves = 10 unique grooves)
+    const firstCycle = [h.getSyncState().currentGrooveId];
+    for (let step = 0; step < 9; step++) {
+      h.el("nextMoveBtn").click();
+      const id = h.getSyncState().currentGrooveId;
+      assert.notEqual(id, firstCycle[firstCycle.length - 1], "Must never repeat immediately consecutively");
+      firstCycle.push(id);
+    }
+    assert.equal(firstCycle[0], "bounce");
+    assert.equal(new Set(firstCycle).size, 10, "First cycle must include Bounce followed by all 9 other grooves");
+    secondGrooves.add(firstCycle[1]);
+
+    // Continue into subsequent shuffle cycles: Bounce must reappear and no immediate repeats may occur
+    let prev = firstCycle[firstCycle.length - 1];
+    let bounceReappeared = false;
+    for (let step = 0; step < 25; step++) {
+      h.el("nextMoveBtn").click();
+      const cur = h.getSyncState().currentGrooveId;
+      assert.notEqual(cur, prev, "Must never repeat consecutively in later cycles");
+      if (cur === "bounce") {
+        bounceReappeared = true;
+        // Later Bounce appearances use normal Coach Tip, not the opening cue
+        assert.equal(h.getSyncState().isOpeningRandomBounce, false);
+        assert.ok(h.el("playerCoachCue").textContent.includes("Coach Tip:"));
+      }
+      prev = cur;
+    }
+    assert.ok(bounceReappeared, "Bounce must reappear in subsequent shuffle cycles");
+  }
+  assert.ok(secondGrooves.size >= 3, `Expected randomized subsequent moves across runs, saw only: ${Array.from(secondGrooves).join(", ")}`);
+
+  // Verify Bounce-first across all 3 audio modes, quick demo, close/reopen, and pause/resume
+  for (const mode of ["beat", "songs", "own"]) {
+    const h = createAppHarness({ h4_dpa_audio_mode: mode });
+    h.el("startRandomDpaBtn").click();
+    await h.flushMicrotasks();
+    assert.equal(h.getSyncState().currentGrooveId, "bounce", `Audio mode ${mode} must start with Bounce`);
+
+    // Move to second groove, pause and resume -> must preserve current groove
+    h.el("nextMoveBtn").click();
+    const midGroove = h.getSyncState().currentGrooveId;
+    assert.notEqual(midGroove, "bounce");
+    h.el("playPauseBtn").click(); // Pause
+    assert.equal(h.getSyncState().isPlaying, false);
+    assert.equal(h.getSyncState().currentGrooveId, midGroove);
+    h.el("playPauseBtn").click(); // Resume
+    await h.flushMicrotasks();
+    assert.equal(h.getSyncState().isPlaying, true);
+    assert.equal(h.getSyncState().currentGrooveId, midGroove, "Pause/resume must preserve current groove");
+
+    // Close and reopen -> must start with Bounce again
+    h.el("closeModalBtn").click();
+    h.el("quickDemoBtn").click();
+    h.el("startRandomDpaBtn").click();
+    await h.flushMicrotasks();
+    assert.equal(h.getSyncState().currentGrooveId, "bounce", `Reopening with Quick Demo in ${mode} must start with Bounce`);
+  }
+
+  // Verify individual groove practice opens selected groove directly & Bounce solo keeps permanent copy
+  const hSolo = createAppHarness();
+  const soloBtnBounce = { getAttribute: (k) => (k === "data-solo-idx" ? "0" : null) };
+  hSolo.el("groovesGrid").dispatch("click", { target: { closest: () => soloBtnBounce } });
+  await hSolo.flushMicrotasks();
+  assert.equal(hSolo.getSyncState().currentGrooveId, "bounce");
+  assert.equal(hSolo.getSyncState().mode, "solo");
+  assert.ok(hSolo.el("playerCoachCue").textContent.includes("Coach Tip:"), "Solo Bounce must preserve permanent instructional copy");
+
+  const soloBtnTick = { getAttribute: (k) => (k === "data-solo-idx" ? "7" : null) };
+  hSolo.el("groovesGrid").dispatch("click", { target: { closest: () => soloBtnTick } });
+  await hSolo.flushMicrotasks();
+  assert.equal(hSolo.getSyncState().currentGrooveId, "tick");
+  assert.equal(hSolo.getMoveTitle(), "08 · THE TICK");
+});
+
+// =========================================================================
+// 12. Beginner-Friendly Defaults, Returning Preferences, & Simplified Status Copy
+// =========================================================================
+test("First-time defaults use Beat Only, 100 BPM, Classic tier, Robot Factory (Mix 1), and preserve returning preferences", async () => {
+  // Clean first-time context
+  const hClean = createAppHarness();
+  assert.equal(hClean.getSyncState().audioMode, "beat");
+  assert.equal(hClean.getSyncState().currentBpm, 100);
+  assert.equal(hClean.getSyncState().currentSongId, "100-robot-factory-1");
+  assert.equal(hClean.el("bpmDisplay").textContent, "100 BPM");
+  assert.equal(hClean.el("musicStatusNote").textContent, "Just the beat. Find your groove!");
+  assert.equal(hClean.audioModeBtns.find((b) => b.getAttribute("data-audio-mode") === "beat").classList.contains("is-active"), true);
+  assert.equal(hClean.bpmTierBtns.find((b) => b.getAttribute("data-bpm-tier") === "100").classList.contains("is-active"), true);
+
+  // Starting in Beat Only must NOT play an H4 song
+  hClean.el("startRandomDpaBtn").click();
+  await hClean.flushMicrotasks();
+  assert.equal(hClean.audio.paused, true, "No H4 song should play in Beat Only mode");
+  assert.equal(hClean.el("audioOnboardingStrip").hidden, false, "Onboarding guidance must appear on first visit");
+
+  // Switching to H4 Songs for the first time selects Robot Factory (Mix 1) in 100 Classic
+  hClean.audioModeBtns.find((b) => b.getAttribute("data-audio-mode") === "songs").click();
+  await hClean.flushMicrotasks();
+  assert.equal(hClean.getSyncState().audioMode, "songs");
+  assert.equal(hClean.getSyncState().currentBpm, 100);
+  assert.equal(hClean.getSyncState().currentSongId, "100-robot-factory-1");
+  assert.equal(hClean.el("songSelect").value, "100-robot-factory-1");
+  assert.ok(decodeURI(hClean.audio.src).includes("100-1-Robot Factory.mp3"));
+  assert.ok(hClean.el("musicStatusNote").textContent.startsWith("Choose a song and dance along!"));
+
+  // Dismissing onboarding persists and does not reset audio mode/song
+  hClean.el("dismissAudioTipsBtn").click();
+  assert.equal(hClean.el("audioOnboardingStrip").hidden, true);
+  assert.equal(hClean.getSyncState().audioMode, "songs");
+  assert.equal(hClean.getSyncState().currentSongId, "100-robot-factory-1");
+
+  // Reopening Audio Tips shows strip again without resetting preferences
+  hClean.el("audioTipsToggleBtn").click();
+  assert.equal(hClean.el("audioOnboardingStrip").hidden, false);
+  assert.equal(hClean.getSyncState().audioMode, "songs");
+
+  // Returning teacher with saved preferences: preserved accurately
+  const hReturning = createAppHarness({
+    h4_dpa_audio_mode: "songs",
+    h4_dpa_bpm: "110",
+    h4_dpa_song_id: "110-golden-era-groove",
+    h4_dpa_audio_tips_dismissed_v1: "1",
+  });
+  hReturning.el("startRandomDpaBtn").click();
+  await hReturning.flushMicrotasks();
+  assert.equal(hReturning.getSyncState().audioMode, "songs");
+  assert.equal(hReturning.getSyncState().currentBpm, 110);
+  assert.equal(hReturning.getSyncState().currentSongId, "110-golden-era-groove");
+  assert.equal(hReturning.el("audioOnboardingStrip").hidden, true, "Dismissed onboarding must stay hidden on reload");
+
+  // Invalid saved preferences fall back cleanly to the new defaults
+  const hInvalid = createAppHarness({
+    h4_dpa_audio_mode: "invalid-mode",
+    h4_dpa_bpm: "999",
+    h4_dpa_song_id: "nonexistent-track",
+  });
+  assert.equal(hInvalid.getSyncState().audioMode, "beat");
+  assert.equal(hInvalid.getSyncState().currentBpm, 100);
+  assert.equal(hInvalid.getSyncState().currentSongId, "100-robot-factory-1");
+});
+
+// =========================================================================
+// 13. Intro Coaching Message & Own Music Complete Silence
+// =========================================================================
+test("Introductory song shows GET READY coaching cue until Count 1, then transitions to Bounce cue; Own Music stays silent", async () => {
+  const hIntro = createAppHarness({ h4_dpa_audio_mode: "songs", h4_dpa_song_id: "115-block-party-brass" });
+  hIntro.el("startRandomDpaBtn").click();
+  await hIntro.flushMicrotasks();
+
+  const bp = hIntro.SONGS.find((s) => s.id === "115-block-party-brass");
+  hIntro.audio.currentTime = hIntro.getSongTimeForBeat(bp, 10.05);
+  hIntro.stepRaf();
+
+  assert.equal(hIntro.getSyncState().currentGrooveId, "bounce");
+  assert.equal(hIntro.getActiveBeatNumber(), 0);
+  assert.ok(hIntro.el("playerCoachCue").innerHTML.includes("GET READY!"));
+  assert.ok(hIntro.el("playerCoachCue").innerHTML.includes("Listen. Feel the beat."));
+  assert.ok(hIntro.el("playerCoachCue").innerHTML.includes("Get those knees ready to bounce!"));
+
+  // At Count 1 (raw beat 36): transitions naturally to opening Bounce coaching message
+  hIntro.audio.currentTime = hIntro.getSongTimeForBeat(bp, 36.05);
+  hIntro.stepRaf();
+  assert.equal(hIntro.getActiveBeatNumber(), 1);
+  assert.equal(hIntro.getSyncState().currentGrooveId, "bounce");
+  assert.ok(hIntro.el("playerCoachCue").innerHTML.includes("Start with the Bounce!"));
+
+  // Own Music mode must produce zero Web Audio sounds (drums, switch cues, celebration)
+  const hOwn = createAppHarness({ h4_dpa_audio_mode: "own", h4_dpa_bpm: "100" });
+  hOwn.el("startRandomDpaBtn").click();
+  await hOwn.flushMicrotasks();
+  hOwn.el("nextMoveBtn").click();
+  assert.equal(hOwn.audio.paused, true);
+  assert.equal(hOwn.scheduledAudioEvents.length, 0, "Own Music must remain completely silent");
+});
+
+// =========================================================================
+// 14. Uninterrupted 5-Minute (300s) Randomized DPA Session End-to-End
+// =========================================================================
+test("Uninterrupted 5-minute randomized DPA session runs from Bounce through completion and awards a Classroom Star", async () => {
+  const h = createAppHarness();
+  h.el("startRandomDpaBtn").click();
+  await h.flushMicrotasks();
+
+  assert.equal(h.el("totalTimerDisplay").textContent, "05:00");
+  assert.equal(h.getSyncState().currentGrooveId, "bounce");
+  assert.equal(h.getSyncState().audioMode, "beat");
+  assert.equal(h.getSyncState().currentBpm, 100);
+
+  // Step through 300 seconds at 100 BPM (0.6s per beat = 500 beats, 31 transitions at 16 beats/move)
+  const seenMoves = [h.getSyncState().currentGrooveId];
+  let prevMove = seenMoves[0];
+  let transitionCount = 0;
+
+  // Locate the 1000ms session countdown interval by stepping seconds alongside audio clock
+  // At 100 BPM: 500 beats = 300.0s. Step beat-by-beat and advance 1-second timer accordingly.
+  let secAccum = 0;
+  const startAudioSec = 10.025;
+  for (let beat = 0; beat < 500; beat++) {
+    h.setAudioNow(startAudioSec + (beat + 0.05) * 0.6);
+    h.stepSchedulerIntervals();
+    h.stepRaf();
+    const curMove = h.getSyncState().currentGrooveId;
+    if (curMove !== prevMove) {
+      assert.notEqual(curMove, prevMove);
+      transitionCount++;
+      seenMoves.push(curMove);
+      prevMove = curMove;
+    }
+    secAccum += 0.6;
+    if (secAccum >= 1.0 - 1e-9) {
+      secAccum -= 1.0;
+      // Trigger 1000ms session timer tick if still active
+      h.stepSecondTimers?.();
+    }
+  }
+
+  assert.equal(seenMoves[0], "bounce", "Session must open with Bounce");
+  assert.equal(transitionCount, 31, "500 beats at 2x8 (16 beats/move) should produce 31 transitions");
+  assert.equal(new Set(seenMoves.slice(0, 10)).size, 10, "First 10 moves must cover all 10 unique grooves");
+  assert.ok(seenMoves.slice(10).includes("bounce"), "Bounce must reappear in subsequent shuffle cycles");
 });
