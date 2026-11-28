@@ -223,9 +223,11 @@ const H4_GLEN_SITE_URL = "https://glenreyes.me/";
 const H4_GLEN_IG_URL = "https://www.instagram.com/h4glen/";
 const H4_QUICK_CALL_MAILTO =
   "mailto:glen@h4community.org?subject=H4%20School%20Workshops%20-%20Quick%20Call" +
-  "&body=Hi%20Glen%2C%0D%0A%0D%0AHere%20is%20what%20we%20have%20in%20mind%3A%0D%0A%0D%0A" +
-  "Grades%3A%20%0D%0AClasses%20or%20students%3A%20%0D%0A" +
-  "Best%20times%20for%20a%20quick%20call%3A%20%0D%0ABest%20phone%20number%3A%20";
+  "&body=Hi%20Glen%2C%0D%0A%0D%0A" +
+  "I%27d%20love%20to%20schedule%20a%20quick%20call%20about%20bringing%20H4%20to%20our%20school.%0D%0A%0D%0A" +
+  "My%20availability%3A%20%0D%0A" +
+  "Best%20phone%20number%3A%20%0D%0A%0D%0A" +
+  "Thanks!";
 const H4_LOGO_PNG_URL = "https://dance.h4community.org/images/h4-logo-mark.png";
 const EMAIL_FONT_STACK = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
@@ -314,18 +316,49 @@ function renderEmailShell_(preheader, eyebrow, headline, bodyHtml, footerLinks) 
     '</table></td></tr></table></body></html>';
 }
 
-function renderProgramCard_(badge, accentColor, title, description) {
-  const paragraphs = Array.isArray(description) ? description : [description];
-  const bodyParagraphsHtml = paragraphs.map((text, idx) => (
-    '<p style="margin:' + (idx < paragraphs.length - 1 ? '0 0 8px 0' : '0') +
-    ';font-size:14px;line-height:1.55;color:#111111">' + escapeHtml_(text) + '</p>'
-  )).join("");
-  return '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 12px 0;table-layout:fixed">' +
-    '<tr><td style="background-color:#FFFDF7;border:2px solid #111111;border-left:8px solid ' + accentColor + ';border-radius:14px;padding:14px 16px;overflow-wrap:break-word;word-wrap:break-word">' +
-    '<span style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:' + accentColor + ';border:1.5px solid #111111;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.04em;color:#111111;text-transform:uppercase;white-space:normal">' +
+function renderProgramCard_(options) {
+  const {
+    badge,
+    highlightBadge,
+    accentColor,
+    bgColor = "#FFFDF7",
+    featured = false,
+    price,
+    priceNote,
+    title,
+    description,
+    minimumLine
+  } = options;
+  const shadow = featured ? ";box-shadow:3px 3px 0 #111111" : "";
+  const badgesHtml =
+    '<div style="margin:0 0 8px 0;line-height:1.4">' +
+    (highlightBadge
+      ? '<span style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:#FFD426;border:1.5px solid #111111;border-radius:999px;padding:3px 9px;margin:0 6px 4px 0;font-size:10px;font-weight:800;line-height:1.3;letter-spacing:0.05em;color:#111111;text-transform:uppercase;white-space:normal">' +
+        escapeHtml_(highlightBadge) + '</span>'
+      : "") +
+    '<span style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:' + accentColor + ';border:1.5px solid #111111;border-radius:999px;padding:3px 9px;margin:0 0 4px 0;font-size:10px;font-weight:800;line-height:1.3;letter-spacing:0.05em;color:#111111;text-transform:uppercase;white-space:normal">' +
     escapeHtml_(badge) + '</span>' +
-    '<p style="margin:10px 0 6px 0;font-size:16px;font-weight:800;line-height:1.3;color:#111111">' + escapeHtml_(title) + '</p>' +
-    bodyParagraphsHtml +
+    '</div>';
+  const priceHtml =
+    '<p style="margin:0' + (priceNote ? ' 0 2px 0' : ' 0 6px 0') +
+    ';font-size:22px;font-weight:800;line-height:1.18;color:#111111">' +
+    escapeHtml_(price) + '</p>' +
+    (priceNote
+      ? '<p style="margin:0 0 6px 0;font-size:13px;font-weight:700;line-height:1.35;color:#111111">' +
+        escapeHtml_(priceNote) + '</p>'
+      : "");
+  const minimumHtml = minimumLine
+    ? '<p style="margin:8px 0 0 0"><span style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:#F0FDF4;border:1.5px solid #111111;border-radius:8px;padding:4px 9px;font-size:12px;font-weight:800;line-height:1.35;color:#111111">' +
+      escapeHtml_(minimumLine) + '</span></p>'
+    : "";
+
+  return '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 10px 0;table-layout:fixed">' +
+    '<tr><td style="background-color:' + bgColor + ';border:2px solid #111111;border-left:8px solid ' + accentColor + ';border-radius:14px' + shadow + ';padding:13px 15px;overflow-wrap:break-word;word-wrap:break-word">' +
+    badgesHtml +
+    priceHtml +
+    '<p style="margin:0 0 4px 0;font-size:15px;font-weight:800;line-height:1.3;color:#111111">' + escapeHtml_(title) + '</p>' +
+    '<p style="margin:0;font-size:14px;line-height:1.45;color:#111111">' + escapeHtml_(description) + '</p>' +
+    minimumHtml +
     '</td></tr></table>';
 }
 
@@ -467,78 +500,56 @@ function buildTutorialEmail_(to, resource) {
 
 function buildProgrammingEmail_(to, interest, fullName) {
   const subject = "Let's get your school movin'! | H4 Community";
-  const preheader = "Flexible dance workshops, family-friendly pricing and exciting possibilities for your school.";
+  const preheader = "Flexible dance workshops, family-friendly pricing and less lesson planning for you.";
   const firstName = extractFirstName_(fullName);
   const greeting = firstName ? "Hi " + firstName + "," : "Hi there,";
-  const introLine = "Thanks for reaching out! Here's a quick breakdown of how our workshops work and what they cost, so you can see what fits your school best.";
+  const introLine = "Thanks for reaching out! From classroom DPA to dance curriculum and school performances, we've got you covered.";
 
-  const familyFeeHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 22px 0;table-layout:fixed">' +
-    '<tr><td style="background-color:#FFF28E;border:2px solid #111111;border-radius:16px;box-shadow:3px 3px 0 #111111;padding:18px;overflow-wrap:break-word;word-wrap:break-word">' +
-    '<span style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:#111111;border:1.5px solid #111111;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:800;line-height:1.35;letter-spacing:0.05em;color:#FFD426;text-transform:uppercase;white-space:normal">THE H4 ONE FAMILY FEE</span>' +
-    '<p style="margin:10px 0 8px 0;font-size:18px;font-weight:800;line-height:1.25;color:#111111">One charge. All their kids get to dance.</p>' +
-    '<p style="margin:0 0 8px 0;font-size:14px;line-height:1.55;color:#111111">I don\'t want parents paying multiple times or having to choose which of their children gets to participate.</p>' +
-    '<p style="margin:0 0 8px 0;font-size:14px;line-height:1.55;color:#111111">When families are paying for the same H4 dance program at your school, they pay for one child and their siblings participate at no additional charge.</p>' +
-    '<p style="margin:0;font-size:14px;font-weight:800;line-height:1.5;color:#111111">Two kids? Three kids? Everyone gets to dance!</p>' +
+  const familyFeeHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 16px 0;table-layout:fixed">' +
+    '<tr><td style="background-color:#FFF28E;border:2px solid #111111;border-radius:14px;box-shadow:3px 3px 0 #111111;padding:13px 15px;overflow-wrap:break-word;word-wrap:break-word">' +
+    '<span style="display:inline-block;max-width:100%;box-sizing:border-box;background-color:#111111;border:1.5px solid #111111;border-radius:999px;padding:3px 10px;font-size:10px;font-weight:800;line-height:1.3;letter-spacing:0.05em;color:#FFD426;text-transform:uppercase;white-space:normal">THE H4 ONE FAMILY FEE</span>' +
+    '<p style="margin:8px 0 4px 0;font-size:16px;font-weight:800;line-height:1.25;color:#111111">One charge. All their kids get to dance.</p>' +
+    '<p style="margin:0;font-size:14px;line-height:1.45;color:#111111">When families pay for an H4 program, siblings participating in the same program at your school dance at no extra charge.</p>' +
     '</td></tr></table>';
 
   const cardsHtml =
-    renderProgramCard_(
-      "ONE WORKSHOP · STARTING AT $10/STUDENT*", "#A3E635",
-      "Easy Win for DPA & Wellness Days",
-      [
-        "A fun, high-energy introduction to hip-hop grooves, musicality and confidence. Perfect for wellness days, DPA, school spirit days or getting your students excited about dance.",
-        "Zero dance experience needed. We'll take care of the moves!"
-      ]
-    ) +
-    renderProgramCard_(
-      "THREE WORKSHOPS · STARTING AT $20/STUDENT*", "#38BDF8",
-      "Bring Your Dance Curriculum to Life",
-      [
-        "Need help teaching dance? We've got you!",
-        "Over three visits, students build foundational hip-hop grooves, explore musicality and creative movement, and develop confidence while supporting your dance curriculum."
-      ]
-    ) +
-    renderProgramCard_(
-      "CONCERT & SHOWCASE · STARTING AT $35/STUDENT*", "#FFD426",
-      "Stage-Ready Choreography (6 to 8 Visits)",
-      [
-        "Preparing for a spring concert, holiday show or cultural night?",
-        "We'll help bring your vision to life with choreography, school-appropriate music and rehearsals, giving your students a chance to shine on stage."
-      ]
-    );
+    renderProgramCard_({
+      badge: "ONE WORKSHOP",
+      accentColor: "#A3E635",
+      price: "From $10/student*",
+      title: "Get your students moving!",
+      description: "Perfect for DPA, wellness days and school spirit events.",
+      minimumLine: "Minimum: 3 classes · 50+ students"
+    }) +
+    renderProgramCard_({
+      highlightBadge: "BEST VALUE",
+      badge: "THREE WORKSHOPS",
+      accentColor: "#38BDF8",
+      bgColor: "#EBF8FF",
+      featured: true,
+      price: "From $20/student*",
+      priceNote: "Includes all three visits.",
+      title: "Let us help teach your dance curriculum!",
+      description: "Less planning for you. More learning for your students. Explore dance foundations, musicality and creative movement."
+    }) +
+    renderProgramCard_({
+      badge: "MULTIPLE SESSIONS",
+      accentColor: "#FFD426",
+      price: "Customized Pricing",
+      title: "Let's get stage ready!",
+      description: "Spring concerts, choreography and showcases. We'll build a program around your school's needs and budget."
+    });
 
-  const pricingNoteHtml = '<div style="margin:4px 0 18px 0;font-size:13px;line-height:1.55;color:#444444">' +
-    '<p style="margin:0 0 8px 0">*Starting rates are plus HST. Minimum group sizes apply. The One Family Fee applies when families pay for siblings participating in the same H4 program at the same school. Final pricing depends on your school\'s group size and programming needs.</p>' +
-    '<p style="margin:0">We send one simple invoice directly to your school. Programming can be funded through your school budget, Parent Council, School Cash Online or a combination of funding sources.</p>' +
-    '</div>' +
-    '<p style="margin:0 0 6px 0;font-size:15px;line-height:1.55;color:#111111">Have something custom in mind? Just tell me what you\'re picturing.</p>' +
-    '<p style="margin:0 0 22px 0;font-size:15px;font-weight:800;line-height:1.5;color:#111111">We can get you movin\'!</p>';
-
-  const callBullets = [
-    "What grades you're thinking of.",
-    "Roughly how many classes or students.",
-    "A couple of times that work for a quick call, plus the best number to reach you."
-  ];
-  const ctaSectionHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 18px 0;border-top:2px solid #111111">' +
-    '<tr><td style="padding-top:18px;font-size:15px;line-height:1.55;color:#111111">' +
-    '<p style="margin:0 0 8px 0;font-size:18px;font-weight:800;line-height:1.3;color:#111111">Let\'s set up a quick call.</p>' +
-    '<p style="margin:0 0 10px 0">The easiest way to figure out programming, dates and exact pricing for your school is a quick 10-minute phone call.</p>' +
-    '<p style="margin:0 0 8px 0">Just hit reply or tap the button below and let me know:</p>' +
-    '<ul style="margin:0 0 12px 0;padding-left:20px">' +
-    callBullets.map((item) => '<li style="margin:0 0 6px 0">' + escapeHtml_(item) + '</li>').join("") +
-    '</ul>' +
-    '<p style="margin:0">I\'ll also follow up personally soon if I don\'t hear back first.</p>' +
-    renderEmailButton_("REPLY TO BOOK A QUICK CALL", H4_QUICK_CALL_MAILTO, "#A3E635") +
+  const ctaSectionHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:14px 0 0 0;border-top:2px solid #111111">' +
+    '<tr><td style="padding-top:14px;font-size:15px;line-height:1.5;color:#111111">' +
+    '<p style="margin:0 0 6px 0;font-size:18px;font-weight:800;line-height:1.25;color:#111111">We can get you movin\'!</p>' +
+    '<p style="margin:0">Let\'s jump on a quick 10-minute call to find what works for your school.</p>' +
+    renderEmailButton_("LET'S BOOK A QUICK CALL", H4_QUICK_CALL_MAILTO, "#A3E635") +
+    '<p style="margin:0 0 10px 0;font-size:14px;line-height:1.5;color:#111111">Just let me know when you\'re available and the best number to reach you.</p>' +
+    '<p style="margin:0;font-size:14px;line-height:1.5;color:#111111">In the meantime, try our <a href="' + H4_DPA_URL + '" target="_blank" rel="noopener noreferrer" style="color:#111111;font-weight:800;text-decoration:underline">free 5-minute classroom DPA</a>!</p>' +
     '</td></tr></table>';
 
-  const dpaStripHtml = '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:6px 0 18px 0">' +
-    '<tr><td style="background-color:#FDF9E7;border:2px solid #111111;border-radius:14px;padding:16px">' +
-    '<p style="margin:0 0 6px 0;font-size:16px;font-weight:800;line-height:1.3;color:#111111">Want to get your classroom moving today?</p>' +
-    '<p style="margin:0;font-size:14px;line-height:1.55;color:#111111">Our free 5-minute classroom DPA is ready to go. Just press play and dance along with your students!</p>' +
-    renderEmailButton_("TRY H4'S FREE CLASSROOM DPA", H4_DPA_URL, "#FFD426") +
-    '</td></tr></table>';
-
-  const signoffHtml = '<p style="margin:14px 0 0 0;font-size:15px;line-height:1.55;color:#111111">' +
+  const signoffHtml = '<p style="margin:16px 0 0 0;font-size:15px;line-height:1.5;color:#111111">' +
     'Looking forward to connecting!<br><strong>Glen Reyes</strong><br>Founder, H4 Community (How Hip Hop Helps)<br>' +
     '<a href="mailto:' + H4_GLEN_EMAIL + '" style="color:#111111;font-weight:700;text-decoration:underline">' + H4_GLEN_EMAIL + '</a><br>' +
     '<a href="' + H4_SITE_URL + '" target="_blank" rel="noopener noreferrer" style="color:#111111;font-weight:700;text-decoration:underline">h4community.org</a>' +
@@ -547,15 +558,18 @@ function buildProgrammingEmail_(to, interest, fullName) {
     ' &nbsp;|&nbsp; ' +
     '<a href="' + H4_GLEN_IG_URL + '" target="_blank" rel="noopener noreferrer" style="color:#111111;font-weight:700;text-decoration:underline">IG: @h4glen</a></p>';
 
-  const bodyHtml = '<p style="margin:0 0 12px 0">' + escapeHtml_(greeting) + '</p>' +
-    '<p style="margin:0 0 18px 0">' + escapeHtml_(introLine) + '</p>' +
+  const disclosuresHtml = '<p style="margin:16px 0 0 0;padding-top:12px;border-top:1px solid #D6D3C4;font-size:12px;line-height:1.5;color:#444444">' +
+    '*Starting rates are plus HST. Minimum group sizes apply. Final pricing depends on participation and programming needs. One Family Fee applies to siblings participating in the same parent-funded program at the same school.' +
+    '</p>';
+
+  const bodyHtml = '<p style="margin:0 0 8px 0">' + escapeHtml_(greeting) + '</p>' +
+    '<p style="margin:0 0 14px 0">' + escapeHtml_(introLine) + '</p>' +
     familyFeeHtml +
-    '<p style="margin:0 0 12px 0;font-size:18px;font-weight:800;color:#111111">What fits your school best?</p>' +
+    '<p style="margin:0 0 10px 0;font-size:17px;font-weight:800;color:#111111">What fits your school best?</p>' +
     cardsHtml +
-    pricingNoteHtml +
     ctaSectionHtml +
-    dpaStripHtml +
-    signoffHtml;
+    signoffHtml +
+    disclosuresHtml;
 
   const htmlBody = renderEmailShell_(
     preheader,
@@ -575,50 +589,40 @@ function buildProgrammingEmail_(to, interest, fullName) {
     "",
     "THE H4 ONE FAMILY FEE",
     "One charge. All their kids get to dance.",
-    "I don't want parents paying multiple times or having to choose which of their children gets to participate.",
-    "When families are paying for the same H4 dance program at your school, they pay for one child and their siblings participate at no additional charge.",
-    "Two kids? Three kids? Everyone gets to dance!",
+    "When families pay for an H4 program, siblings participating in the same program at your school dance at no extra charge.",
     "",
     "What fits your school best?",
     "",
-    "ONE WORKSHOP · STARTING AT $10/STUDENT*",
-    "Easy Win for DPA & Wellness Days",
-    "A fun, high-energy introduction to hip-hop grooves, musicality and confidence. Perfect for wellness days, DPA, school spirit days or getting your students excited about dance.",
-    "Zero dance experience needed. We'll take care of the moves!",
+    "ONE WORKSHOP",
+    "From $10/student*",
+    "Get your students moving!",
+    "Perfect for DPA, wellness days and school spirit events.",
+    "Minimum: 3 classes · 50+ students",
     "",
-    "THREE WORKSHOPS · STARTING AT $20/STUDENT*",
-    "Bring Your Dance Curriculum to Life",
-    "Need help teaching dance? We've got you!",
-    "Over three visits, students build foundational hip-hop grooves, explore musicality and creative movement, and develop confidence while supporting your dance curriculum.",
+    "THREE WORKSHOPS (BEST VALUE)",
+    "From $20/student*",
+    "Includes all three visits.",
+    "Let us help teach your dance curriculum!",
+    "Less planning for you. More learning for your students. Explore dance foundations, musicality and creative movement.",
     "",
-    "CONCERT & SHOWCASE · STARTING AT $35/STUDENT*",
-    "Stage-Ready Choreography (6 to 8 Visits)",
-    "Preparing for a spring concert, holiday show or cultural night?",
-    "We'll help bring your vision to life with choreography, school-appropriate music and rehearsals, giving your students a chance to shine on stage.",
+    "MULTIPLE SESSIONS",
+    "Customized Pricing",
+    "Let's get stage ready!",
+    "Spring concerts, choreography and showcases. We'll build a program around your school's needs and budget.",
     "",
-    "*Starting rates are plus HST. Minimum group sizes apply. The One Family Fee applies when families pay for siblings participating in the same H4 program at the same school. Final pricing depends on your school's group size and programming needs.",
-    "We send one simple invoice directly to your school. Programming can be funded through your school budget, Parent Council, School Cash Online or a combination of funding sources.",
-    "Have something custom in mind? Just tell me what you're picturing.",
     "We can get you movin'!",
-    "",
-    "Let's set up a quick call.",
-    "The easiest way to figure out programming, dates and exact pricing for your school is a quick 10-minute phone call.",
-    "Just hit reply or tap the button below and let me know:",
-    "- What grades you're thinking of.",
-    "- Roughly how many classes or students.",
-    "- A couple of times that work for a quick call, plus the best number to reach you.",
-    "I'll also follow up personally soon if I don't hear back first.",
-    "REPLY TO BOOK A QUICK CALL: " + H4_QUICK_CALL_MAILTO,
-    "",
-    "Want to get your classroom moving today?",
-    "Our free 5-minute classroom DPA is ready to go. Just press play and dance along with your students!",
-    "TRY H4'S FREE CLASSROOM DPA: " + H4_DPA_URL,
+    "Let's jump on a quick 10-minute call to find what works for your school.",
+    "LET'S BOOK A QUICK CALL: " + H4_QUICK_CALL_MAILTO,
+    "Just let me know when you're available and the best number to reach you.",
+    "In the meantime, try our free 5-minute classroom DPA! " + H4_DPA_URL,
     "",
     "Looking forward to connecting!",
     "Glen Reyes",
     "Founder, H4 Community (How Hip Hop Helps)",
     H4_GLEN_EMAIL,
     "h4community.org (" + H4_SITE_URL + ") | glenreyes.me (" + H4_GLEN_SITE_URL + ") | IG: @h4glen (" + H4_GLEN_IG_URL + ")",
+    "",
+    "*Starting rates are plus HST. Minimum group sizes apply. Final pricing depends on participation and programming needs. One Family Fee applies to siblings participating in the same parent-funded program at the same school.",
     "",
     "HOW HIP HOP HELPS.",
     "Confidence in Motion.",

@@ -310,9 +310,11 @@ test("remains backwards compatible with live form payloads and rejects mismatche
 
 const QUICK_CALL_MAILTO =
   "mailto:glen@h4community.org?subject=H4%20School%20Workshops%20-%20Quick%20Call" +
-  "&body=Hi%20Glen%2C%0D%0A%0D%0AHere%20is%20what%20we%20have%20in%20mind%3A%0D%0A%0D%0A" +
-  "Grades%3A%20%0D%0AClasses%20or%20students%3A%20%0D%0A" +
-  "Best%20times%20for%20a%20quick%20call%3A%20%0D%0ABest%20phone%20number%3A%20";
+  "&body=Hi%20Glen%2C%0D%0A%0D%0A" +
+  "I%27d%20love%20to%20schedule%20a%20quick%20call%20about%20bringing%20H4%20to%20our%20school.%0D%0A%0D%0A" +
+  "My%20availability%3A%20%0D%0A" +
+  "Best%20phone%20number%3A%20%0D%0A%0D%0A" +
+  "Thanks!";
 const QUICK_CALL_MAILTO_HTML = QUICK_CALL_MAILTO.replace(/&/g, "&amp;");
 
 function assertProgrammingEmailContent(msg, expectedGreeting) {
@@ -323,35 +325,36 @@ function assertProgrammingEmailContent(msg, expectedGreeting) {
   assert.ok(!msg.htmlBody.includes("—") && !msg.htmlBody.includes("&mdash;"), "HTML programming email must not include em dashes");
 
   const sharedPhrases = [
-    "Thanks for reaching out! Here's a quick breakdown of how our workshops work and what they cost, so you can see what fits your school best.",
+    "Thanks for reaching out! From classroom DPA to dance curriculum and school performances, we've got you covered.",
     "THE H4 ONE FAMILY FEE",
     "One charge. All their kids get to dance.",
-    "When families are paying for the same H4 dance program at your school, they pay for one child and their siblings participate at no additional charge.",
-    "Two kids? Three kids? Everyone gets to dance!",
+    "When families pay for an H4 program, siblings participating in the same program at your school dance at no extra charge.",
     "What fits your school best?",
-    "ONE WORKSHOP · STARTING AT $10/STUDENT*",
-    "Easy Win for DPA & Wellness Days",
-    "THREE WORKSHOPS · STARTING AT $20/STUDENT*",
-    "Bring Your Dance Curriculum to Life",
-    "CONCERT & SHOWCASE · STARTING AT $35/STUDENT*",
-    "Stage-Ready Choreography (6 to 8 Visits)",
-    "Starting rates are plus HST. Minimum group sizes apply.",
-    "We send one simple invoice directly to your school.",
-    "Have something custom in mind? Just tell me what you're picturing.",
+    "ONE WORKSHOP",
+    "From $10/student*",
+    "Get your students moving!",
+    "Perfect for DPA, wellness days and school spirit events.",
+    "Minimum: 3 classes · 50+ students",
+    "BEST VALUE",
+    "THREE WORKSHOPS",
+    "From $20/student*",
+    "Includes all three visits.",
+    "Let us help teach your dance curriculum!",
+    "Less planning for you. More learning for your students. Explore dance foundations, musicality and creative movement.",
+    "MULTIPLE SESSIONS",
+    "Customized Pricing",
+    "Let's get stage ready!",
+    "Spring concerts, choreography and showcases. We'll build a program around your school's needs and budget.",
     "We can get you movin'!",
-    "Let's set up a quick call.",
-    "What grades you're thinking of.",
-    "Roughly how many classes or students.",
-    "A couple of times that work for a quick call, plus the best number to reach you.",
-    "I'll also follow up personally soon if I don't hear back first.",
-    "REPLY TO BOOK A QUICK CALL",
-    "Want to get your classroom moving today?",
-    "Our free 5-minute classroom DPA is ready to go. Just press play and dance along with your students!",
-    "TRY H4'S FREE CLASSROOM DPA",
+    "Let's jump on a quick 10-minute call to find what works for your school.",
+    "LET'S BOOK A QUICK CALL",
+    "Just let me know when you're available and the best number to reach you.",
+    "free 5-minute classroom DPA",
     "Looking forward to connecting!",
     "Glen Reyes",
     "Founder, H4 Community (How Hip Hop Helps)",
     "glen@h4community.org",
+    "Starting rates are plus HST. Minimum group sizes apply. Final pricing depends on participation and programming needs. One Family Fee applies to siblings participating in the same parent-funded program at the same school.",
     "HOW HIP HOP HELPS.",
     "Confidence in Motion."
   ];
@@ -361,14 +364,36 @@ function assertProgrammingEmailContent(msg, expectedGreeting) {
     assert.ok(decodedHtml.includes(phrase), `HTML email missing: ${phrase}`);
   }
 
-  // Removed legacy sections must not reappear
-  for (const removed of ["Small Moves. Big Impact.", "Something Else Entirely?", "not a fixed package"]) {
+  // Disclosures must appear below the signature in both HTML and plain text
+  const disclosureText = "Starting rates are plus HST. Minimum group sizes apply.";
+  assert.ok(
+    msg.body.indexOf(disclosureText) > msg.body.indexOf("Glen Reyes"),
+    "Plain-text disclosures must appear below the signature"
+  );
+  assert.ok(
+    decodedHtml.indexOf(disclosureText) > decodedHtml.indexOf("Glen Reyes"),
+    "HTML disclosures must appear below the signature"
+  );
+
+  // Removed legacy pricing, visit counts, survey questions, and promotional boxes must not reappear
+  for (const removed of [
+    "$35",
+    "6 to 8 Visits",
+    "CONCERT & SHOWCASE",
+    "Small Moves. Big Impact.",
+    "Something Else Entirely?",
+    "not a fixed package",
+    "What grades you're thinking of.",
+    "Roughly how many classes or students.",
+    "Want to get your classroom moving today?",
+    "TRY H4'S FREE CLASSROOM DPA"
+  ]) {
     assert.ok(!msg.body.includes(removed), `Plain-text email should not include: ${removed}`);
-    assert.ok(!msg.htmlBody.includes(removed), `HTML email should not include: ${removed}`);
+    assert.ok(!decodedHtml.includes(removed), `HTML email should not include: ${removed}`);
   }
 
   // Preheader, CTA destinations, logo, and clickable signature links
-  assert.ok(msg.htmlBody.includes("Flexible dance workshops, family-friendly pricing and exciting possibilities for your school."));
+  assert.ok(msg.htmlBody.includes("Flexible dance workshops, family-friendly pricing and less lesson planning for you."));
   assert.ok(msg.body.includes(QUICK_CALL_MAILTO));
   assert.ok(msg.htmlBody.includes(`href="${QUICK_CALL_MAILTO_HTML}"`));
   assert.ok(msg.body.includes("https://dance.h4community.org/"));
