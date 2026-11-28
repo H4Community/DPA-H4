@@ -308,19 +308,93 @@ test("remains backwards compatible with live form payloads and rejects mismatche
   }).code, "INVALID_REQUEST");
 });
 
+const QUICK_CALL_MAILTO =
+  "mailto:glen@h4community.org?subject=H4%20School%20Workshops%20-%20Quick%20Call" +
+  "&body=Hi%20Glen%2C%0D%0A%0D%0AHere%20is%20what%20we%20have%20in%20mind%3A%0D%0A%0D%0A" +
+  "Grades%3A%20%0D%0AClasses%20or%20students%3A%20%0D%0A" +
+  "Best%20times%20for%20a%20quick%20call%3A%20%0D%0ABest%20phone%20number%3A%20";
+const QUICK_CALL_MAILTO_HTML = QUICK_CALL_MAILTO.replace(/&/g, "&amp;");
+
+function assertProgrammingEmailContent(msg, expectedGreeting) {
+  assert.equal(msg.subject, "Let's get your school movin'! | H4 Community");
+  assert.equal(msg.replyTo, "info@h4community.org");
+  assert.ok(msg.body.startsWith(expectedGreeting + "\n\n"));
+  assert.ok(!msg.body.includes("—"), "Plain-text programming email must not include em dashes");
+  assert.ok(!msg.htmlBody.includes("—") && !msg.htmlBody.includes("&mdash;"), "HTML programming email must not include em dashes");
+
+  const sharedPhrases = [
+    "Thanks for reaching out! Here's a quick breakdown of how our workshops work and what they cost, so you can see what fits your school best.",
+    "THE H4 ONE FAMILY FEE",
+    "One charge. All their kids get to dance.",
+    "When families are paying for the same H4 dance program at your school, they pay for one child and their siblings participate at no additional charge.",
+    "Two kids? Three kids? Everyone gets to dance!",
+    "What fits your school best?",
+    "ONE WORKSHOP · STARTING AT $10/STUDENT*",
+    "Easy Win for DPA & Wellness Days",
+    "THREE WORKSHOPS · STARTING AT $20/STUDENT*",
+    "Bring Your Dance Curriculum to Life",
+    "CONCERT & SHOWCASE · STARTING AT $35/STUDENT*",
+    "Stage-Ready Choreography (6 to 8 Visits)",
+    "Starting rates are plus HST. Minimum group sizes apply.",
+    "We send one simple invoice directly to your school.",
+    "Have something custom in mind? Just tell me what you're picturing.",
+    "We can get you movin'!",
+    "Let's set up a quick call.",
+    "What grades you're thinking of.",
+    "Roughly how many classes or students.",
+    "A couple of times that work for a quick call, plus the best number to reach you.",
+    "I'll also follow up personally soon if I don't hear back first.",
+    "REPLY TO BOOK A QUICK CALL",
+    "Want to get your classroom moving today?",
+    "Our free 5-minute classroom DPA is ready to go. Just press play and dance along with your students!",
+    "TRY H4'S FREE CLASSROOM DPA",
+    "Looking forward to connecting!",
+    "Glen Reyes",
+    "Founder, H4 Community (How Hip Hop Helps)",
+    "glen@h4community.org",
+    "HOW HIP HOP HELPS.",
+    "Confidence in Motion."
+  ];
+  const decodedHtml = msg.htmlBody.replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+  for (const phrase of sharedPhrases) {
+    assert.ok(msg.body.includes(phrase), `Plain-text email missing: ${phrase}`);
+    assert.ok(decodedHtml.includes(phrase), `HTML email missing: ${phrase}`);
+  }
+
+  // Removed legacy sections must not reappear
+  for (const removed of ["Small Moves. Big Impact.", "Something Else Entirely?", "not a fixed package"]) {
+    assert.ok(!msg.body.includes(removed), `Plain-text email should not include: ${removed}`);
+    assert.ok(!msg.htmlBody.includes(removed), `HTML email should not include: ${removed}`);
+  }
+
+  // Preheader, CTA destinations, logo, and clickable signature links
+  assert.ok(msg.htmlBody.includes("Flexible dance workshops, family-friendly pricing and exciting possibilities for your school."));
+  assert.ok(msg.body.includes(QUICK_CALL_MAILTO));
+  assert.ok(msg.htmlBody.includes(`href="${QUICK_CALL_MAILTO_HTML}"`));
+  assert.ok(msg.body.includes("https://dance.h4community.org/"));
+  assert.ok(msg.htmlBody.includes('href="https://dance.h4community.org/"'));
+  assert.ok(msg.htmlBody.includes('href="mailto:glen@h4community.org"'));
+  assert.ok(msg.htmlBody.includes('href="https://h4community.org/"'));
+  assert.ok(msg.htmlBody.includes('href="https://glenreyes.me/"'));
+  assert.ok(msg.htmlBody.includes('href="https://www.instagram.com/h4glen/"'));
+  assert.ok(msg.htmlBody.includes("https://dance.h4community.org/images/h4-logo-mark.png"));
+}
+
 test("supports all 6 flexible programming inquiry options in sheet records and email notifications", () => {
   const sheet = testSheet();
   const programOptions = [
     "Hip-Hop & Breaking Workshops",
     "DPA & Classroom Dance",
     "Multi-Session Dance Programs",
-    "School-Wide Events & Celebrations"
+    "School-Wide Events & Celebrations",
+    "Full-Day School Workshop"
   ];
 
   programOptions.forEach((interest, idx) => {
     const res = sheet.send({
       submissionKey: randomUUID(),
       email: `program${idx}@example.org`,
+      fullName: "Ms. Jordan Lee",
       interest,
       preferredTiming: "Flexible / Anytime"
     });
@@ -328,13 +402,7 @@ test("supports all 6 flexible programming inquiry options in sheet records and e
     assert.equal(res.emailStatus, "Sent");
     assert.equal(sheet.get("Interest"), interest);
     assert.equal(sheet.get("Preferred Timing"), "Flexible / Anytime");
-    const msg = sheet.messages.at(-1);
-    assert.equal(msg.subject, "Let's get your school movin'! | H4 Community");
-    assert.ok(msg.body.includes("We're excited to explore how we can bring more music, movement and confidence to your school."));
-    assert.ok(msg.htmlBody.includes("CONNECT WITH GLEN"));
-    assert.ok(msg.htmlBody.includes('href="mailto:glen@h4community.org"'));
-    assert.ok(msg.htmlBody.includes('href="https://dance.h4community.org/"'));
-    assert.ok(msg.htmlBody.includes("https://dance.h4community.org/images/h4-logo-mark.png"));
+    assertProgrammingEmailContent(sheet.messages.at(-1), "Hi Jordan,");
   });
 
   const tutorialRes = sheet.send({
@@ -376,11 +444,15 @@ test("supports all 6 flexible programming inquiry options in sheet records and e
   assert.equal(exploreRes.emailStatus, "Sent");
   assert.equal(sheet.get("Interest"), "Other / Let's Explore");
   const exploreMsg = sheet.messages.at(-1);
-  assert.equal(exploreMsg.subject, "Let's get your school movin'! | H4 Community");
-  assert.ok(exploreMsg.body.startsWith("Hi Jordan,\n\n"));
-  assert.ok(exploreMsg.body.includes("We'd love to hear what you have in mind and explore how we can bring more music, movement and confidence to your school."));
+  assertProgrammingEmailContent(exploreMsg, "Hi Jordan,");
   assert.ok(!exploreMsg.body.includes("Other / Let's Explore"));
   assert.ok(!exploreMsg.htmlBody.includes("Other / Let's Explore"));
+
+  // Fallback greeting when fullName is blank (direct template invocation)
+  const fallbackContext = vm.createContext({ Utilities: gmailUtilities });
+  vm.runInContext(load("../apps-script/Email.gs"), fallbackContext);
+  const fallbackMsg = fallbackContext.buildProgrammingEmail_("fallback@example.org", "Hip-Hop & Breaking Workshops", "");
+  assertProgrammingEmailContent(fallbackMsg, "Hi there,");
 });
 
 test("staff alerts are separate from confirmations, deduplicated by lead key and restricted to paid and general inquiries", () => {
