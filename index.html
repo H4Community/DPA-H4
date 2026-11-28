@@ -1096,7 +1096,7 @@
       border: var(--border-w) solid var(--ink);
       border-radius: 26px;
       box-shadow: var(--shadow-lg);
-      padding: 28px;
+      padding: 26px 28px;
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap: 24px;
@@ -1105,62 +1105,72 @@
     }
 
     .conversion-strip h2 {
-      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-size: clamp(1.55rem, 2.9vw, 2.1rem);
+      line-height: 1.12;
       color: var(--lime);
       margin-bottom: 10px;
     }
 
     .conversion-strip p {
       color: #E4E4E7;
-      margin-bottom: 14px;
-      font-size: 0.98rem;
-    }
-
-    .conversion-perks {
-      list-style: none;
-      display: grid;
-      gap: 8px;
-      margin-bottom: 16px;
-      font-size: 0.94rem;
-    }
-
-    .conversion-perks li::before {
-      content: "⚡ ";
+      margin-bottom: 12px;
+      font-size: 0.96rem;
+      line-height: 1.5;
     }
 
     .conversion-subhead {
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      font-size: 1.08rem;
-      color: var(--yellow) !important;
-      margin-bottom: 8px !important;
+      font-size: 1.02rem;
+      color: var(--tangerine) !important;
+      margin-bottom: 10px !important;
+    }
+
+    .conversion-options {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .conversion-options li {
+      border-left: 4px solid var(--tangerine);
+      padding-left: 12px;
+      line-height: 1.38;
+    }
+
+    .conversion-option-title {
+      display: block;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: #FFFFFF;
+    }
+
+    .conversion-option-desc {
+      display: block;
+      font-size: 0.91rem;
+      color: #D4D4D8;
     }
 
     .conversion-closing {
+      font-family: 'Fredoka', sans-serif;
       font-weight: 700;
-      color: #FFFFFF !important;
-      margin-bottom: 14px !important;
+      font-size: 1.18rem !important;
+      color: var(--lime) !important;
+      margin-bottom: 6px !important;
     }
 
-    .conversion-cta-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
+    .conversion-contact {
+      font-size: 0.9rem !important;
+      color: #A1A1AA !important;
+      margin-bottom: 0 !important;
     }
 
-    .conversion-primary-cta {
-      background: var(--lime);
-      color: var(--ink);
-      padding: 13px 22px;
-      font-size: 1rem;
-      min-height: 44px;
-    }
-
-    .conversion-microcopy {
-      font-size: 0.86rem;
-      color: #D4D4D8;
-      font-weight: 600;
+    .conversion-contact a {
+      color: var(--lime);
+      font-weight: 700;
+      text-decoration: underline;
     }
 
     .booking-card {
@@ -3001,36 +3011,29 @@
           <span class="tag-chip" style="background: var(--tangerine); color: var(--ink); margin-bottom: 10px;">
             LIVE SCHOOL PROGRAMS · GTA &amp; ONTARIO
           </span>
-          <h2 tabindex="-1">Want Us to Get the Dancing Started?</h2>
+          <h2 tabindex="-1">Want the Pros to Get Things Started?</h2>
           <p>
-            Would you rather have H4 lead the first few sessions? Looking to introduce your students to hip-hop?
-            Planning something exciting for your school? We'd love to help!
+            Whether it's one workshop or a school-wide performance, we'll bring the music, moves and energy to your
+            school.
           </p>
-          <p>
-            Our professional dance educators bring music, movement and creativity directly to your school, helping
-            students build confidence while having fun. From individual classroom workshops to school-wide
-            experiences, we'll work with you to create something that fits your students, your goals and your
-            school's needs.
-          </p>
-          <p class="conversion-subhead">Let's Get Your School Moving!</p>
-          <ul class="conversion-perks">
-            <li>Hip-hop and breaking workshops.</li>
-            <li>Classroom and school-wide DPA experiences.</li>
-            <li>Dance programs for primary, junior and intermediate students.</li>
-            <li>Multi-session programs that build skills and confidence.</li>
-            <li>Special events, celebrations and customized programming.</li>
+          <p class="conversion-subhead">Find what fits your school:</p>
+          <ul class="conversion-options">
+            <li>
+              <span class="conversion-option-title">One Workshop</span>
+              <span class="conversion-option-desc">DPA, wellness and school spirit days.</span>
+            </li>
+            <li>
+              <span class="conversion-option-title">Three Workshops</span>
+              <span class="conversion-option-desc">Bring your dance curriculum to life.</span>
+            </li>
+            <li>
+              <span class="conversion-option-title">Multiple Sessions</span>
+              <span class="conversion-option-desc">Spring concerts, showcases and celebrations.</span>
+            </li>
           </ul>
-          <p class="conversion-closing">Every school is different. Let's find out what works for yours.</p>
-          <div class="conversion-cta-wrap">
-            <a href="#bookingCard" class="comic-btn conversion-primary-cta" id="planProgrammingCta"
-              data-select-interest="Hip-Hop &amp; Breaking Workshops">
-              Let's Plan Something Together
-            </a>
-            <span class="conversion-microcopy">Ask us about programming, pricing and availability.</span>
-          </div>
-          <p style="font-size: 0.9rem; color: #A1A1AA; margin-top: 12px; margin-bottom: 0;">
-            Direct inquiries: <a href="mailto:info@h4community.org"
-              style="color: var(--lime); font-weight: 700;">info@h4community.org</a>
+          <p class="conversion-closing">We can get you movin'!</p>
+          <p class="conversion-contact">
+            Questions about rates? <a href="mailto:glen@h4community.org">Contact Glen</a>.
           </p>
         </div>
 
@@ -3043,7 +3046,7 @@
             </button>
             <button type="button" class="comic-btn signup-choice-btn signup-choice-btn-workshop"
               id="choiceWorkshopBtn" data-interest-choice="Hip-Hop &amp; Breaking Workshops" aria-pressed="false">
-              Plan School Programming
+              School Workshops &amp; Pricing
             </button>
             <button type="button" class="signup-choice-link" id="choiceLearnMoreBtn"
               data-interest-choice="Other / Let's Explore" aria-pressed="false">

@@ -332,9 +332,39 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(directState.formHidden, true, "Form fields must stay hidden until a choice is selected");
   assert.deepEqual(directState.choiceTexts, [
     "Free Teacher Tutorial",
-    "Plan School Programming",
+    "School Workshops & Pricing",
     "Other / Let's Explore"
   ]);
+
+  const conversionCopy = await evalInPage(cdp, `
+    const strip = document.getElementById("book-workshop");
+    const contactLink = strip.querySelector(".conversion-contact a");
+    return {
+      heading: strip.querySelector("h2")?.textContent.trim(),
+      text: strip.textContent.replace(/\\s+/g, " ").trim(),
+      hasRemovedCta: Boolean(document.getElementById("planProgrammingCta")),
+      contactHref: contactLink?.getAttribute("href"),
+      contactText: contactLink?.textContent.trim()
+    };
+  `);
+  assert.equal(conversionCopy.heading, "Want the Pros to Get Things Started?");
+  assert.equal(conversionCopy.hasRemovedCta, false);
+  assert.equal(conversionCopy.contactHref, "mailto:glen@h4community.org");
+  assert.equal(conversionCopy.contactText, "Contact Glen");
+  for (const phrase of [
+    "LIVE SCHOOL PROGRAMS · GTA & ONTARIO",
+    "Whether it's one workshop or a school-wide performance, we'll bring the music, moves and energy to your school.",
+    "Find what fits your school:",
+    "One Workshop",
+    "DPA, wellness and school spirit days.",
+    "Three Workshops",
+    "Bring your dance curriculum to life.",
+    "Multiple Sessions",
+    "Spring concerts, showcases and celebrations.",
+    "We can get you movin'!"
+  ]) {
+    assert.ok(conversionCopy.text.includes(phrase), `Conversion section missing: ${phrase}`);
+  }
 
   // Topbar workshop CTA opens Request Workshop Dates directly
   const topCtaResult = await evalInPage(cdp, `
