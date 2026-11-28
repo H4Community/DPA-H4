@@ -2097,6 +2097,176 @@
       box-shadow: 2px 2px 0px var(--ink);
     }
 
+    .audio-mode-btn:focus-visible,
+    .audio-tips-btn:focus-visible,
+    .audio-tips-dismiss:focus-visible,
+    .mini-ctrl:focus-visible,
+    .bpm-tier-btn:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .audio-tips-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #FFFDF7;
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 2px 2px 0px var(--ink);
+      padding: 5px 10px;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--ink);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+
+    .audio-tips-btn:hover {
+      background: var(--yellow);
+      transform: translate(-1px, -1px);
+    }
+
+    .audio-tips-btn[aria-expanded="true"] {
+      background: var(--yellow);
+    }
+
+    .audio-onboarding {
+      position: relative;
+      background: #FFFDF7;
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 4px 4px 0px var(--ink);
+      padding: 12px 12px 10px;
+      margin-bottom: 12px;
+    }
+
+    .audio-onboarding[hidden] {
+      display: none;
+    }
+
+    .audio-onboarding-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .audio-tip-card {
+      position: relative;
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      box-shadow: 3px 3px 0px var(--ink);
+      padding: 8px 10px;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .audio-tip-card::before,
+    .audio-tip-card::after {
+      content: "";
+      position: absolute;
+      left: 22px;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      pointer-events: none;
+    }
+
+    .audio-tip-card::before {
+      top: -11px;
+      border-width: 0 8px 10px 8px;
+      border-color: transparent transparent var(--ink) transparent;
+    }
+
+    .audio-tip-card::after {
+      top: -7px;
+      left: 24px;
+      border-width: 0 6px 8px 6px;
+    }
+
+    .audio-tip-card--songs {
+      background: #7DD3FC;
+    }
+
+    .audio-tip-card--songs::after {
+      border-color: transparent transparent #7DD3FC transparent;
+    }
+
+    .audio-tip-card--beat {
+      background: var(--lime);
+    }
+
+    .audio-tip-card--beat::after {
+      border-color: transparent transparent var(--lime) transparent;
+    }
+
+    .audio-tip-card--own {
+      background: var(--yellow);
+    }
+
+    .audio-tip-card--own::after {
+      border-color: transparent transparent var(--yellow) transparent;
+    }
+
+    .audio-tip-title {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    .audio-tip-lead {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.84rem;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .audio-tip-body {
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+    }
+
+    .audio-onboarding-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .audio-tips-dismiss {
+      background: var(--ink);
+      color: #FFFFFF;
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 2px 2px 0px var(--tangerine);
+      padding: 4px 14px;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .audio-tips-dismiss:hover {
+      transform: translate(-1px, -1px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .audio-tips-btn,
+      .audio-tips-dismiss {
+        transition: none;
+      }
+    }
+
     .music-bar {
       display: flex;
       align-items: center;
@@ -2252,7 +2422,7 @@
 
     /* 10 Live Dance Animations on Stage Dancer */
     .stage-dancer-wrap {
-      --beat-ms: 522ms;
+      --beat-ms: 600ms;
       width: 100%;
       max-width: 260px;
       height: 296px;
@@ -2496,7 +2666,7 @@
     }
 
     .stage-cue {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       background: var(--yellow);
       border: 2.5px solid var(--ink);
@@ -2504,6 +2674,25 @@
       padding: 10px 14px;
       margin-bottom: 12px;
       box-shadow: 3px 3px 0 var(--ink);
+      line-height: 1.35;
+    }
+
+    .stage-cue.is-intro-cue {
+      background: #FEF08A;
+    }
+
+    .stage-cue-heading {
+      display: block;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.08rem;
+      margin-bottom: 2px;
+    }
+
+    .stage-cue-line {
+      display: block;
+      font-size: 0.96rem;
+      font-weight: 700;
     }
 
     /* 8-Count Musical Bar */
@@ -2705,6 +2894,32 @@
       .parent-card,
       .dancestash-final-card {
         padding: 20px;
+      }
+
+      .player-shell {
+        padding: 14px 12px;
+      }
+
+      .audio-onboarding-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .audio-tip-card::before,
+      .audio-tip-card::after {
+        display: none;
+      }
+
+      .audio-mode-group {
+        max-width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .song-select {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
       }
     }
   </style>
@@ -3404,11 +3619,11 @@
 
         <div class="player-controls-top">
           <div class="audio-mode-group" role="group" aria-label="Music source mode">
-            <button type="button" class="audio-mode-btn is-active" data-audio-mode="songs" aria-pressed="true"
+            <button type="button" class="audio-mode-btn" data-audio-mode="songs" aria-pressed="false"
               title="Play curated H4 hip-hop instrumentals matched to the BPM">
               🎵 H4 Songs
             </button>
-            <button type="button" class="audio-mode-btn" data-audio-mode="beat" aria-pressed="false"
+            <button type="button" class="audio-mode-btn is-active" data-audio-mode="beat" aria-pressed="true"
               title="Play built-in drum metronome only (works offline)">
               🥁 Beat Only
             </button>
@@ -3417,6 +3632,10 @@
               🎧 Own Music
             </button>
           </div>
+          <button type="button" class="audio-tips-btn" id="audioTipsToggleBtn" aria-expanded="false"
+            aria-controls="audioOnboardingStrip" title="Show or hide audio mode tips">
+            ? Audio Tips
+          </button>
           <button type="button" class="mini-ctrl is-active" id="interval2x8Btn"
             title="Switch every 2 counts of 8 (16 beats)">
             2×8 Counts
@@ -3430,7 +3649,7 @@
           </button>
           <div class="bpm-ctrl-group" role="group" aria-label="Tempo controls">
             <button type="button" class="mini-ctrl" id="bpmDownBtn" title="Slow down by 5 BPM">-5</button>
-            <span class="bpm-readout" id="bpmDisplay">115 BPM</span>
+            <span class="bpm-readout" id="bpmDisplay">100 BPM</span>
             <button type="button" class="mini-ctrl" id="bpmUpBtn" title="Speed up by 5 BPM">+5</button>
             <button type="button" class="mini-ctrl" id="tapBpmBtn"
               title="Tap along with your music to set BPM, or tap once on Count 1 to manually re-align phase">
@@ -3443,14 +3662,38 @@
         </div>
       </div>
 
+      <!-- FIRST-TIME AUDIO MODE ONBOARDING CALLOUTS -->
+      <section class="audio-onboarding" id="audioOnboardingStrip" aria-label="Audio mode tips" hidden>
+        <div class="audio-onboarding-grid">
+          <div class="audio-tip-card audio-tip-card--songs" data-tip-for="songs">
+            <strong class="audio-tip-title">🎵 H4 Songs</strong>
+            <span class="audio-tip-lead">Try our songs!</span>
+            <span class="audio-tip-body">Explore our hip-hop music.</span>
+          </div>
+          <div class="audio-tip-card audio-tip-card--beat" data-tip-for="beat">
+            <strong class="audio-tip-title">🥁 Beat Only</strong>
+            <span class="audio-tip-lead">Start here!</span>
+            <span class="audio-tip-body">Find your groove with just the beat.</span>
+          </div>
+          <div class="audio-tip-card audio-tip-card--own" data-tip-for="own">
+            <strong class="audio-tip-title">🎧 Own Music</strong>
+            <span class="audio-tip-lead">Your favourite songs!</span>
+            <span class="audio-tip-body">Go silent and match the BPM.</span>
+          </div>
+        </div>
+        <div class="audio-onboarding-footer">
+          <button type="button" class="audio-tips-dismiss" id="dismissAudioTipsBtn">Got it!</button>
+        </div>
+      </section>
+
       <!-- H4 MUSIC LIBRARY & TEMPO BAR -->
       <div class="music-bar" id="musicBar">
         <div class="music-bar-left">
           <div class="bpm-tier-group" id="bpmTierGroup" role="group" aria-label="Suggested BPM music tiers">
             <button type="button" class="bpm-tier-btn" data-bpm-tier="95">95 · Chill</button>
-            <button type="button" class="bpm-tier-btn" data-bpm-tier="100">100 · Classic</button>
+            <button type="button" class="bpm-tier-btn is-active" data-bpm-tier="100">100 · Classic</button>
             <button type="button" class="bpm-tier-btn" data-bpm-tier="110">110 · Bounce</button>
-            <button type="button" class="bpm-tier-btn is-active" data-bpm-tier="115">115 · Hype</button>
+            <button type="button" class="bpm-tier-btn" data-bpm-tier="115">115 · Hype</button>
           </div>
           <span class="music-status-note" id="musicStatusNote"></span>
         </div>
@@ -3498,7 +3741,7 @@
           </div>
 
           <div class="eight-count-label">
-            <span id="eightCountBpmLabel">Musical 8-Count Tracker (115 BPM)</span>
+            <span id="eightCountBpmLabel">Musical 8-Count Tracker (100 BPM)</span>
             <span id="eightCountCycleLabel">Count 1 of 2</span>
           </div>
           <div class="eight-count-grid" id="eightCountGrid" aria-label="8-count beat visualizer">
@@ -3742,7 +3985,7 @@
       // 3. Crew Tap Interaction (Hero Stage)
       const CREW_QUOTES = {
         ace: [
-          "Ace says: Soft knees on the Bounce—feel that 115 BPM bass!",
+          "Ace says: Soft knees on the Bounce—feel that 100 BPM bass!",
           "Show me your cleanest Slide across the desk!",
           "Hit DPA START and see if you can survive all 10 moves!"
         ],
@@ -3873,16 +4116,38 @@
         return getSongTimeForBeat(song, getSongCountOneBeat(song));
       }
 
+      function safeStorageGet(key) {
+        try {
+          return localStorage.getItem(key);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function safeStorageSet(key, value) {
+        try {
+          localStorage.setItem(key, String(value));
+        } catch (_) { }
+      }
+
       let audioCtx = null;
       let synthBusGain = null;
       const scheduledSynthSources = new Set();
       const MIN_BPM = 75;
       const MAX_BPM = 145;
-      const savedBpm = Number(localStorage.getItem("h4_dpa_bpm"));
-      let currentBpm = Number.isFinite(savedBpm) && savedBpm >= MIN_BPM && savedBpm <= MAX_BPM ? Math.round(savedBpm) : 115;
-      const savedAudioMode = localStorage.getItem("h4_dpa_audio_mode");
-      let audioMode = ["songs", "beat", "own"].includes(savedAudioMode) ? savedAudioMode : "songs";
-      const savedVol = Number(localStorage.getItem("h4_dpa_music_vol"));
+      const DEFAULT_BPM = 100;
+      const DEFAULT_AUDIO_MODE = "beat";
+      const DEFAULT_SONG_ID = "100-robot-factory-1";
+      const BOUNCE_GROOVE_ID = "bounce";
+      const AUDIO_TIPS_DISMISSED_KEY = "h4_dpa_audio_tips_dismissed_v1";
+      const savedBpmRaw = safeStorageGet("h4_dpa_bpm");
+      const savedBpm = savedBpmRaw !== null && savedBpmRaw !== "" ? Number(savedBpmRaw) : NaN;
+      const hasValidSavedBpm = Number.isFinite(savedBpm) && savedBpm >= MIN_BPM && savedBpm <= MAX_BPM;
+      let currentBpm = hasValidSavedBpm ? Math.round(savedBpm) : DEFAULT_BPM;
+      const savedAudioMode = safeStorageGet("h4_dpa_audio_mode");
+      let audioMode = ["songs", "beat", "own"].includes(savedAudioMode) ? savedAudioMode : DEFAULT_AUDIO_MODE;
+      const savedVolRaw = safeStorageGet("h4_dpa_music_vol");
+      const savedVol = savedVolRaw !== null && savedVolRaw !== "" ? Number(savedVolRaw) : NaN;
       let musicVolume = Number.isFinite(savedVol) && savedVol >= 0.1 && savedVol <= 1 ? savedVol : 0.85;
       let songFallbackActive = false;
 
@@ -3901,13 +4166,13 @@
             if (q !== null && q !== "") return clampVisualSyncOffsetMs(Number(q));
           }
         } catch (_) { }
-        const savedOffset = localStorage.getItem("h4_dpa_visual_offset_ms");
+        const savedOffset = safeStorageGet("h4_dpa_visual_offset_ms");
         return savedOffset !== null && savedOffset !== "" ? clampVisualSyncOffsetMs(Number(savedOffset)) : 0;
       }
       let visualSyncOffsetMs = loadVisualSyncOffsetMs();
       function setVisualSyncOffsetMs(ms) {
         visualSyncOffsetMs = clampVisualSyncOffsetMs(Number(ms));
-        localStorage.setItem("h4_dpa_visual_offset_ms", String(visualSyncOffsetMs));
+        safeStorageSet("h4_dpa_visual_offset_ms", String(visualSyncOffsetMs));
         return visualSyncOffsetMs;
       }
       function getEffectiveSongTimeSec(audioEl) {
@@ -3963,10 +4228,18 @@
         return SONGS.filter((s) => s.bpm === tierBpm);
       }
 
-      let currentSongId = localStorage.getItem("h4_dpa_song_id") || "";
-      if (!SONGS.some((s) => s.id === currentSongId)) {
-        const defaultTierSongs = getSongsForTier(getNearestBpmTier(currentBpm));
-        currentSongId = defaultTierSongs[0] ? defaultTierSongs[0].id : SONGS[0].id;
+      const savedSongId = safeStorageGet("h4_dpa_song_id") || "";
+      let currentSongId = SONGS.some((s) => s.id === savedSongId) ? savedSongId : "";
+      if (!currentSongId) {
+        const tierForDefault = hasValidSavedBpm && audioMode === "songs"
+          ? getNearestBpmTier(currentBpm)
+          : DEFAULT_BPM;
+        if (tierForDefault === 100 && SONGS.some((s) => s.id === DEFAULT_SONG_ID)) {
+          currentSongId = DEFAULT_SONG_ID;
+        } else {
+          const defaultTierSongs = getSongsForTier(tierForDefault);
+          currentSongId = defaultTierSongs[0] ? defaultTierSongs[0].id : SONGS[0].id;
+        }
       }
 
       function getCurrentSong() {
@@ -4185,6 +4458,9 @@
       const upNextText = document.getElementById("upNextText");
       const playPauseBtn = document.getElementById("playPauseBtn");
       const beatBoxes = Array.from(document.querySelectorAll(".beat-box"));
+      const audioOnboardingStrip = document.getElementById("audioOnboardingStrip");
+      const audioTipsToggleBtn = document.getElementById("audioTipsToggleBtn");
+      const dismissAudioTipsBtn = document.getElementById("dismissAudioTipsBtn");
 
       let mode = "random";
       let isPlaying = false;
@@ -4193,12 +4469,29 @@
       let totalSecondsLeft = 300; // 5:00
       let currentGrooveIdx = 0;
       let nextGrooveIdx = 1;
+      let isOpeningRandomBounce = false;
       let shuffleBag = [];
       let secondTimerId = null;
-      let stars = Number(localStorage.getItem("h4_dpa_stars") || "0");
+      let stars = Number(safeStorageGet("h4_dpa_stars") || "0");
+      if (!Number.isFinite(stars) || stars < 0) stars = 0;
 
       const starCountEl = document.getElementById("starCount");
       starCountEl.textContent = String(stars);
+
+      function getBounceGrooveIdx() {
+        const idx = GROOVES.findIndex((g) => g.id === BOUNCE_GROOVE_ID);
+        return idx >= 0 ? idx : 0;
+      }
+
+      function isAudioTipsDismissed() {
+        return safeStorageGet(AUDIO_TIPS_DISMISSED_KEY) === "1";
+      }
+
+      function setAudioTipsVisible(visible) {
+        const show = Boolean(visible);
+        if (audioOnboardingStrip) audioOnboardingStrip.hidden = !show;
+        if (audioTipsToggleBtn) audioTipsToggleBtn.setAttribute("aria-expanded", String(show));
+      }
 
       function refillShuffleBag(excludeIdx) {
         const indices = GROOVES.map((_, i) => i).filter((i) => i !== excludeIdx);
@@ -4222,6 +4515,28 @@
         return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
       }
 
+      function renderCoachCue() {
+        const g = GROOVES[currentGrooveIdx];
+        if (!g) return;
+        if (isWaitingForIntro) {
+          playerCoachCue.classList.add("is-intro-cue");
+          playerCoachCue.innerHTML =
+            `<strong class="stage-cue-heading">GET READY!</strong>` +
+            `<span class="stage-cue-line">Listen. Feel the beat.</span>` +
+            `<span class="stage-cue-line">Get those knees ready to bounce!</span>`;
+          return;
+        }
+        playerCoachCue.classList.remove("is-intro-cue");
+        if (mode === "random" && isOpeningRandomBounce && g.id === BOUNCE_GROOVE_ID) {
+          playerCoachCue.innerHTML =
+            `<strong class="stage-cue-heading">Start with the Bounce!</strong>` +
+            `<span class="stage-cue-line">Soft knees. Feel the beat. Find your groove.</span>` +
+            `<span class="stage-cue-line">Every great dancer starts here.</span>`;
+          return;
+        }
+        playerCoachCue.textContent = `💡 Coach Tip: ${g.coachCue}`;
+      }
+
       function renderCurrentGroove(isSwitchAccent = false) {
         const g = GROOVES[currentGrooveIdx];
         const nextG = GROOVES[nextGrooveIdx];
@@ -4239,8 +4554,8 @@
         playerMoveNumber.textContent = `TECHNIQUE ${g.num} OF 10 · ${g.tag.toUpperCase()}`;
         playerMoveTitle.textContent = `${g.num} · THE ${g.name.toUpperCase()}`;
         playerMoveDesc.textContent = g.shortDesc;
-        playerCoachCue.textContent = `💡 Coach Tip: ${g.coachCue}`;
-        stageEnergyCallout.textContent = g.energyLines[0];
+        renderCoachCue();
+        stageEnergyCallout.textContent = isWaitingForIntro ? "Get Ready!" : g.energyLines[0];
 
         if (mode === "random") {
           playerModeLabel.textContent = quickDemoMode
@@ -4280,6 +4595,7 @@
             stageEnergyCallout.textContent = g.energyLines[0];
           }
         }
+        renderCoachCue();
       }
 
       function clearBeatHighlights() {
@@ -4357,6 +4673,7 @@
           // Trigger at most ONE automatic move switch per frame, right on Count 1 after
           // the required number of 8-counts complete (or cleanly on recovery after tab throttling).
           if (mode === "random" && moveBarsCompleted >= getTotalCycles() && (beatInEight === 0 || barsCrossed > 0)) {
+            isOpeningRandomBounce = false;
             currentGrooveIdx = nextGrooveIdx;
             nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
             moveBarsCompleted = 0;
@@ -4378,6 +4695,7 @@
         if (isWaitingForIntro) {
           isWaitingForIntro = false;
           eightCountCycleLabel.classList.remove("is-intro");
+          renderCoachCue();
         }
 
         beatBoxes.forEach((box, idx) => {
@@ -4598,7 +4916,7 @@
           .join("");
         if (!tierSongs.some((s) => s.id === currentSongId) && tierSongs[0]) {
           currentSongId = tierSongs[0].id;
-          localStorage.setItem("h4_dpa_song_id", currentSongId);
+          safeStorageSet("h4_dpa_song_id", currentSongId);
         }
         songSelect.value = currentSongId;
       }
@@ -4624,21 +4942,15 @@
 
         if (audioMode === "songs") {
           populateSongDropdown(tierBpm);
-          const rate = currentBpm / song.exactBpm;
-          const displayBpm = getDisplayBpm();
           if (isOfflineMode() || songFallbackActive) {
             musicStatusNote.textContent = "⚡ Offline fallback: Built-In Beat";
-          } else if (displayBpm !== song.bpm) {
-            musicStatusNote.textContent = `Tempo adjusted to ${displayBpm} BPM (${rate.toFixed(2)}×)`;
-          } else if (Math.abs(rate - 1) >= 0.004) {
-            musicStatusNote.textContent = `${getSongsForTier(tierBpm).length} tracks · Normalized to ${displayBpm} BPM (${rate.toFixed(2)}×)`;
           } else {
-            musicStatusNote.textContent = `${getSongsForTier(tierBpm).length} tracks · ${displayBpm} BPM`;
+            musicStatusNote.textContent = `Choose a song and dance along! (${getSongsForTier(tierBpm).length} tracks)`;
           }
         } else if (audioMode === "beat") {
-          musicStatusNote.textContent = "🥁 Built-in drum metronome (Web Audio locked)";
+          musicStatusNote.textContent = "Just the beat. Find your groove!";
         } else {
-          musicStatusNote.textContent = "🎧 Visual 8-count only (does not listen to external audio) — tap BPM on Count 1 to set tempo or re-align phase.";
+          musicStatusNote.textContent = "Play your favourite song separately and match the BPM. Not sure of the BPM? Use Tap BPM and tap along with your song. Start tapping on Count 1 to help line up the visual counter with your music.";
         }
       }
 
@@ -4690,11 +5002,11 @@
         const target = SONGS.find((s) => s.id === songId);
         if (!target) return;
         currentSongId = target.id;
-        localStorage.setItem("h4_dpa_song_id", currentSongId);
+        safeStorageSet("h4_dpa_song_id", currentSongId);
         songFallbackActive = false;
         if (normalizeToTier) {
           currentBpm = target.bpm;
-          localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+          safeStorageSet("h4_dpa_bpm", String(currentBpm));
         }
         stopBeatClocks();
         resetBeatTrackingState();
@@ -4833,7 +5145,7 @@
       function finishSession() {
         stopLoops(true);
         stars += 1;
-        localStorage.setItem("h4_dpa_stars", String(stars));
+        safeStorageSet("h4_dpa_stars", String(stars));
         starCountEl.textContent = String(stars);
         triggerConfetti();
         playVictoryFanfare();
@@ -4874,7 +5186,7 @@
       function setBpm(newBpm) {
         const oldBpm = currentBpm;
         currentBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(newBpm)));
-        localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+        safeStorageSet("h4_dpa_bpm", String(currentBpm));
         syncBpmUI();
 
         if (isSongPlaybackEnabled()) {
@@ -4896,7 +5208,7 @@
           } else {
             // Clicking the active bucket resets playback cleanly to the selected tier BPM
             currentBpm = tierBpm;
-            localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+            safeStorageSet("h4_dpa_bpm", String(currentBpm));
             syncBpmUI();
             updateSongPlaybackRate();
             return;
@@ -4917,7 +5229,7 @@
 
         if (Number.isFinite(tappedBpm)) {
           currentBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(tappedBpm)));
-          localStorage.setItem("h4_dpa_bpm", String(currentBpm));
+          safeStorageSet("h4_dpa_bpm", String(currentBpm));
           syncBpmUI();
         }
 
@@ -4994,14 +5306,17 @@
         }
         if (mode === "random") {
           totalSecondsLeft = quickDemoMode ? 30 : 300;
-          shuffleBag = [];
-          currentGrooveIdx = drawNextRandomIdx(-1);
+          currentGrooveIdx = getBounceGrooveIdx();
+          refillShuffleBag(currentGrooveIdx);
           nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
+          isOpeningRandomBounce = true;
         } else {
           totalSecondsLeft = 120;
           currentGrooveIdx = soloIndex;
           nextGrooveIdx = (soloIndex + 1) % GROOVES.length;
+          isOpeningRandomBounce = false;
         }
+        setAudioTipsVisible(!isAudioTipsDismissed());
         renderCurrentGroove(false);
         updateTimersUI();
         playerModal.classList.add("is-open");
@@ -5040,6 +5355,7 @@
       });
 
       document.getElementById("nextMoveBtn").addEventListener("click", () => {
+        isOpeningRandomBounce = false;
         if (mode === "random") {
           currentGrooveIdx = nextGrooveIdx;
           nextGrooveIdx = drawNextRandomIdx(currentGrooveIdx);
@@ -5053,6 +5369,23 @@
         rescheduleFutureSynthBeats();
       });
 
+      if (dismissAudioTipsBtn) {
+        dismissAudioTipsBtn.addEventListener("click", () => {
+          safeStorageSet(AUDIO_TIPS_DISMISSED_KEY, "1");
+          setAudioTipsVisible(false);
+          if (audioTipsToggleBtn && typeof audioTipsToggleBtn.focus === "function") {
+            audioTipsToggleBtn.focus();
+          }
+        });
+      }
+
+      if (audioTipsToggleBtn) {
+        audioTipsToggleBtn.addEventListener("click", () => {
+          const isCurrentlyHidden = audioOnboardingStrip ? audioOnboardingStrip.hidden : true;
+          setAudioTipsVisible(isCurrentlyHidden);
+        });
+      }
+
       document.getElementById("closeModalBtn").addEventListener("click", closePlayer);
 
       playerModal.addEventListener("click", (e) => {
@@ -5062,7 +5395,7 @@
       function setAudioMode(nextMode) {
         const prevMode = audioMode;
         audioMode = nextMode;
-        localStorage.setItem("h4_dpa_audio_mode", audioMode);
+        safeStorageSet("h4_dpa_audio_mode", audioMode);
         songFallbackActive = false;
 
         if (audioMode === "songs" && prevMode !== "songs") {
@@ -5118,7 +5451,7 @@
 
       musicVolSlider.addEventListener("input", () => {
         musicVolume = Number(musicVolSlider.value);
-        localStorage.setItem("h4_dpa_music_vol", String(musicVolume));
+        safeStorageSet("h4_dpa_music_vol", String(musicVolume));
         songAudio.volume = musicVolume;
       });
 
@@ -5236,7 +5569,7 @@
           return;
         }
         stars = 0;
-        localStorage.setItem("h4_dpa_stars", "0");
+        safeStorageSet("h4_dpa_stars", "0");
         starCountEl.textContent = "0";
         confirmReset = false;
         resetStarsBtn.textContent = "Reset";
@@ -5386,9 +5719,13 @@
             getAudioElement: () => songAudio,
             getState: () => ({
               isPlaying,
+              mode,
               audioMode,
               currentBpm,
               currentSongId,
+              currentGrooveId: GROOVES[currentGrooveIdx]?.id || null,
+              isOpeningRandomBounce,
+              shuffleBagLength: shuffleBag.length,
               currentBeatInEight,
               hasActiveBeat,
               isWaitingForIntro,
