@@ -430,8 +430,8 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   `);
 
   assert.equal(navResult.selectedInterest, "Free Teacher Tutorial");
-  assert.equal(navResult.teacherNameValuePreserved, "Ms. Maya Chen", "Entered name must be preserved in memory when switching");
-  assert.equal(navResult.fullNameHidden, true, "Full name field must be hidden on Free Videos");
+  assert.equal(navResult.teacherNameValuePreserved, "Ms. Maya Chen", "Entered name must be preserved when switching");
+  assert.equal(navResult.fullNameHidden, false, "Full name field must be visible and required on Free Tutorial");
   assert.equal(navResult.emailPreserved, "maya@example.org");
   assert.equal(navResult.rolePreserved, "Teacher");
   assert.equal(navResult.optionalSchoolVisible, true, "Staff must see collapsed Add your school (optional)");
@@ -648,38 +648,39 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
   assert.equal(teacherFreePayload.interest, "Free Teacher Tutorial");
   assert.equal(teacherFreePayload.role, "Teacher");
   assert.equal(teacherFreePayload.email, "maya@example.org");
-  assert.equal(teacherFreePayload.fullName, "", "Hidden fullName from Workshop must NOT leak into Free Videos");
+  assert.equal(teacherFreePayload.fullName, "Ms. Maya Chen", "Full name must be included on Free Teacher Tutorial");
   assert.equal(teacherFreePayload.boardId, "", "Collapsed school from Workshop must NOT leak into Free Videos");
   assert.equal(teacherFreePayload.schoolId, "");
   assert.deepEqual(teacherFreePayload.grades, [], "Hidden grades from Workshop must NOT leak into Free Videos");
   assert.equal(teacherFreePayload.phone, "");
   assert.equal(teacherFreePayload.instagram, "");
 
-  // 4b. Parent Free Videos with only email + role and Queued email response (must NOT say "Check your inbox")
+  // 4b. Parent Free Videos with only name + email + role and Queued email response (must NOT say "Check your inbox")
   srv.setMode("ok-queued");
   const parentQueued = await evalInPage(cdp, `
     const update = (el, type, val) => { el.value = val; el.dispatchEvent(new Event(type, { bubbles: true })); };
     document.getElementById("formEditBtn").click();
     document.getElementById("choiceFreeVideosBtn").click();
+    update(document.getElementById("teacherName"), "input", "Jordan Parent");
     update(document.getElementById("teacherEmail"), "input", "parent@example.org");
     update(document.getElementById("signupRole"), "change", "Parent / Caregiver");
-    const onlyTwoFieldsVisible = document.getElementById("fullNameField").hidden &&
+    const onlyThreeFieldsVisible = !document.getElementById("fullNameField").hidden &&
       document.getElementById("optionalSchoolDetails").hidden &&
       document.getElementById("signupSchoolDetails").hidden;
     document.getElementById("workshopForm").requestSubmit();
     await new Promise((r) => setTimeout(r, 200));
     return {
-      onlyTwoFieldsVisible,
+      onlyThreeFieldsVisible,
       body: document.getElementById("formReadyBody").textContent
     };
   `);
-  assert.equal(parentQueued.onlyTwoFieldsVisible, true);
+  assert.equal(parentQueued.onlyThreeFieldsVisible, true);
   assert.ok(!parentQueued.body.includes("Check your inbox"), "Queued email must not claim Check your inbox");
   assert.ok(parentQueued.body.includes("saved") && parentQueued.body.includes("queued"));
   const parentPayload = srv.receivedRequests.at(-1).payload;
   assert.equal(parentPayload.interest, "Free Teacher Tutorial");
   assert.equal(parentPayload.role, "Parent / Caregiver");
-  assert.equal(parentPayload.fullName, "");
+  assert.equal(parentPayload.fullName, "Jordan Parent");
   assert.equal(parentPayload.boardId, "");
 
   // 4c. Workshop with TCDSB + St Mother Teresa + optional details, then switch to Learn More -> zero hidden fields submitted
@@ -937,7 +938,8 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     optDetails.open = true;
     const noCarryOver = document.getElementById("boardId").value === "" && document.getElementById("schoolId").value === "";
 
-    // Select ONLY a board (no school) and submit with valid email + role
+    // Select ONLY a board (no school) and submit with valid name + email + role
+    update(document.getElementById("teacherName"), "input", "Partial Teacher");
     update(document.getElementById("teacherEmail"), "input", "partial@example.org");
     update(document.getElementById("signupRole"), "change", "Teacher");
     window.__h4TeacherForm.selectBoardById("B67059");
@@ -948,6 +950,7 @@ test("Free Teacher Tutorial card, layout, CTA, form preselection, payload, failu
     // Now start fresh on Free Videos, select COMPLETE board+school, collapse section, and submit
     document.getElementById("formEditBtn").click();
     document.getElementById("choiceFreeVideosBtn").click();
+    update(document.getElementById("teacherName"), "input", "Complete Teacher");
     update(document.getElementById("teacherEmail"), "input", "complete@example.org");
     update(document.getElementById("signupRole"), "change", "Teacher");
     optDetails.open = true;

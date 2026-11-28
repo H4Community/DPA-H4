@@ -145,13 +145,36 @@
     B66095: ["YRDSB", "York Region District School Board"]
   };
 
+  const POPULAR_BOARD_IDS = [
+    "B67059", // Toronto Catholic District School Board (TCDSB)
+    "B66052", // Toronto District School Board (TDSB)
+    "B66095", // York Region District School Board (YRDSB)
+    "B67075", // York Catholic District School Board (YCDSB)
+    "B66060", // Durham District School Board (DDSB)
+    "B67105"  // Durham Catholic District School Board (DCDSB)
+  ];
+  const POPULAR_BOARD_SET = new Set(POPULAR_BOARD_IDS);
+  const POPULAR_BOARD_LABELS = {
+    B67059: "TCDSB · Toronto Catholic DSB",
+    B66052: "TDSB · Toronto DSB",
+    B66095: "YRDSB · York Region DSB",
+    B67075: "YCDSB · York Catholic DSB",
+    B66060: "DDSB · Durham DSB",
+    B67105: "DCDSB · Durham Catholic DSB"
+  };
+
   let activeInterest = "";
   let sending = false;
   let lastAttempt;
 
-  const normalize = (value) => value.toLowerCase().normalize("NFD")
-    .replace(/\p{M}/gu, "").replace(/\bste\.?\b/g, "sainte").replace(/\bsaint\b/g, "st")
-    .replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const normalize = (value) => String(value || "").toLowerCase().normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/\bste\.?\b/g, "sainte")
+    .replace(/\bsaint\b/g, "st")
+    .replace(/\bst\./g, "st ")
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 
   const matches = (query, labels) => {
     const clean = normalize(query);
@@ -166,25 +189,60 @@
     return Boolean(clean) && labels.some((label) => normalize(label) === clean);
   };
 
-  const allBoards = Object.entries(H4_SCHOOL_DIRECTORY).map(([id, [name]]) => {
-    const aliases = boardAliases[id] || [];
-    const label = aliases.length >= 2 ? aliases.slice(0, 2).join(" · ")
-      : aliases.length === 1 ? `${aliases[0]} · ${name}` : name;
-    return { id, label, searchLabels: [name, ...aliases] };
-  });
+  const boardById = new Map(
+    Object.entries(H4_SCHOOL_DIRECTORY).map(([id, [name]]) => {
+      const aliases = boardAliases[id] || [];
+      const acronym = aliases[0] || "";
+      const label = POPULAR_BOARD_LABELS[id]
+        || (acronym && !name.toLowerCase().startsWith(acronym.toLowerCase()) ? `${acronym} · ${name}` : name);
+      return [id, { id, name, label, isPopular: POPULAR_BOARD_SET.has(id), searchLabels: [name, label, ...aliases] }];
+    })
+  );
+
+  const popularBoards = POPULAR_BOARD_IDS.map((id) => boardById.get(id)).filter(Boolean);
+  const otherBoards = [...boardById.values()]
+    .filter((entry) => !POPULAR_BOARD_SET.has(entry.id))
+    .sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
+  const allBoards = [...popularBoards, ...otherBoards];
+
+  function syncComboboxViewportHeight() {
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    if (!vh) return;
+    const maxH = Math.max(140, Math.min(320, Math.round(vh * 0.45)));
+    document.documentElement.style.setProperty("--combobox-max-h", `${maxH}px`);
+  }
+
+  syncComboboxViewportHeight();
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", syncComboboxViewportHeight);
+  }
+  window.addEventListener("resize", syncComboboxViewportHeight);
+
+  function clearFieldError(input) {
+    if (!input || !input.id) return;
+    input.setAttribute("aria-invalid", "false");
+    input.classList.remove("is-field-invalid");
+    const errEl = field(`${input.id}Error`);
+    if (errEl) {
+      errEl.textContent = "";
+      errEl.hidden = true;
+    }
+  }
 
   function createCombobox({
     input, hiddenInput, listbox, clearBtn, searchIcon, optionPrefix,
-    getItems, fallbackItem, emptyMessage, onSelect, onClear
+    getItems, getGroups, maxVisibleItems, hintTemplate,
+    fallbackItem, emptyMessage, onSelect, onClear
   }) {
     let currentItems = [];
     let activeIndex = -1;
     let selectedLabel = "";
+    const wrap = input.closest(".combobox-wrap");
 
     function syncClearIcon() {
       const hasText = Boolean(input.value.trim()) && !input.disabled;
       clearBtn.hidden = !hasText;
-      searchIcon.hidden = hasText;
+      searchIcon.toggleAttribute("hidden", hasText);
     }
 
     function setActive(index) {
@@ -206,43 +264,85 @@
       activeIndex = -1;
     }
 
-    function render(query) {
-      const matched = getItems(query);
-      currentItems = [...matched, fallbackItem];
-      listbox.replaceChildren();
-      if (!matched.length && query.trim()) {
-        const empty = document.createElement("li");
-        empty.className = "combobox-empty";
-        empty.setAttribute("role", "presentation");
-        empty.textContent = emptyMessage;
-        listbox.appendChild(empty);
-      }
-      currentItems.forEach((item, index) => {
-        const li = document.createElement("li");
-        li.id = `${optionPrefix}-${index}`;
-        li.className = "combobox-option" + (item === fallbackItem ? " combobox-option-fallback" : "");
-        li.setAttribute("role", "option");
-        li.dataset.value = item.id;
-        li.setAttribute("aria-selected", item.id === hiddenInput.value ? "true" : "false");
-        li.textContent = item.label;
-        li.addEventListener("mousedown", (event) => {
-          event.preventDefault();
-          choose(item);
-        });
-        li.addEventListener("click", () => choose(item));
-        listbox.appendChild(li);
+    function buildOptionEl(item, index) {
+      const li = document.createElement("li");
+      li.id = `${optionPrefix}-${index}`;
+      li.className = "combobox-option" + (item === fallbackItem ? " combobox-option-fallback" : "");
+      li.setAttribute("role", "option");
+      li.dataset.value = item.id;
+      li.setAttribute("aria-selected", item.id === hiddenInput.value ? "true" : "false");
+      li.textContent = item.label;
+      li.addEventListener("mousedown", (event) => {
+        event.preventDefault();
       });
+      li.addEventListener("click", () => choose(item));
+      return li;
+    }
+
+    function render(query) {
+      syncComboboxViewportHeight();
+      listbox.replaceChildren();
+      currentItems = [];
+      let totalMatched = 0;
+
+      if (getGroups && !query.trim()) {
+        const groups = getGroups();
+        for (const group of groups) {
+          if (!group.items.length) continue;
+          const heading = document.createElement("li");
+          heading.className = "combobox-group-label";
+          heading.setAttribute("role", "presentation");
+          heading.textContent = group.heading;
+          listbox.appendChild(heading);
+          for (const item of group.items) {
+            const idx = currentItems.length;
+            currentItems.push(item);
+            listbox.appendChild(buildOptionEl(item, idx));
+          }
+          totalMatched += group.items.length;
+        }
+      } else {
+        const matched = getItems(query);
+        totalMatched = matched.length;
+        const visible = maxVisibleItems && matched.length > maxVisibleItems
+          ? matched.slice(0, maxVisibleItems)
+          : matched;
+        if (!matched.length && query.trim()) {
+          const empty = document.createElement("li");
+          empty.className = "combobox-empty";
+          empty.setAttribute("role", "presentation");
+          empty.textContent = emptyMessage;
+          listbox.appendChild(empty);
+        }
+        for (const item of visible) {
+          const idx = currentItems.length;
+          currentItems.push(item);
+          listbox.appendChild(buildOptionEl(item, idx));
+        }
+        if (maxVisibleItems && matched.length > maxVisibleItems && hintTemplate) {
+          const hint = document.createElement("li");
+          hint.className = "combobox-hint";
+          hint.setAttribute("role", "presentation");
+          hint.textContent = hintTemplate(visible.length, matched.length);
+          listbox.appendChild(hint);
+        }
+      }
+
+      const fallbackIndex = currentItems.length;
+      currentItems.push(fallbackItem);
+      listbox.appendChild(buildOptionEl(fallbackItem, fallbackIndex));
+
       listbox.hidden = false;
+      listbox.scrollTop = 0;
       input.setAttribute("aria-expanded", "true");
-      setActive(matched.length > 0 && query.trim() ? 0 : -1);
+      setActive(totalMatched > 0 && query.trim() ? 0 : -1);
     }
 
     function choose(item) {
       hiddenInput.value = item.id;
       selectedLabel = item.label;
       input.value = item.label;
-      input.setAttribute("aria-invalid", "false");
-      input.classList.remove("is-field-invalid");
+      clearFieldError(input);
       close();
       syncClearIcon();
       onSelect(item.id, item.label);
@@ -252,8 +352,7 @@
       hiddenInput.value = "";
       selectedLabel = "";
       input.value = "";
-      input.setAttribute("aria-invalid", "false");
-      input.classList.remove("is-field-invalid");
+      clearFieldError(input);
       close();
       syncClearIcon();
       onClear();
@@ -289,6 +388,12 @@
       } else if (event.key === "ArrowUp") {
         event.preventDefault();
         if (!listbox.hidden) setActive(activeIndex <= 0 ? 0 : activeIndex - 1);
+      } else if (event.key === "Home" && !listbox.hidden) {
+        event.preventDefault();
+        setActive(0);
+      } else if (event.key === "End" && !listbox.hidden) {
+        event.preventDefault();
+        setActive(currentItems.length - 1);
       } else if (event.key === "Enter" && !listbox.hidden) {
         event.preventDefault();
         const pickIndex = activeIndex >= 0 ? activeIndex : (currentItems.length === 2 && !listbox.querySelector(".combobox-empty") ? 0 : -1);
@@ -302,7 +407,13 @@
     input.addEventListener("blur", () => {
       setTimeout(() => {
         if (!listbox.contains(document.activeElement)) close();
-      }, 120);
+      }, 150);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (!listbox.hidden && wrap && !wrap.contains(event.target)) {
+        close();
+      }
     });
 
     clearBtn.addEventListener("click", () => clearValue(true));
@@ -323,8 +434,7 @@
         hiddenInput.value = id || "";
         selectedLabel = id ? (label || "") : "";
         input.value = label || "";
-        input.setAttribute("aria-invalid", "false");
-        input.classList.remove("is-field-invalid");
+        clearFieldError(input);
         close();
         syncClearIcon();
       },
@@ -400,7 +510,7 @@
     schoolPicker.hidden = isOther;
     const schoolEnabled = schoolActive && hasDirectoryBoard && !isOther;
     schoolSearch.disabled = !schoolEnabled;
-    schoolSearch.placeholder = schoolEnabled ? "Search schools" : "Select a board first";
+    schoolSearch.placeholder = schoolEnabled ? "Start typing your school name..." : "Select a board first";
     schoolSearch.required = schoolEnabled && isWorkshopInterest(activeInterest);
     schoolCombobox.syncClearIcon();
     updateManualSchool();
@@ -413,14 +523,24 @@
     clearBtn: schoolClearBtn,
     searchIcon: schoolSearchIcon,
     optionPrefix: "school-opt",
+    maxVisibleItems: 60,
+    hintTemplate: (shown, total) => `Showing ${shown} of ${total} schools — keep typing to narrow results`,
     getItems(query) {
       const schools = H4_SCHOOL_DIRECTORY[boardId.value]?.[1] || {};
-      return Object.entries(schools).flatMap(([id, [name, city]]) => {
+      const clean = normalize(query);
+      const list = Object.entries(schools).flatMap(([id, [name, city]]) => {
         if (!matches(query, [name, city])) return [];
-        return [{ id, label: city ? `${name} · ${city}` : name }];
+        const normName = normalize(name);
+        const rank = !clean ? 0
+          : normName.startsWith(clean) ? 0
+          : normName.split(" ").some((w) => w.startsWith(clean)) ? 1
+          : 2;
+        return [{ id, label: city ? `${name} · ${city}` : name, rank }];
       });
+      if (!clean) return list;
+      return list.sort((a, b) => a.rank - b.rank || a.label.localeCompare(b.label, "en", { sensitivity: "base" }));
     },
-    fallbackItem: { id: "manual", label: "My school isn’t listed" },
+    fallbackItem: { id: "manual", label: "Can't find your school? Enter it manually." },
     emptyMessage: "No matching schools found.",
     onSelect() {
       updateManualSchool();
@@ -437,12 +557,24 @@
     clearBtn: boardClearBtn,
     searchIcon: boardSearchIcon,
     optionPrefix: "board-opt",
+    getGroups() {
+      return [
+        { heading: "Popular school boards", items: popularBoards },
+        { heading: "All other school boards", items: otherBoards }
+      ];
+    },
     getItems(query) {
       const matched = allBoards.filter((entry) => matches(query, entry.searchLabels));
       if (!query.trim()) return matched;
-      return matched.sort((a, b) => Number(isExactMatch(query, b.searchLabels)) - Number(isExactMatch(query, a.searchLabels)));
+      return matched.sort((a, b) => {
+        const exactDiff = Number(isExactMatch(query, b.searchLabels)) - Number(isExactMatch(query, a.searchLabels));
+        if (exactDiff !== 0) return exactDiff;
+        const popularDiff = Number(b.isPopular) - Number(a.isPopular);
+        if (popularDiff !== 0) return popularDiff;
+        return a.name.localeCompare(b.name, "en", { sensitivity: "base" });
+      });
     },
-    fallbackItem: { id: "other", label: "Independent school / Other" },
+    fallbackItem: { id: "other", label: "Other / Not listed (enter manually)" },
     emptyMessage: "No matching school boards found.",
     onSelect() {
       schoolCombobox.clear();
@@ -457,8 +589,7 @@
   function clearValidationVisuals() {
     error.hidden = true;
     for (const el of form.querySelectorAll("input, select")) {
-      el.setAttribute("aria-invalid", "false");
-      el.classList.remove("is-field-invalid");
+      clearFieldError(el);
     }
   }
 
@@ -505,10 +636,10 @@
       field("programInterestLabel").textContent = programInterestSelect.selectedOptions[0]?.textContent || "";
     }
 
-    // Full name: hidden & disabled on Free Teacher Tutorial (value preserved in DOM for switching)
-    fullNameField.hidden = isFree;
-    teacherName.disabled = isFree;
-    teacherName.required = !isFree;
+    // Full name: visible & required on all pathways (Free Tutorial has 3 required fields: Name, Email, Role)
+    fullNameField.hidden = false;
+    teacherName.disabled = false;
+    teacherName.required = true;
 
     // School Board & School placement
     const showOptionalSchool = (isFree || isExplore) && !isParent;
@@ -532,17 +663,20 @@
     for (const mark of schoolDetails.querySelectorAll(".school-req-mark")) {
       mark.hidden = !showWorkshopSchool;
     }
+    for (const mark of schoolDetails.querySelectorAll(".school-opt-mark")) {
+      mark.hidden = showWorkshopSchool;
+    }
     boardCombobox.syncClearIcon();
     syncSchoolPickerState();
 
-    // Workshop optional details (Grades, Preferred Timing, Phone, Instagram)
+    // Workshop optional details (Grades, Preferred Timing, Phone — Instagram hidden on all pathways)
     optionalWorkshopDetails.hidden = !isWorkshop;
     if (!isWorkshop) optionalWorkshopDetails.open = false;
     for (const control of workshopDetails.querySelectorAll("input, select")) {
       control.disabled = !isWorkshop;
     }
-    instagramField.hidden = !isWorkshop || isParent;
-    teacherInstagram.disabled = !isWorkshop || isParent;
+    if (instagramField) instagramField.hidden = true;
+    if (teacherInstagram) teacherInstagram.disabled = true;
 
     if (!sending) {
       submit.textContent = isFree
@@ -559,6 +693,11 @@
     if (input && input !== error) {
       input.setAttribute("aria-invalid", "true");
       input.classList.add("is-field-invalid");
+      const errEl = input.id ? field(`${input.id}Error`) : null;
+      if (errEl) {
+        errEl.textContent = message;
+        errEl.hidden = false;
+      }
     }
     input.focus();
   }
@@ -632,13 +771,11 @@
   role.addEventListener("change", () => { if (!sending) updateView(); });
   form.addEventListener("input", (event) => {
     if (!sending) error.hidden = true;
-    event.target.setAttribute("aria-invalid", "false");
-    event.target.classList.remove("is-field-invalid");
+    clearFieldError(event.target);
   });
   form.addEventListener("change", (event) => {
     if (!sending) error.hidden = true;
-    event.target.setAttribute("aria-invalid", "false");
-    event.target.classList.remove("is-field-invalid");
+    clearFieldError(event.target);
   });
   field("formEditBtn").addEventListener("click", resetForm);
 
@@ -652,7 +789,7 @@
     const isExplore = isExploreInterest(activeInterest);
     const isParent = role.value === "Parent / Caregiver";
 
-    if (!isFree && !teacherName.value.trim()) {
+    if (!teacherName.value.trim()) {
       showError("Please enter your full name.", teacherName);
       return;
     }
@@ -671,7 +808,7 @@
         return;
       }
       if (boardId.value !== "other" && !schoolId.value) {
-        showError("Please select your school or choose ‘My school isn’t listed’.", schoolSearch);
+        showError("Please select your school or choose ‘Can't find your school? Enter it manually.’", schoolSearch);
         return;
       }
       if ((boardId.value === "other" || schoolId.value === "manual") && !manualName.value.trim()) {
@@ -697,13 +834,13 @@
     const payload = {
       interest: activeInterest,
       role: role.value,
-      fullName: isFree ? "" : teacherName.value.trim(),
+      fullName: teacherName.value.trim(),
       email: teacherEmail.value.trim(),
       boardId: activeBoardId,
       schoolId: activeSchoolId,
       schoolName: activeSchoolName,
       phone: isWorkshop ? teacherPhone.value.trim() : "",
-      instagram: isWorkshop && !isParent ? teacherInstagram.value.trim() : "",
+      instagram: "",
       grades: activeGrades,
       preferredTiming: isWorkshop ? (targetMonth.value || "") : "",
       website: form.elements.website?.value || ""
@@ -724,6 +861,7 @@
     sendingStatus.hidden = false;
     sendingStatus.focus({ preventScroll: true });
     form.setAttribute("aria-busy", "true");
+    submit.classList.add("is-loading");
     submit.textContent = "Sending request…";
     const controller = new AbortController();
     const configuredTimeout = Number(window.H4_TEACHER_FORM_CONFIG?.timeoutMs);
@@ -760,6 +898,7 @@
       controls.forEach((control) => { control.disabled = false; });
       disclosures.forEach((summary) => { summary.inert = false; });
       sendingStatus.hidden = true;
+      submit.classList.remove("is-loading");
       form.removeAttribute("aria-busy");
       if (form.hidden === false) updateView();
     }
